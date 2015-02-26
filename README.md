@@ -145,4 +145,4 @@ Authors
 References
 ==========
 
-* http://www3.nd.edu/~mcdonald/Word_Lists.html (word lists)
+* https://github.com/jeffreybreen/twitter-sentiment-analysis-tutorial-201107/tree/master/data/opinion-lexicon-English (positive and negative word lists)
