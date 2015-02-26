@@ -1,4 +1,6 @@
-How to install Python 2.7 in a Virtualenv with Libraries and use on Hadoop
+-------------------------------------------------------------------
+Install Python 2.7 in a Virtualenv with libraries and use on Hadoop
+-------------------------------------------------------------------
 
 Python 2.7
 $ wget https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz
@@ -15,7 +17,7 @@ $ cd /scratch/scratch/... (we assume this directory from now on)
 $ virtualenv -p $HOME/.local/bin/python2.7 python
 $ virtualenv --relocatable python
 
-Shared libaries
+Shared libaries (optional)
 It's mostly about wget, ./configure --prefix=/scratch/scratch/.../opt then make and make install.
 - OpenBLAS: Instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct PREFIX=... and no sudo nor ldconfig.
@@ -26,11 +28,11 @@ PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:/scratch/scratch/..
 export LIBRARY_PATH="$HOME/.local/lib:/scratch/scratch/.../opt/lib"
 export LD_LIBRARY_PATH="$HOME/.local/lib:/scratch/scratch/.../opt/lib"
 export CPATH="$HOME/.local/include:/scratch/scratch/.../opt/include"
-export BLAS="$HOME/.local/lib/libopenblas.a"
+export BLAS="$HOME/.local/lib/libopenblas.a" (optional)
 
 Then use `source ~/.bashrc`
 
-Python Libraries
+Python libraries
 $ source python/bin/activate (alternatively, make an alias for it)
 (python)$ pip install cython,readline
 (python)$ pip install numpy
@@ -40,7 +42,7 @@ $ source python/bin/activate (alternatively, make an alias for it)
    Note that this might screw up the latter pip installations since they depend
    on numpy and consider a numpy installed this way to be incompatible, but that
    can be avoided by passing --no-deps to at least scipy,pandas,scikit-learn,numexpr.)
-(python)$ pip install scipy,pandas,scikit-learn,numexpr,matplotlib,mpi4py
+(python)$ pip install scipy,pandas,scikit-learn,numexpr,matplotlib,mpi4py (optional)
 
 Hadoop
 $ tar xzvf python.tgz python/
@@ -78,5 +80,6 @@ Finding application logs
 ------------------------
 After completing a job, you can find the logs with:
 $ hdfs dfs -ls /app-logs/.../logs/
+
 The latest one is the most recent application job. Copy the whole application ID behind the slash, e.g. application_1421846212827_0079. Then you can read the logs with:
 $ yarn logs -applicationId application_1421846212827_0079 | less
