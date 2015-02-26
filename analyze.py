@@ -13,13 +13,11 @@ def main(argv):
     words = {}
     with open("words/positive.txt") as file:
         for line in file:
-            line = line.replace("\r\n", "").lower()
-            words[line] = 1
+            words[line.rstrip()] = 1
 
     with open("words/negative.txt") as file:
         for line in file:
-            line = line.replace("\r\n", "").lower()
-            words[line] = -1
+            words[line.rstrip()] = -1
 
     # Perform the sentiment analysis
     score = 0
