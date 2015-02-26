@@ -3,3 +3,8 @@
 
 # Vim swap files
 *.swp
+
+# Dataset files
+*.json
+*.bson
+*.tar.gz
