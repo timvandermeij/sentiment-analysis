@@ -141,3 +141,8 @@ Authors
 
 * Tim van der Meij (Leiden University, @timvandermeij)
 * Leon Helwerda (Leiden University, @lhelwerd)
+
+References
+==========
+
+* http://www3.nd.edu/~mcdonald/Word_Lists.html (word lists)
