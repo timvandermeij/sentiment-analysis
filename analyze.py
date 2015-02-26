@@ -30,7 +30,10 @@ def main(argv):
             score += words[w]
             found += 1
 
-    print(round(score / float(found), 2))
+    if found == 0:
+        print(0)
+    else:
+        print(round(score / float(found), 2))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
