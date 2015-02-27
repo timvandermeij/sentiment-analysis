@@ -23,15 +23,13 @@ def main(argv):
     score = 0
     found = 0
     for w in message.split():
-        w = re.sub(r'\W+', '', w).lower() # Only keep alphanumeric characters
+        # Only keep alphanumeric characters and some punctuation.
+        w = re.sub(r'[^\-\'+\w]', '', w).lower()
         if w in words:
             score += words[w]
             found += 1
 
-    if found == 0:
-        print(0)
-    else:
-        print(round(score / float(found), 2))
+    print(round(score / float(found) if found != 0 else 0, 2))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
