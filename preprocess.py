@@ -38,10 +38,21 @@ def extract(tarball, file):
     tar.close()
     print("Untarring dataset [finished]")
 
+def isLatinAlphabet(string):
+    try:
+        string.encode('ascii')
+    except UnicodeEncodeError:
+        return False
+    
+    return True
+
 def bson2json(file):
     output = open(file + ".json", "wb")
     bsonFile = open(file + ".bson", "rb")
     for rawJson in bson.decode_all(bsonFile.read()):
+        if not isLatinAlphabet(rawJson["body"]):
+            continue
+
         preprocessedJson = {}
         for item in DATASET_KEEP_FIELDS:
             preprocessedJson[item] = rawJson[item]
@@ -53,12 +64,10 @@ def bson2json(file):
     print("Converting BSON to JSON and removing unused fields [finished]")
 
 def main(argv):
-    if not os.path.isfile(DATASET_NAME + ".bson"):
+    if not os.path.isfile(DATASET_NAME + ".json"):
         download(DATASET_URL, DATASET_NAME + ".tar.gz")
         extract(DATASET_NAME, "dump/github/" + DATASET_NAME + ".bson")
         os.remove(DATASET_NAME + ".tar.gz")
-    
-    if not os.path.isfile(DATASET_NAME + ".json"):
         bson2json(DATASET_NAME)
         os.remove(DATASET_NAME + ".bson")
 
