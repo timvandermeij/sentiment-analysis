@@ -17,7 +17,7 @@ def main(argv):
         score = 0
         found = 0
         for w in message.split():
-            # Only keep alphanumeric characters and some punctuation.
+            # Only keep alphanumeric and some punctuation characters
             w = re.sub(r'[^\-\'+\w]', '', w).lower()
             if w in words:
                 score += words[w]

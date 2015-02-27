@@ -33,7 +33,7 @@ def extract(tarball, file):
     member.name = os.path.basename(member.name)
     tar.extract(member)
     tar.close()
-    print(" -> Untarring commit messages dataset (finished)")
+    print("-> Untarring commit messages dataset (finished)")
  
 def main(argv):
     # Download the dataset if it does not exist yet

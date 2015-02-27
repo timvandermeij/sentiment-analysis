@@ -23,9 +23,12 @@ Running the code
 
 All code is written in Python. To run the simple sentiment analaysis program, execute:
 
+    $ python preprocess.py
     $ python analyze.py "Yay, sentiment analysis is working perfectly!"
 
-The output of the application is a score between -1 and 1, where -1 indicates that the message is negative, 1 indicates that the
+Running `preprocess.py` only needs to be done once. If all required data is available, `preprocess.py` will do nothing.
+
+The output of `analyze.py` is a score between -1 and 1, where -1 indicates that the message is negative, 1 indicates that the
 message is positive and 0 indicates that the message is neutral.
 
 Installation notes for the DAS-3
