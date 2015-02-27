@@ -1,5 +1,6 @@
 import sys
 import re
+import json
 
 def main(argv):
     # Load the positive and negative words
@@ -13,7 +14,8 @@ def main(argv):
             words[line.rstrip()] = -1
 
     # Perform the sentiment analysis
-    for message in sys.stdin:
+    for jsonObject in sys.stdin:
+        message = json.loads(jsonObject)["body"]
         score = 0
         found = 0
         for w in message.split():
