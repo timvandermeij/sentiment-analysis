@@ -7,7 +7,7 @@ import json
 
 DATASET_NAME = "commit_comments"
 DATASET_URL = "http://ghtorrent.org/downloads/" + DATASET_NAME + "-dump.2015-01-29.tar.gz"
-DATASET_KEEP_FIELDS = ["body"]
+DATASET_KEEP_FIELDS = ["id", "body"]
 
 def download(url, target):
     stream = urllib2.urlopen(url)
@@ -49,7 +49,9 @@ def isLatinAlphabet(string):
 def bson2json(file):
     output = open(file + ".json", "wb")
     bsonFile = open(file + ".bson", "rb")
-    for rawJson in bson.decode_all(bsonFile.read()):
+    # Read every BSON object as an iterator to save memory.
+    for rawJson in bson.decode_file_iter(bsonFile):
+        # TODO: Perhaps just strip non-Latin and only ignore if nothing is left
         if not isLatinAlphabet(rawJson["body"]):
             continue
 
@@ -64,12 +66,13 @@ def bson2json(file):
     print("Converting BSON to JSON and removing unused fields [finished]")
 
 def main(argv):
-    if not os.path.isfile(DATASET_NAME + ".json"):
+    if not os.path.isfile(DATASET_NAME + ".tar.gz"):
         download(DATASET_URL, DATASET_NAME + ".tar.gz")
+    if not os.path.isfile(DATASET_NAME + ".bson"):
         extract(DATASET_NAME, "dump/github/" + DATASET_NAME + ".bson")
-        os.remove(DATASET_NAME + ".tar.gz")
-        bson2json(DATASET_NAME)
-        os.remove(DATASET_NAME + ".bson")
+
+    bson2json(DATASET_NAME)
+    os.remove(DATASET_NAME + ".bson")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

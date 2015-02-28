@@ -15,7 +15,8 @@ def main(argv):
 
     # Perform the sentiment analysis
     for jsonObject in sys.stdin:
-        message = json.loads(jsonObject)["body"]
+        data = json.loads(jsonObject)
+        message = data["body"]
         score = 0
         found = 0
         for w in message.split():
@@ -25,7 +26,7 @@ def main(argv):
                 score += words[w]
                 found += 1
 
-        print(round(score / float(found) if found != 0 else 0, 2))
+        print("{}\t{:.2f}".format(data["id"], score / float(found) if found != 0 else 0.0))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
