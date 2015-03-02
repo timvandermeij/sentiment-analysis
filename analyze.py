@@ -3,6 +3,9 @@ import re
 import json
 
 def main(argv):
+    group = argv[0] if len(argv) > 0 else "id"
+    display = group == "id"
+
     # Load the positive and negative words
     words = {}
     with open("words/positive.txt") as file:
@@ -30,9 +33,10 @@ def main(argv):
             if w in words:
                 score += words[w]
                 found += 1
-                disp += colors[words[w]] + w + END_COLOR + " "
+                if display:
+                    disp += colors[words[w]] + w + END_COLOR + " "
 
-        print("{}\t{:.2f}\t{}{}".format(data["id"], score / float(found) if found != 0 else 0.0, disp, message.replace('\n',' ')))
+        print("{}{:.2f}{}".format(str(data[group]) + "\t" if group != "score" else "", score / float(found) if found != 0 else 0.0, "\t{}{}".format(disp, message.replace('\n',' ')) if display else ""))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
