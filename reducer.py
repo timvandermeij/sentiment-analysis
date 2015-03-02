@@ -21,5 +21,8 @@ def main(argv):
         last_score = s
         count = count + 1
 
+    if last_group is not None:
+        print("{}\t{}".format("{}\t{}".format(last_group, last_score) if group != "score" else last_group, count))
+
 if __name__ == "__main__":
     main(sys.argv[1:])

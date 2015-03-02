@@ -9,3 +9,7 @@
 *.bson
 *.tar.gz
 *.tgz
+
+# Output data and plot files
+*.dat
+*.eps
