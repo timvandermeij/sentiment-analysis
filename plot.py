@@ -42,8 +42,8 @@ def main(argv):
     plt.xlim(-1.0,1.0 + width)
     plt.axhline(0, color='black')
 
-    # "Clever" way of showing negative part as negative culumative part of the 
-    # plot and the positive part culumative from there as well.
+    # "Clever" way of showing negative part as negative cumulative part of the 
+    # plot and the positive part cumulative from there as well.
     d = -1
     zero = M[M['x'] == 0.00].index[0] # index of zero point
     parts = np.split(M, [zero, zero+1])
