@@ -27,9 +27,10 @@ def main(argv):
         score = 0
         found = 0
         disp = ""
-        for w in message.split():
-            # Only keep alphanumeric and some punctuation characters
-            w = re.sub(r'[^\-\'+\w]', '', w).lower()
+        # Only keep alphanumeric and some punctuation characters
+        # Keep emoticons together but beware of edge cases that should be split
+        parts = filter(lambda x: x != '' and x is not None, re.split(r'"|(?:(?<=[a-z])[;\.])?\s+|(?:(?<=[a-z])[;\.])?$|(?!.[/(]\S)([^;\.\-\"\'+\w\s][^+\w\s]*(?:[-a-z]\b)?)|(?!.[/(]\S)((?:\b[a-z])?[^+\w\s]*[^;\.\-\"\'+\w\s])', message.lower()))
+        for w in parts:
             if w in words:
                 score += words[w]
                 found += 1
