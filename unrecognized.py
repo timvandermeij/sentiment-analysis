@@ -35,6 +35,8 @@ def main(argv):
 
         target = unrecognized_negative if score < 0 else unrecognized_positive
         for w in parts:
+            # Only keep alphanumeric and some punctuation characters
+            w = re.sub(r'[^\-\'+\w]', '', w).lower()
             if w not in words:
                 if w in target:
                     target[w] += 1
