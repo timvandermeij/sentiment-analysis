@@ -4,7 +4,6 @@ from sklearn.pipeline import Pipeline
 import numpy as np
 import json
 import sys
-import time
 import itertools
 from analyze import Analyzer # for some train data labelling
 
@@ -29,7 +28,6 @@ def main(argv):
     ])
     regressor.fit(train_data, train_labels)
 
-    t = time.clock()
     test_group = []
     def track(x):
         if analyzer.group != "score":
@@ -55,9 +53,6 @@ def main(argv):
             message = analyzer.colors[c] + test_data[i] + analyzer.END_COLOR
 
         analyzer.output(group, message, prediction, "")
-
-    sys.stderr.write('Time: {:f} s\n'.format(time.clock() - t))
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])
