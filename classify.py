@@ -1,11 +1,9 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 import numpy as np
 import json
 import sys
-import time
 from analyze import Analyzer # for some train data labelling
 
 def main(argv):
@@ -26,7 +24,6 @@ def main(argv):
     regressor = Pipeline([
         ('tfidf', TfidfVectorizer(input='content')),
         ('clf', RandomForestRegressor())
-        #('clf', KNeighborsRegressor())
     ])
     regressor.fit(train_data, train_labels)
 
