@@ -7,8 +7,8 @@ Prerequisites
 
 The version numbers mentioned below have been verified to work. Different versions might also work.
 
-* Git 2.3
-* Python 2.7.9
+* Git 1.7.1
+* Python 2.7.9 with libraries (see installation notes for details)
 
 Cloning the repository
 ======================
@@ -61,7 +61,7 @@ We have now created a virtual environment called `python`. The goal is to distri
 Shared libaries
 ---------------
 
-Note that this is optional. It's mostly about `wget`, `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
+Note that this is optional. It's mostly about `wget`, `tar xz`, `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
 
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
@@ -84,14 +84,27 @@ Python libraries
 ----------------
 
     $ source python/bin/activate
+
+We now have a Python virtual environment, but pip is still from Python 2.6. In order to fix this, run the following:
+
+    (python)$ wget https://bootstrap.pypa.io/get-pip.py
+    (python)$ python get-pip.py -U -I
+
+This installs pip for Python 2.7, which is less likely to give troubles with installing or upgrading dependencies:
+
     (python)$ pip install cython
     (python)$ pip install readline
     (python)$ pip install numpy
-    (python)$ pip install scipy,pandas,scikit-learn,numexpr,matplotlib,mpi4py
+    (python)$ pip install scipy
+    (python)$ pip install pandas
+    (python)$ pip install scikit-learn>=0.16b1
+    (python)$ pip install numexpr
+    (python)$ pip install matplotlib
+    (python)$ pip install mpi4py
 
-For the last command you need to run it with every single comma-separated value. `mpi4py` is optional.
+The last command for `mpi4py` is optional.
 
-There is a chance that the `numpy` does not work because you might want OpenBLAS. Then we need to install from source according to the following link:
+This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
 http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
 
 Note that this might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that
@@ -103,7 +116,9 @@ HDFS
     $ tar xzvf python.tgz python/
     $ tar xzvf local.tgz $HOME/.local/*
     $ tar xzvf libs.tgz /usr/lib64/libg2c.so* /usr/lib/libgfortran.so*
-    $ hdfs dfs -put python.tgz, local.tgz, libs.tgz
+    $ hdfs dfs -put python.tgz
+    $ hdfs dfs -put local.tgz
+    $ hdfs dfs -put libs.tgz
 
 Update ~/.bashrc again
 ----------------------
