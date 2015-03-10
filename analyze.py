@@ -26,7 +26,8 @@ class Analyzer(object):
             # Normalize newlines
             message = data["body"].replace('\r\n', '\n')
             del data["body"]
-            yield message, data
+            group = str(data[self.group]) if self.group != "score" else ""
+            yield message, group
             i = i + 1
             if max is not None and i >= max:
                 break
@@ -48,8 +49,8 @@ class Analyzer(object):
         label = score / float(found) if found != 0 else 0.0
         return (label, score, found, disp)
 
-    def output(self, data, message, label, disp):
-        g = str(data[self.group]) + "\t" if self.group != "score" else ""
+    def output(self, group, message, label, disp):
+        g = group + "\t" if self.group != "score" else ""
 
         text = ""
         if self.display:
