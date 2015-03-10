@@ -18,16 +18,19 @@ def read_json(file, max=None):
             break
 
 def main(argv):
+    group = argv[0] if len(argv) > 0 else "id"
+    train_size = int(argv[1]) if len(argv) > 1 else 1000
+    display = group == "id"
+
     train_data = []
     train_labels = []
     analyzer = Analyzer()
     for message in read_json(sys.stdin):
-        (score, found, _) = analyzer.analyze(message)
-        label = score / float(found) if found > 0 else 0.0
+        label = analyzer.analyze(message)[0]
         train_data.append(message)
         train_labels.append(label)
 
-        if len(train_data) >= 1000:
+        if len(train_data) >= train_size:
             break
 
     regressor = Pipeline([('tfidf', TfidfVectorizer(input='content')),
@@ -35,7 +38,10 @@ def main(argv):
     ])
     regressor.fit(train_data, train_labels)
 
-    data = list(read_json(sys.stdin, 2000))
+    data = read_json(sys.stdin)
+    if group != "score":
+        data = list(data)
+
     predicted = regressor.predict(data)
     for i in range(len(predicted)):
         # Take the color for this group of predictions

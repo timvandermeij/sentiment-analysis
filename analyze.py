@@ -31,21 +31,23 @@ class Analyzer(object):
                 if display:
                     disp += self.colors[self.words[w]] + w + self.END_COLOR + " "
 
-        return (score, found, disp)
+        label = score / float(found) if found != 0 else 0.0
+        return (label, score, found, disp)
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     display = group == "id"
 
     # Perform the sentiment analysis
+    analyzer = Analyzer()
     for jsonObject in sys.stdin:
         data = json.loads(jsonObject)
         # normalize newlines
         message = data["body"].replace('\r\n','\n')
 
-        (score, found, disp) = analyze(message, display)
+        (label, score, found, disp) = analyzer.analyze(message, display)
 
-        print("{}{:.2f}{}".format(str(data[group]) + "\t" if group != "score" else "", score / float(found) if found != 0 else 0.0, "\t{}{}".format(disp, message.replace('\n',' ')) if display else ""))
+        print("{}{:.2f}{}".format(str(data[group]) + "\t" if group != "score" else "", label, "\t{}{}".format(disp, message.replace('\n',' ')) if display else ""))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
