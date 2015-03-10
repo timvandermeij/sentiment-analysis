@@ -4,6 +4,8 @@ from sklearn.pipeline import Pipeline
 import numpy as np
 import json
 import sys
+import time
+import itertools
 from analyze import Analyzer # for some train data labelling
 
 def main(argv):
@@ -27,17 +29,34 @@ def main(argv):
     ])
     regressor.fit(train_data, train_labels)
 
-    for message, group in analyzer.read_json(sys.stdin):
+    t = time.clock()
+    test_group = []
+    def track(x):
+        if analyzer.group != "score":
+            test_group.append(x[1])
+        return(x[0])
+
+    test_data = itertools.imap(track, analyzer.read_json(sys.stdin))
+    if analyzer.display:
+        test_data = list(test_data)
+
+    predictions = regressor.predict(test_data)
+
+    for i in xrange(len(predictions)):
         # Call predict for every message which might be slow in practice but 
         # avoids memory hog due to not being able to use iterators if done in 
         # one batch.
-        prediction = regressor.predict([message])[0]
+        prediction = predictions[i]
+        message = ""
+        group = test_group[i] if analyzer.group != "score" else ""
         if analyzer.display:
             # Take the color for this group of predictions
             c = cmp(prediction, 0)
-            message = analyzer.colors[c] + message + analyzer.END_COLOR
+            message = analyzer.colors[c] + test_data[i] + analyzer.END_COLOR
 
         analyzer.output(group, message, prediction, "")
+
+    sys.stderr.write('Time: {:f} s\n'.format(time.clock() - t))
 
 
 if __name__ == "__main__":
