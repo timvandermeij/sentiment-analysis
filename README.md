@@ -13,7 +13,7 @@ The version numbers mentioned below have been verified to work. Different versio
 Cloning the repository
 ======================
 
-The first step is to clone the repository to obtian a local copy of the code. Open a terminal window and run the following commands.
+The first step is to clone the repository to obtain a local copy of the code. Open a terminal window and run the following commands.
 
     $ git clone https://github.com/timvandermeij/SDDM.git
     $ cd SDDM
@@ -21,15 +21,24 @@ The first step is to clone the repository to obtian a local copy of the code. Op
 Running the code
 ================
 
-All code is written in Python. To run the simple sentiment analaysis program, execute:
+All code is written in Python. To run the simple sentiment analysis program, execute:
 
     $ python preprocess.py
-    $ python analyze.py "Yay, sentiment analysis is working perfectly!"
+    $ echo "Yay, sentiment analysis is working perfectly!" | python analyze.py
 
 Running `preprocess.py` only needs to be done once. If all required data is available, `preprocess.py` will do nothing.
 
-The output of `analyze.py` is a score between -1 and 1, where -1 indicates that the message is negative, 1 indicates that the
-message is positive and 0 indicates that the message is neutral.
+The output of the analysis program are lines containing scores between -1 and 1, where -1 indicates that the message is negative, 1 indicates that the
+message is positive and 0 indicates that the message is neutral. The output can also contain grouping data or some visualization of the message.
+
+Instead of using a single line as input, one can give the file to read as standard input as follows:
+
+    $ python analyze.py < commit_comments.json
+    $ python classify.py score < commit_comments.json
+
+The latter `classify.py` script uses a (naive) classifier to predict the scores using a labeled dataset. Both programs work in a similar manner.
+
+The output can be given to the `reducer.py` script, but only if it has been sorted on the first column of the output (the group or the score of the line). This can be done using MapReduce as described later on. This generates a histogram of frequencies of the scores, and this can be passed to `plot.py` to make a graph of the frequencies.
 
 Installation notes for the DAS-3
 ================================
@@ -58,8 +67,8 @@ Install `virtualenv` using `pip`:
 
 We have now created a virtual environment called `python`. The goal is to distribute this over all the nodes using HDFS.
 
-Shared libaries
----------------
+Shared libraries
+----------------
 
 Note that this is optional. It's mostly about `wget`, `tar xz`, `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
 
