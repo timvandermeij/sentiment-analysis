@@ -34,16 +34,23 @@ class Labeler:
             
             # linecache provides random access to lines in (large) text files
             raw_json = linecache.getline(self.dataset + '.json', line)
-            message = json.loads(raw_json)['body']
-            print(message + '\n')
-            
-            # Get the label (score) from the naive word list classifier and interpret it
+            json_object = json.loads(raw_json)
+            message = json_object['body']
             label = analyzer.analyze(message)[0]
-
+            
+            print(message + '\n')
             print('Guess: ' + self.interpret(label))
             choice = raw_input('Label (Enter to confirm, otherwise "p", "n", "t" or "u"): ')
-            self.labeled_num_lines += 1
             print('\n')
+
+            self.write(json_object, self.labels[choice] if choice is not '' else self.interpret(label))
+            self.labeled_num_lines += 1
+
+    def write(self, json_object, label):
+        json_object['label'] = label
+        output = open(self.dataset + '.labeled.json', 'a')
+        output.write(json.dumps(json_object) + '\n')
+        output.close()
 
 def main(argv):
     dataset = argv[0] if len(argv) > 0 else 'commit_comments'
