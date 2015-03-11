@@ -50,7 +50,7 @@ def main(argv):
         if analyzer.display:
             # Take the color for this group of predictions
             c = cmp(prediction, 0)
-            message = analyzer.colors[c] + test_data[i] + analyzer.END_COLOR
+            message = analyzer.colors[c] + test_data[i] + analyzer.colors['end']
 
         analyzer.output(group, message, prediction, "")
 
