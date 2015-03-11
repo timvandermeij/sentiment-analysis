@@ -2,57 +2,67 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 import numpy as np
-import json
 import sys
 import itertools
 from analyze import Analyzer # for some train data labelling
 
+class Classifier(object):
+    def __init__(self, group, train_size):
+        self.group = group
+        self.train_size = train_size
+        self.analyzer = Analyzer(group)
+
+    def train(self):
+        # Collect the training data
+        train_data = []
+        train_labels = []
+        for message, _ in self.analyzer.read_json(sys.stdin):
+            label = self.analyzer.analyze(message)[0]
+            train_data.append(message)
+            train_labels.append(label)
+
+            if len(train_data) >= self.train_size:
+                break
+
+        # Train the regressor
+        self.regressor = Pipeline([
+            ('tfidf', TfidfVectorizer(input='content')),
+            ('clf', RandomForestRegressor())
+        ])
+        self.regressor.fit(train_data, train_labels)
+
+    def predict(self):
+        self.test_group = []
+        def track(x):
+            if self.analyzer.group != "score":
+                self.test_group.append(x[1])
+            return x[0]
+
+        self.test_data = itertools.imap(track, self.analyzer.read_json(sys.stdin))
+        if self.analyzer.display:
+            self.test_data = list(self.test_data)
+
+        return self.regressor.predict(self.test_data)
+
+    def output(self, predictions):
+        for i in xrange(len(predictions)):
+            prediction = predictions[i]
+            message = ""
+            group = self.test_group[i] if self.analyzer.group != "score" else ""
+            if self.analyzer.display:
+                # Take the color for this group of predictions
+                c = cmp(prediction, 0)
+                message = self.analyzer.colors[c] + self.test_data[i] + self.analyzer.colors['end']
+            
+            self.analyzer.output(group, message, prediction, "")
+
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     train_size = int(argv[1]) if len(argv) > 1 else 1000
-
-    train_data = []
-    train_labels = []
-    analyzer = Analyzer(group)
-    for message, _ in analyzer.read_json(sys.stdin):
-        label = analyzer.analyze(message)[0]
-        train_data.append(message)
-        train_labels.append(label)
-
-        if len(train_data) >= train_size:
-            break
-
-    regressor = Pipeline([
-        ('tfidf', TfidfVectorizer(input='content')),
-        ('clf', RandomForestRegressor())
-    ])
-    regressor.fit(train_data, train_labels)
-
-    test_group = []
-    def track(x):
-        if analyzer.group != "score":
-            test_group.append(x[1])
-        return(x[0])
-
-    test_data = itertools.imap(track, analyzer.read_json(sys.stdin))
-    if analyzer.display:
-        test_data = list(test_data)
-
-    predictions = regressor.predict(test_data)
-
-    for i in xrange(len(predictions)):
-        # Call predict for every message which might be slow in practice but 
-        # avoids memory hog due to not being able to use iterators if done in 
-        # one batch.
-        prediction = predictions[i]
-        message = ""
-        group = test_group[i] if analyzer.group != "score" else ""
-        if analyzer.display:
-            # Take the color for this group of predictions
-            c = cmp(prediction, 0)
-            message = analyzer.colors[c] + test_data[i] + analyzer.colors['end']
-
-        analyzer.output(group, message, prediction, "")
+    
+    classifier = Classifier(group, train_size)
+    classifier.train()
+    classifier.output(classifier.predict())
 
 if __name__ == "__main__":
     main(sys.argv[1:])
