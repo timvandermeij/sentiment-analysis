@@ -1,4 +1,4 @@
-This repository contains all code necessary to perform sentiment analysis on a large dataset of Git commit messages
+This repository contains all code necessary to perform sentiment analysis on a large dataset of Git commit comments
 from GitHub (http://www.ghtorrent.org). The code is meant to be run on the Distributed ASCI Supercomputer 3 (DAS-3) at LIACS. It makes use of
 Apache Hadoop's HDFS and MapReduce to perform the sentiment analysis. 
 
@@ -108,7 +108,7 @@ This installs `pip` for Python 2.7, which is less likely to give troubles with i
     (python)$ pip install numpy
     (python)$ pip install scipy
     (python)$ pip install pandas
-    (python)$ pip install scikit-learn>=0.16b1
+    (python)$ pip install scikit-learn==0.16b1
     (python)$ pip install numexpr
     (python)$ pip install matplotlib
     (python)$ pip install mpi4py
