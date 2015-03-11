@@ -62,8 +62,8 @@ Install `virtualenv` using `pip`:
 
     $ pip install --user virtualenv
     $ cd /scratch/scratch/{username} (we assume this directory from now on)
-    $ virtualenv -p $HOME/.local/bin/python2.7 python
-    $ virtualenv --relocatable python
+    $ ~/.local/bin/virtualenv -p $HOME/.local/bin/python2.7 python
+    $ ~/.local/bin/virtualenv --relocatable python
 
 We have now created a virtual environment called `python`. The goal is to distribute this over all the nodes using HDFS.
 
@@ -74,7 +74,7 @@ Note that this is optional. It's mostly about `wget`, `tar xz`, `./configure --p
 
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
-* OpenMPI
+* OpenMPI: Download from http://www.open-mpi.org/software/ompi/v1.8/
 
 Update ~/.bashrc
 ----------------
@@ -87,19 +87,19 @@ The final line for BLAS is optional.
     export CPATH="$HOME/.local/include:/scratch/scratch/{username}/opt/include"
     export BLAS="$HOME/.local/lib/libopenblas.a"
 
-Then use `source ~/.bashrc` to reload the configuration.
+Then use `source ~/.bashrc` to reload the configuration. Note that you could do this earlier on, which might make some commands shorter and easier to use.
 
 Python libraries
 ----------------
 
     $ source python/bin/activate
 
-We now have a Python virtual environment, but pip is still from Python 2.6. In order to fix this, run the following:
+We now have a Python 2.7 virtual environment, but `pip` is still from Python 2.6. In order to fix this, run the following:
 
     (python)$ wget https://bootstrap.pypa.io/get-pip.py
     (python)$ python get-pip.py -U -I
 
-This installs pip for Python 2.7, which is less likely to give troubles with installing or upgrading dependencies:
+This installs `pip` for Python 2.7, which is less likely to give troubles with installing or upgrading dependencies:
 
     (python)$ pip install cython
     (python)$ pip install readline
@@ -116,8 +116,7 @@ The last command for `mpi4py` is optional.
 This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
 http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
 
-Note that this might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that
-can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`.
+Note that installing `numpy` from source might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`.
 
 HDFS
 ----
@@ -148,10 +147,17 @@ Update ~/.bashrc again
         margs=$1;shift;
         rargs=$1;shift;
         echo "Arguments: input=$input output=$output mapper=\"$mapper $margs\" reducer=\"$reducer $rargs\" REST=\"$@\""
-        hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar -archives "$HDFS_URL/python.tgz#python,$HDFS_URL/local.tgz#local,$HDFS_URL/libs.tgz#libs" $@ -input "$input" -output "$output" -cmdenv "LD_LIBRARY_PATH=./local/lib:./libs/usr/lib64" -cmdenv "PYTHONHOME=./python/python:./local" -cmdenv "PYTHONPATH=./python/python/lib/python2.7:./local/lib/python2.7" -mapper "./python/python/bin/python $mapper $margs" -reducer "./python/python/bin/python $reducer $rargs" -file "$mapper" -file "$reducer"
+        hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar -archives "$HDFS_URL/python.tgz#python,$HDFS_URL/local.tgz#local,$HDFS_URL/libs.tgz#libs" $@ -input "$input" -output "$output" -cmdenv "LD_LIBRARY_PATH=./local/lib:./libs/usr/lib64" -cmdenv "PYTHONHOME=./python/python:./local" -cmdenv "PYTHONPATH=./python/python/lib/python2.7:./local/lib/python2.7:." -mapper "./python/python/bin/python $mapper $margs" -reducer "./python/python/bin/python $reducer $rargs" -file "$mapper" -file "$reducer"
     }
 
-After sourcing `~/.bashrc` again, the function gives help by running `pyhadoop`.
+After sourcing `~/.bashrc` again, the function gives help by running `pyhadoop`. As can be seen, the function needs at least for arguments for the input file, output directory, the Python mapper script, the Python reducer. Then one can give arguments to the mapper and reducer, respectively; put these  between quotes if you want to give more than one argument per script.
+
+The rest of the command is interpreted as extra arguments to `hadoop`, such as any additional archive files you might want to make available to the workers. These archives must be on HDFS, and are then unpacked on the worker nodes. The part after the `#` specifies the directory name to unpack the archive as, but beware of directories within archives as well. So, for example, if you have an archive `data.tgz` containing a directory data with your additional data files, then pass it like this:
+
+    $ hdfs dfs -put data.tgz
+    $ pyhadoop input.txt result mapper.py reducer.py "data/data 123" "data/data 42" -archives "$HDFS_URL/data.tgz#data"
+
+If you have hardcoded paths, sometimes you can circumvent these directory problems by using e.g. `-files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\"`
 
 Finding application logs
 ------------------------
