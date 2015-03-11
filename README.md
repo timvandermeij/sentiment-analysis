@@ -7,7 +7,7 @@ Prerequisites
 
 The version numbers mentioned below have been verified to work. Different versions might also work.
 
-* Git 1.7.1 or 2.3.1
+* Git 1.7.1 or 2.3.x
 * Python 2.7.9 with libraries (see installation notes below for details)
 
 Cloning the repository
