@@ -7,8 +7,8 @@ Prerequisites
 
 The version numbers mentioned below have been verified to work. Different versions might also work.
 
-* Git 1.7.1
-* Python 2.7.9 with libraries (see installation notes for details)
+* Git 1.7.1 or 2.3.1
+* Python 2.7.9 with libraries (see installation notes below for details)
 
 Cloning the repository
 ======================
@@ -31,14 +31,16 @@ Running `preprocess.py` only needs to be done once. If all required data is avai
 The output of the analysis program are lines containing scores between -1 and 1, where -1 indicates that the message is negative, 1 indicates that the
 message is positive and 0 indicates that the message is neutral. The output can also contain grouping data or some visualization of the message.
 
-Instead of using a single line as input, one can give the file to read as standard input as follows:
+Instead of using a single line as input, one can give a file to read as standard input as follows:
 
     $ python analyze.py < commit_comments.json
     $ python classify.py score < commit_comments.json
 
 The latter `classify.py` script uses a (naive) classifier to predict the scores using a labeled dataset. Both programs work in a similar manner.
 
-The output can be given to the `reducer.py` script, but only if it has been sorted on the first column of the output (the group or the score of the line). This can be done using MapReduce as described later on. This generates a histogram of frequencies of the scores, and this can be passed to `plot.py` to make a graph of the frequencies.
+The output can be given to the `reducer.py` script, but only if it has been sorted on the first column of the output (the group or the score of the line).
+This can be done using MapReduce as described later on. This generates a histogram of frequencies of the scores which can be passed to `plot.py` to
+make a graph of the frequencies.
 
 Installation notes for the DAS-3
 ================================
@@ -74,7 +76,7 @@ Note that this is optional. It's mostly about `wget`, `tar xz`, `./configure --p
 
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
-* OpenMPI: Download from http://www.open-mpi.org/software/ompi/v1.8/
+* OpenMPI: download from http://www.open-mpi.org/software/ompi/v1.8
 
 Update ~/.bashrc
 ----------------
@@ -150,9 +152,9 @@ Update ~/.bashrc again
         hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar -archives "$HDFS_URL/python.tgz#python,$HDFS_URL/local.tgz#local,$HDFS_URL/libs.tgz#libs" $@ -input "$input" -output "$output" -cmdenv "LD_LIBRARY_PATH=./local/lib:./libs/usr/lib64" -cmdenv "PYTHONHOME=./python/python:./local" -cmdenv "PYTHONPATH=./python/python/lib/python2.7:./local/lib/python2.7:." -mapper "./python/python/bin/python $mapper $margs" -reducer "./python/python/bin/python $reducer $rargs" -file "$mapper" -file "$reducer"
     }
 
-After sourcing `~/.bashrc` again, the function gives help by running `pyhadoop`. As can be seen, the function needs at least for arguments for the input file, output directory, the Python mapper script, the Python reducer. Then one can give arguments to the mapper and reducer, respectively; put these  between quotes if you want to give more than one argument per script.
+After sourcing `~/.bashrc` again, the function gives help by running `pyhadoop`. As can be seen, the function needs at least four arguments: the input file, the output directory, the Python mapper script and the Python reducer script. Then one can give arguments to the mapper and reducer, respectively. Put these between quotes if you want to give more than one argument per script.
 
-The rest of the command is interpreted as extra arguments to `hadoop`, such as any additional archive files you might want to make available to the workers. These archives must be on HDFS, and are then unpacked on the worker nodes. The part after the `#` specifies the directory name to unpack the archive as, but beware of directories within archives as well. So, for example, if you have an archive `data.tgz` containing a directory data with your additional data files, then pass it like this:
+The rest of the command is interpreted as extra arguments to `hadoop`, such as any additional archive files you might want to make available to the workers. These archives must be on HDFS and are then unpacked on the worker nodes. The part after the `#` specifies the directory name to unpack the archive in, but beware of directories within archives as well. So, for example, if you have an archive `data.tgz` containing a directory data with additional data files, then pass it like this:
 
     $ hdfs dfs -put data.tgz
     $ pyhadoop input.txt result mapper.py reducer.py "data/data 123" "data/data 42" -archives "$HDFS_URL/data.tgz#data"
