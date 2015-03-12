@@ -18,19 +18,11 @@ class Labeler:
         if os.path.isfile(dataset + '.labeled.json'):
             self.labeled_num_lines = sum(1 for line in open(dataset + '.labeled.json'))
 
-    def interpret(self, score):
-        if score < 0:
-            return 'negative'
-        elif score == 0:
-            return 'neutral'
-
-        return 'positive'
-
     def start(self):
         analyzer = Analyzer('id')
         while self.labeled_num_lines < self.original_num_lines:
             line = self.labeled_num_lines + 1
-            print(analyzer.colors['head'] + '--- Labeling message ' + str(line) + ' ---' + analyzer.colors['end'])
+            print(analyzer.get_colored_text('head', '--- Labeling message ' + str(line) + ' ---'))
             
             # linecache provides random access to lines in (large) text files
             raw_json = linecache.getline(self.dataset + '.json', line)
@@ -40,11 +32,12 @@ class Labeler:
             
             print(message + '\n')
             c = cmp(label, 0)
-            print('Guess: ' + analyzer.colors[c] + self.interpret(label) + analyzer.colors['end'])
-            choice = raw_input('Label (Enter to confirm, otherwise "p", "n", "t" or "u"): ')
-            print('\n')
+            print('Guess: ' + analyzer.get_colored_text(label))
+            choice = raw_input('Label (Enter to confirm, or [p]ositive, [n]egative, neu[t]ral or [u]nknown): ')
+            text = self.labels[choice] if choice is not '' else self.score_to_label(label)
+            print('You entered: ' + analyzer.get_colored_text(text, text) + '\n')
 
-            self.write(json_object, self.labels[choice] if choice is not '' else self.interpret(label))
+            self.write(json_object, text)
             self.labeled_num_lines += 1
 
     def write(self, json_object, label):

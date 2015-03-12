@@ -24,12 +24,8 @@ class Classifier(object):
             i = 0
             for data in self.analyzer.read_json(f, ['id','label']):
                 i = i + 1
-                score = 0.0
-                if data["label"] == "positive":
-                    score = 1.0
-                elif data["label"] == "negative":
-                    score = -1.0
-                elif data["label"] != "neutral":
+                score = self.analyzer.label_to_score(data["label"])
+                if score is None: # unknown
                     continue
 
                 line = linecache.getline(self.dataset_name + '.json', i)
@@ -75,9 +71,7 @@ class Classifier(object):
             message = ""
             group = self.test_group[i] if self.analyzer.group != "score" else ""
             if self.analyzer.display:
-                # Take the color for this group of predictions
-                c = cmp(prediction, 0)
-                message = self.analyzer.colors[c] + self.test_data[i] + self.analyzer.colors['end']
+                message = self.analyzer.get_colored_text(prediction, self.test_data[i])
             
             self.analyzer.output(group, message, prediction, "")
 

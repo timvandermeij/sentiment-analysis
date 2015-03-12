@@ -17,6 +17,41 @@ class Analyzer(object):
             for line in file:
                 self.words[line.rstrip()] = -1
 
+    def get_colored_text(self, c, text=None):
+        if text is None:
+            text = self.score_to_label(c)
+
+        if c != 'head':
+            if type(c) == str:
+                c = self.label_to_score(c)
+            if c is None:
+                c = 0
+
+            c = cmp(c, 0)
+
+        b = self.colors[c] if c in self.colors else self.colors[0]
+        return b + str(text) + self.colors['end']
+
+    def score_to_label(self, score):
+        if score < 0:
+            return 'negative'
+        elif score > 0:
+            return 'positive'
+        elif score == 0:
+            return 'neutral'
+
+        return 'unknown'
+
+    def label_to_score(self, label):
+        if label == "positive":
+            return 1.0
+        elif label== "negative":
+            return -1.0
+        elif label == "neutral":
+            return 0.0
+
+        return None
+
     def read_json(self, file, keep_fields=True):
         i = 0
         for jsonObject in file:
@@ -57,7 +92,7 @@ class Analyzer(object):
                 score += self.words[w]
                 found += 1
                 if self.display:
-                    disp += self.colors[self.words[w]] + w + self.colors['end'] + " "
+                    disp += self.get_colored_text(self.words[w], w) + " "
 
         label = score / float(found) if found != 0 else 0.0
         return (label, disp)
