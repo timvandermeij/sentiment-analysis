@@ -33,7 +33,7 @@ class Labeler:
             print(message + '\n')
             print('Guess: ' + analyzer.get_colored_text(label))
             choice = raw_input('Label (Enter to confirm, or [p]ositive, [n]egative, neu[t]ral or [u]nknown): ')
-            text = self.labels[choice] if choice is not '' else self.score_to_label(label)
+            text = self.labels[choice] if choice is not '' else analyzer.score_to_label(label)
             print('You entered: ' + analyzer.get_colored_text(text, text) + '\n')
 
             self.write(json_object, text)
