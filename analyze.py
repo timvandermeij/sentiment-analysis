@@ -45,7 +45,7 @@ class Analyzer(object):
     def label_to_score(self, label):
         if label == "positive":
             return 1.0
-        elif label== "negative":
+        elif label == "negative":
             return -1.0
         elif label == "neutral":
             return 0.0

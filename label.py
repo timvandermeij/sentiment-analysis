@@ -31,7 +31,6 @@ class Labeler:
             label = analyzer.analyze(message)[0]
             
             print(message + '\n')
-            c = cmp(label, 0)
             print('Guess: ' + analyzer.get_colored_text(label))
             choice = raw_input('Label (Enter to confirm, or [p]ositive, [n]egative, neu[t]ral or [u]nknown): ')
             text = self.labels[choice] if choice is not '' else self.score_to_label(label)
