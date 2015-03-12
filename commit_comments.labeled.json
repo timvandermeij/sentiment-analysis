@@ -1,25 +1,30 @@
-{"body": "MeHasVISTO", "id": 8768788, "label": "unknown"}
-{"body": "It is just a change to `CComBSTR`. And once you do that, remove also all `bstr_t` instances used only for comparisons. ", "id": 8768820, "label": "neutral"}
-{"body": "Apparently, I need to remove `_ATL_NO_AUTOMATIC_NAMESPACE` define from stdafx.h for `CComBSTR` to be available.", "id": 8768822, "label": "neutral"}
-{"body": "Wow Jacob, nice change!", "id": 8768762, "label": "positive"}
-{"body": "I got this error today: Bad Gateway (502) and 500 (Internal Server Error).\r\nWill you update the code to not raise the error and show a logger warning/error instead of the traceback?\r\n\r\nTrakt is having a lot of issues lately.\r\n\r\npi@raspbmc:~/SickRage/Logs$ grep -Ri \"Server Error\"\r\nsickbeard.log.1:traktException: 502 Server Error: Bad Gateway\r\nsickbeard.log.1:traktException: 500 Server Error: Internal Server Error\r\nsickbeard.log.1:traktException: 500 Server Error: Internal Server Error\r\nsickbeard.log:traktException: 502 Server Error: Bad Gateway\r\nsickbeard.log:traktException: 520 Server Error: Origin Error\r\n\r\nsickbeard.log.1:  File \"/home/pi/SickRage/sickbeard/traktChecker.py\", line 48, in run\r\nsickbeard.log.1:  File \"/home/pi/SickRage/sickbeard/traktChecker.py\", line 127, in updateShows\r\nsickbeard.log.1:    watchlist = self.trakt_api.traktRequest(\"user/watchlist/shows.json/%APIKEY%/%USER%\")\r\nsickbeard.log.1:  File \"/home/pi/SickRage/lib/trakt/trakt.py\", line 39, in traktRequest\r\nsickbeard.log.1:    raise traktException(e.message)\r\nsickbeard.log.1:traktException: 502 Server Error: Bad Gateway\r\nsickbeard.log.1:2014-11-29 14:16:33 DEBUG    TRAKTCHECKER :: Starting new thread: TRAKTCHECKER\r\nsickbeard.log.1:2014-11-29 14:16:33 DEBUG    TRAKTCHECKER :: Starting trakt show watchlist check\r\nsickbeard.log.1:2014-11-29 14:16:35 DEBUG    TRAKTCHECKER :: No shows found in your watchlist, aborting watchlist update\r\nsickbeard.log.1:2014-11-29 14:16:35 DEBUG    TRAKTCHECKER :: Starting trakt episode watchlist check\r\nsickbeard.log.1:2014-11-29 14:17:03 DEBUG    TRAKTCHECKER :: Traceback (most recent call last):\r\nsickbeard.log.1:  File \"/home/pi/SickRage/sickbeard/traktChecker.py\", line 49, in run\r\nsickbeard.log.1:  File \"/home/pi/SickRage/sickbeard/traktChecker.py\", line 162, in updateEpisodes\r\nsickbeard.log.1:    watchlist = self.trakt_api.traktRequest(\"user/watchlist/episodes.json/%APIKEY%/%USER%\")\r\nsickbeard.log.1:  File \"/home/pi/SickRage/lib/trakt/trakt.py\", line 39, in traktRequest\r\nsickbeard.log.1:    raise traktException(e.message)\r\nsickbeard.log.1:traktException: 500 Server Error: Internal Server Error\r\n", "id": 8768821, "label": "negative"}
-{"body": "add encoder?", "id": 8768825, "label": "neutral"}
-{"body": "But wouldn't that require more code changes? Or is it just a change from `BSTR` to `CComBSTR`?", "id": 8768795, "label": "neutral"}
-{"body": "Review by @gzm0 for pushing on scalajs/master.", "id": 8768827, "label": "neutral"}
-{"body": "Is the `function` variable still getting checked against the whitelist on line 10 - 13? And if it is, is it `send`ing untrusted strings?\r\n\r\nIt might pose a security risk to pass untrusted strings to the `send` command. You could do something like this before at the top of `send_command`:\r\n\r\n```ruby\r\ndef check_whitelist(function)\r\n  raise \"UNAUTHORIZED\" unless whitelist.include?(function.upcase)\r\nend\r\n```\r\n\r\nThis would prevent the user from sending something malicious like `send(\"eval\", \"`rm -rf .`\"))", "id": 8768828, "label": "neutral"}
-{"body": "change to btn-primary", "id": 8768832, "label": "neutral"}
-{"body": "subtract", "id": 8768833, "label": "unknown"}
-{"body": "It is up to you then. This commit is ok if you want to keep things as is. BTW, according to coverity you have few instance left still. ", "id": 8768845, "label": "positive"}
-{"body": "This is pretty ugly but it works! I wanted to get the helpers of the parent template and this line does exactly that. I'm not sure why I have to call `parentView` twice...", "id": 8768846, "label": "positive"}
-{"body": "@kasper93: https://github.com/XhmikosR/perfmonbar/commit/59485adbe96af7388ae1eea29a78704e4c7c4296", "id": 8768848, "label": "unknown"}
-{"body": "this change should be applied to all templates and will cause to loose a lot of translations. are we sure we want to proceed with this?\r\n\r\nmy suggestion is to start using a fake file \"translations.html\" were put data to be fetched by grunt only to put on transifex translations while currently not using it.\r\n\r\nso for example also for this template we will use \"Esteemed Antani\" and \"Take Care\" for some time and in the meantime we will push in translation \"Dear Antani\" and \"Kind regars\". sounds good? \r\n\r\n\\cc @fpietrosanti @hellais @vecna @mmaker ", "id": 8768849, "label": "negative"}
-{"body": "did you have to add this to the UI\r\n", "id": 8768850, "label": "negative"}
-{"body": "update_sqlite (mbadams5) - x86_64-Linux-Ubuntu-14.04-gcc-4.8: OK (1580 of 1580 tests passed)\n\n<a href='https://nrel.github.io/EnergyPlusBuildResults/EnergyPlus-dbbe8394504940870dd17166c1c408f499e6b7e7-x86_64-Linux-Ubuntu-14.04-gcc-4.8.html'>![Build Badge](http://img.shields.io/badge/build%20status-passing-green.svg)</a> <a href='https://nrel.github.io/EnergyPlusBuildResults/EnergyPlus-dbbe8394504940870dd17166c1c408f499e6b7e7-x86_64-Linux-Ubuntu-14.04-gcc-4.8.html'>![Test Badge](http://img.shields.io/badge/tests%20passed-100.0%25-green.svg)</a>\n", "id": 8768842, "label": "positive"}
-{"body": "location of @perfectmak is Ife, NG   and @walexi4great is also Ife,NG", "id": 8768853, "label": "unknown"}
-{"body": "same as above. i will take care of this if agreed", "id": 8768851, "label": "neutral"}
-{"body": "Before I merge this I had one question, can you take a look.", "id": 8768854, "label": "neutral"}
-{"body": "Daniel, you broke my test for CSVParser!! When you have a moment, please let me know what format you've settled on. I'm can't quite tell from looking.\r\n\r\nThanks,\r\n\r\nJay", "id": 8768856, "label": "negative"}
-{"body": "r+", "id": 8768862, "label": "positive"}
-{"body": "yeah - i needed to add this to the project file manually", "id": 8768865, "label": "neutral"}
-{"body": "update_sqlite (mbadams5) - x86_64-MacOS-10.9-clang: OK (1574 of 1574 tests passed)\n\n<a href='https://nrel.github.io/EnergyPlusBuildResults/EnergyPlus-dbbe8394504940870dd17166c1c408f499e6b7e7-x86_64-MacOS-10.9-clang.html'>![Build Badge](http://img.shields.io/badge/build%20status-passing-green.svg)</a> <a href='https://nrel.github.io/EnergyPlusBuildResults/EnergyPlus-dbbe8394504940870dd17166c1c408f499e6b7e7-x86_64-MacOS-10.9-clang.html'>![Test Badge](http://img.shields.io/badge/tests%20passed-100.0%25-green.svg)</a>\n", "id": 8768864, "label": "positive"}
-{"body": "Oh ok.", "id": 8768861, "label": "positive"}
+{"id": 8768788, "label": "unknown"}
+{"id": 8768820, "label": "neutral"}
+{"id": 8768822, "label": "neutral"}
+{"id": 8768762, "label": "positive"}
+{"id": 8768821, "label": "negative"}
+{"id": 8768825, "label": "unknown"}
+{"id": 8768795, "label": "neutral"}
+{"id": 8768827, "label": "unknown"}
+{"id": 8768828, "label": "neutral"}
+{"id": 8768832, "label": "unknown"}
+{"id": 8768833, "label": "unknown"}
+{"id": 8768845, "label": "positive"}
+{"id": 8768846, "label": "positive"}
+{"id": 8768848, "label": "unknown"}
+{"id": 8768849, "label": "negative"}
+{"id": 8768850, "label": "unknown"}
+{"id": 8768842, "label": "positive"}
+{"id": 8768853, "label": "unknown"}
+{"id": 8768851, "label": "positive"}
+{"id": 8768854, "label": "neutral"}
+{"id": 8768856, "label": "negative"}
+{"id": 8768862, "label": "positive"}
+{"id": 8768865, "label": "neutral"}
+{"id": 8768864, "label": "positive"}
+{"id": 8768861, "label": "positive"}
+{"id": 8768881, "label": "negative"}
+{"id": 8768884, "label": "positive"}
+{"id": 8768885, "label": "negative"}
+{"id": 8768874, "label": "positive"}
+{"id": 8768890, "label": "neutral"}
