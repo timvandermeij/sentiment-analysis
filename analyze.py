@@ -9,7 +9,7 @@ class Analyzer(object):
 
         # Load the positive and negative words
         self.words = {}
-        self.colors = {1: '\033[92m', -1: '\033[91m', 0: '', 'end': '\033[0m'}
+        self.colors = {1: '\033[1;32m', -1: '\033[1;31m', 0: '\033[1m', 'head': '\033[1;36m', 'end': '\033[0m'}
         with open("words/positive.txt") as file:
             for line in file:
                 self.words[line.rstrip()] = 1
@@ -17,18 +17,32 @@ class Analyzer(object):
             for line in file:
                 self.words[line.rstrip()] = -1
 
-    def read_json(self, file, max=None):
+    def read_json(self, file, keep_fields=True):
         i = 0
         for jsonObject in file:
             data = json.loads(jsonObject)
             # Normalize newlines
-            message = data["body"].replace('\r\n', '\n')
-            del data["body"]
-            group = str(data[self.group]) if self.group != "score" else ""
-            yield message, group
+            if "body" in data:
+                data["body"] = data["body"].replace('\r\n', '\n')
+
+            if type(keep_fields) == list:
+                keep_fields = dict([(k,k) for k in keep_fields])
+            elif type(keep_fields) != dict:
+                k = {"message": "body"}
+                if type(keep_fields) == str:
+                    k[keep_fields] = keep_fields
+                if self.group != "score":
+                    k["group"] = self.group
+
+                keep_fields = k
+
+            fields = {}
+            # Rename the fields and filter
+            for new,old in keep_fields.iteritems():
+                fields[new] = data[old]
+
+            yield fields
             i = i + 1
-            if max is not None and i >= max:
-                break
 
     def analyze(self, message):
         score = 0
@@ -49,7 +63,7 @@ class Analyzer(object):
         return (label, disp)
 
     def output(self, group, message, label, disp):
-        g = group + "\t" if self.group != "score" else ""
+        g = "{}\t".format(group) if self.group != "score" else ""
 
         text = ""
         if self.display:
@@ -60,9 +74,9 @@ class Analyzer(object):
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     analyzer = Analyzer(group)
-    for message, group in analyzer.read_json(sys.stdin):
-        (label, disp) = analyzer.analyze(message)
-        analyzer.output(group, message, label, disp)
+    for data in analyzer.read_json(sys.stdin):
+        (label, disp) = analyzer.analyze(data["message"])
+        analyzer.output(data["group"], data["message"], label, disp)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
