@@ -30,7 +30,7 @@ class Labeler:
         analyzer = Analyzer('id')
         while self.labeled_num_lines < self.original_num_lines:
             line = self.labeled_num_lines + 1
-            print('--- Labeling message ' + str(line) + ' ---')
+            print(analyzer.colors['head'] + '--- Labeling message ' + str(line) + ' ---' + analyzer.colors['end'])
             
             # linecache provides random access to lines in (large) text files
             raw_json = linecache.getline(self.dataset + '.json', line)
@@ -39,7 +39,8 @@ class Labeler:
             label = analyzer.analyze(message)[0]
             
             print(message + '\n')
-            print('Guess: ' + self.interpret(label))
+            c = cmp(label, 0)
+            print('Guess: ' + analyzer.colors[c] + self.interpret(label) + analyzer.colors['end'])
             choice = raw_input('Label (Enter to confirm, otherwise "p", "n", "t" or "u"): ')
             print('\n')
 
