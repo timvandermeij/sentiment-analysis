@@ -44,7 +44,7 @@ class Classifier(object):
         # Train the regressor
         self.regressor = Pipeline([
             ('tfidf', TfidfVectorizer(input='content')),
-            ('clf', RandomForestRegressor(n_jobs=-1))
+            ('clf', RandomForestRegressor(n_estimators=1000, n_jobs=-1))
         ])
         self.regressor.fit(train_data, train_labels)
 
