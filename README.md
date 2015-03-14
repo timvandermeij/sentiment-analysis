@@ -83,10 +83,12 @@ Update ~/.bashrc
 
 The final line for BLAS is optional.
 
-    PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:/scratch/scratch/{username}/python/bin:/scratch/scratch/{username}/opt/bin"
-    export LIBRARY_PATH="$HOME/.local/lib:/scratch/scratch/{username}/opt/lib"
-    export LD_LIBRARY_PATH="$HOME/.local/lib:/scratch/scratch/{username}/opt/lib"
-    export CPATH="$HOME/.local/include:/scratch/scratch/{username}/opt/include"
+    export SCRATCH="/scratch/scratch/{username}"
+    PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:$SCRATCH/python/bin:$SCRATCH/opt/bin"
+    export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
+    export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
+    export CPATH="$HOME/.local/include:$SCRATCH/opt/include"
+    export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig:$SCRATCH/opt/lib/pkgconfig"
     export BLAS="$HOME/.local/lib/libopenblas.a"
 
 Then use `source ~/.bashrc` to reload the configuration. Note that you could do this earlier on, which might make some commands shorter and easier to use.
@@ -160,6 +162,41 @@ The rest of the command is interpreted as extra arguments to `hadoop`, such as a
     $ pyhadoop input.txt result mapper.py reducer.py "data/data 123" "data/data 42" -archives "$HDFS_URL/data.tgz#data"
 
 If you have hardcoded paths, sometimes you can circumvent these directory problems by using e.g. `-files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\"`
+
+Additional notes for installing Qt
+----------------------------------
+
+Note that installing Python from source on the DAS has the strange effect that among others, the default Tk GUI library in Python does not function. It's probably related to missing dependencies (development headers) or to configuration flags. Either way, it might be better to use something like GTK or Qt, although it is certainly not easy.
+
+Also, this section is of limited use: one can display `matplotlib` files through X forwarding (make sure to use `ssh -X` on all connections between you and the DAS).
+
+Installation will cost at least 4 hours. We assume you are in an `activate`d virtualenv shell.
+
+- Download the Qt source from http://download.qt-project.org/official_releases/qt/5.4/5.4.1/single/qt-everywhere-opensource-src-5.4.1.tar.gz
+- Extract with `tar xzvf qt-everywhere-opensource-src-5.4.1.tar.gz` and `cd` 
+  into that directory
+- Compile as follows:
+
+    $ ./configure -prefix $SCRATCH/opt/qt -opensource -nomake tests -qt-xcb
+    $ make
+    $ make install
+
+  Each step takes a long time. Answer `yes` to the license question during `./configure`, and check at the end whether the configuration makes sense. We probably didn't need the entirety of Qt, but it is the easiest way, and the binary installation did not work.
+- Download and install SIP:
+  
+    $ wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.6/sip-4.16.6.tar.gz
+    $ tar xzvf sip-4.16.6.tar.gz
+    $ cd sip-4.16.6
+    $ python configure.py
+    $ make
+    $ make install
+- Download PyQt4 in the same fashion as SIP from http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.11.3/PyQt-x11-gpl-4.11.3.tar.gz and again use `configure.py`.
+- This should be enough to display plots using `matplotlib`. Try out `python plot.py` with some frequency data (e.g., from a MapReduce run) to test.
+- Requirements for IPython QtConsole:
+
+    $ pip install pygments
+    $ pip install pyzmq
+    $ pip install ipython
 
 Finding application logs
 ------------------------
