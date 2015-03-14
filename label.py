@@ -40,7 +40,7 @@ class Labeler:
             raw_json = linecache.getline(self.dataset + '.json', line)
             json_object = json.loads(raw_json)
             message = json_object['body']
-            label = analyzer.analyze(message)[0]
+            (label, disp, message) = analyzer.analyze(message)
             
             print(message + '\n')
             print('Guess: {}'.format(analyzer.get_colored_text(label)))

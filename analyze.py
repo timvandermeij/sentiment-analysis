@@ -87,22 +87,29 @@ class Analyzer(object):
         # Only keep alphanumeric and some punctuation characters
         # Keep emoticons together but beware of edge cases that should be split
         parts = filter(lambda x: x != '' and x is not None, re.split(r'"|(?:(?<=[a-z])[;\.])?\s+|(?:(?<=[a-z])[;\.])?$|(?!.[/(]\S)([^;\.\-\"\'+\w\s][^+\w\s]*(?:[-a-z]\b)?)|(?!.[/(]\S)((?:\b[a-z])?[^+\w\s]*[^;\.\-\"\'+\w\s])', message.lower()))
+
+        i = 0
         for w in parts:
             if w in self.words:
                 score += self.words[w]
                 found += 1
                 if self.display:
-                    disp += self.get_colored_text(self.words[w], w) + " "
+                    i = message.lower().find(w, i)
+                    d = self.get_colored_text(self.words[w], message[i:i+len(w)])
+                    message = message[:i] + d + message[i+len(w):]
+                    i = i + len(d)
+
+                    disp += d + " "
 
         label = score / float(found) if found != 0 else 0.0
-        return (label, disp)
+        return (label, disp, message)
 
     def output(self, group, message, label, disp):
         g = "{}\t".format(group) if self.group != "score" else ""
 
         text = ""
         if self.display:
-            text = "\t{}{}".format(disp, message.replace('\n',' '))
+            text = "\t{}| {}".format(disp, message.replace('\n',' '))
 
         print("{}{:.2f}{}".format(g, label, text))
 
@@ -110,8 +117,8 @@ def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     analyzer = Analyzer(group)
     for data in analyzer.read_json(sys.stdin):
-        (label, disp) = analyzer.analyze(data["message"])
-        analyzer.output(data["group"], data["message"], label, disp)
+        (label, disp, message) = analyzer.analyze(data["message"])
+        analyzer.output(data["group"], message, label, disp)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
