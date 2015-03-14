@@ -177,26 +177,26 @@ Installation will cost at least 4 hours. We assume you are in an `activate`d vir
   into that directory
 - Compile as follows:
 
-    $ ./configure -prefix $SCRATCH/opt/qt -opensource -nomake tests -qt-xcb
-    $ make
-    $ make install
+        $ ./configure -prefix $SCRATCH/opt/qt -opensource -nomake tests -qt-xcb
+        $ make
+        $ make install
 
   Each step takes a long time. Answer `yes` to the license question during `./configure`, and check at the end whether the configuration makes sense. We probably didn't need the entirety of Qt, but it is the easiest way, and the binary installation did not work.
 - Download and install SIP:
   
-    $ wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.6/sip-4.16.6.tar.gz
-    $ tar xzvf sip-4.16.6.tar.gz
-    $ cd sip-4.16.6
-    $ python configure.py
-    $ make
-    $ make install
+        $ wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.6/sip-4.16.6.tar.gz
+        $ tar xzvf sip-4.16.6.tar.gz
+        $ cd sip-4.16.6
+        $ python configure.py
+        $ make
+        $ make install
 - Download PyQt4 in the same fashion as SIP from http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.11.3/PyQt-x11-gpl-4.11.3.tar.gz and again use `configure.py`.
 - This should be enough to display plots using `matplotlib`. Try out `python plot.py` with some frequency data (e.g., from a MapReduce run) to test.
 - Requirements for IPython QtConsole:
 
-    $ pip install pygments
-    $ pip install pyzmq
-    $ pip install ipython
+        $ pip install pygments
+        $ pip install pyzmq
+        $ pip install ipython
 
 Finding application logs
 ------------------------
