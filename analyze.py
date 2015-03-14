@@ -118,7 +118,8 @@ def main(argv):
     analyzer = Analyzer(group)
     for data in analyzer.read_json(sys.stdin):
         (label, disp, message) = analyzer.analyze(data["message"])
-        analyzer.output(data["group"], message, label, disp)
+        group = data["group"] if "group" in data else ""
+        analyzer.output(group, message, label, disp)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
