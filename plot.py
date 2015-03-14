@@ -84,10 +84,11 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
     return np.convolve( m[::-1], y, mode='valid')
 
 class Plot:
-    def __init__(self, data_file, plot_file, title):
+    def __init__(self, data_file, plot_file, title, bins):
         self.data_file = data_file
         self.plot_file = plot_file
         self.title = title
+        self.bins = bins
 
     def make_plot(self):
         # Initialize plot with data from the input file
@@ -99,17 +100,16 @@ class Plot:
         x = M[:,0]
         y = M[:,1]
 
-        # number of bars and widths of bars
-        bins = 100
-        width = (len(M) / float(bins)) / 101.
+        # widths of bars
+        width = (len(M) / float(self.bins)) / 101.
 
         plt.title(self.title)
         plt.xlabel('score')
         plt.ylabel('frequency')
         plt.grid(True)
-        plt.xlim(-1.0,1.0 + width)
+        plt.xlim(-1.0,1.0)
         plt.axhline(0, color='black')
-        plt.hist(x, bins, weights=y, width=width, linewidth=0.5,alpha=0.5)
+        plt.hist(x, self.bins, weights=y, width=width, linewidth=0.5,alpha=0.5)
 
         # Draw a smooth curve
         # Split the region in two sections (negative, positive) to ensure the 
@@ -121,9 +121,7 @@ class Plot:
         plt.plot(x[0:zero], yNeg, 'r')
         plt.plot(x[zero:-1], yPos, 'g')
 
-        plt.show()
-
-    def do_plot(self):
+    def end_plot(self):
         # Finish plotting by saving or showing file.
         if NO_DISPLAY:
             print('Saving plot to {}'.format(self.plot_file))
@@ -142,10 +140,11 @@ def main(argv):
     data_file = argv[0] if len(argv) > 0 else "score.dat"
     plot_file = argv[1] if len(argv) > 1 else "score.eps"
     title = argv[2] if len(argv) > 2 else "Histogram"
+    bins = int(argv[3]) if len(argv) > 3 else 100
 
-    plot = Plot(data_file, plot_file, title)
+    plot = Plot(data_file, plot_file, title, bins)
     plot.make_plot()
-    plot.do_plot()
+    plot.end_plot()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
