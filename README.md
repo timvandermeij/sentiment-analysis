@@ -173,11 +173,11 @@ Also, this section is of limited use: one can display `matplotlib` files through
 Installation will cost at least 4 hours. We assume you are in an `activate`d virtualenv shell.
 
 - Download the Qt source from http://download.qt-project.org/official_releases/qt/5.4/5.4.1/single/qt-everywhere-opensource-src-5.4.1.tar.gz
-- Extract with `tar xzvf qt-everywhere-opensource-src-5.4.1.tar.gz` and `cd` 
+- Extract with `tar xzf qt-everywhere-opensource-src-5.4.1.tar.gz` and `cd` 
   into that directory
 - Compile as follows:
 
-        $ ./configure -prefix $SCRATCH/opt/qt -opensource -nomake tests -qt-xcb
+        $ ./configure -prefix $SCRATCH/opt -opensource -nomake tests -qt-xcb
         $ make
         $ make install
 
