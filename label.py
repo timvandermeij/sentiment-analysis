@@ -34,7 +34,6 @@ class Labeler:
 
         while self.labeled_num_lines < self.original_num_lines:
             line = self.labeled_num_lines + 1
-            print(analyzer.get_colored_text('head', '--- Labeling message {} ---'.format(line)))
             
             # linecache provides random access to lines in (large) text files
             raw_json = linecache.getline(self.dataset + '.json', line)
@@ -42,6 +41,7 @@ class Labeler:
             message = json_object['body']
             (label, disp, message) = analyzer.analyze(message)
             
+            print(analyzer.get_colored_text('head', '--- Labeling message {} (ID: {}) ---'.format(line, json_object['id'])))
             print(message + '\n')
             print('Guess: {}'.format(analyzer.get_colored_text(label)))
             choice = '?'
