@@ -114,8 +114,10 @@ This installs `pip` for Python 2.7, which is less likely to give troubles with i
     (python)$ pip install numexpr
     (python)$ pip install matplotlib
     (python)$ pip install mpi4py
+    (python)$ git clone https://github.com/andialbrecht/sqlparse.git
+    (python)$ cd sqlparse && python setup.py install
 
-The last command for `mpi4py` is optional.
+The command for `mpi4py` is optional.
 
 This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
 http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
