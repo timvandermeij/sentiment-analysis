@@ -25,6 +25,7 @@ class Preprocessor(object):
         with gzip.open(mysql_file, 'rb') as f:
             for line in f:
                 l = l + 1
+                print('Processing line {}'.format(l))
                 if line.startswith('INSERT INTO `projects` VALUES'):
                     sql = sqlparse.parse(line)
                     tokens = sql[0].tokens
@@ -32,13 +33,9 @@ class Preprocessor(object):
                         url = str(tokens[i].tokens[1].tokens[2])[1:-1]
                         project = self.get_repo(url)
                         language = str(tokens[i].tokens[1].tokens[10])[1:-1]
-                        # We could convert language to int using 
-                        # https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml
-                        # That could save space but is not very worthwhile.
                         self.languages[project] = language
 
                     done = True
-                    print('Line {}'.format(l))
                 elif done:
                     break
         
@@ -106,7 +103,6 @@ class Preprocessor(object):
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     mysql_file = argv[1] if len(argv) > 1 else "projects.sql.gz"
-    print(group,mysql_file)
 
     dataset_name = 'commit_comments'
     dataset_url = 'http://ghtorrent.org/downloads/' + dataset_name + '-dump.2015-01-29.tar.gz'
