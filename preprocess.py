@@ -17,7 +17,7 @@ class Preprocessor(object):
             self.keep_fields.append(group)
 
     def get_repo(self, url):
-        return re.search(r"repos/([^/]+/[^/]+)/", url).group(1)
+        return re.search(r"repos/([^/]+/[^/]+)(/|$)", url).group(1)
 
     def get_project_langs(self, mysql_file):
         done = False
