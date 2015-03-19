@@ -11,6 +11,7 @@
 *.tar.gz
 *.tgz
 
-# Output data and plot files
+# Models, output data and plot files
+*.pickle
 *.dat
 *.eps

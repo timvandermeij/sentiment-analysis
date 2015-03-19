@@ -6,15 +6,38 @@ import sys
 import itertools
 import linecache
 import json
+import os
+import pickle
 from analyze import Analyzer # for some train data labelling
 
 class Classifier(object):
-    def __init__(self, group, train_size):
+    def __init__(self, group, n_estimators, model_file):
         self.dataset_name = "commit_comments"
         self.group = group
-        self.train_size = train_size
+        self.model_file = model_file
+        self.n_estimators = n_estimators
         self.train_ids = set()
         self.analyzer = Analyzer(group)
+
+    def create_model(self):
+        trained = False
+        if self.model_file != "" and os.path.isfile(self.model_file):
+            with open(self.model_file, 'rb') as f:
+                model = pickle.load(f)
+                trained = True
+        else:
+            model = RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=-1)
+
+        self.regressor = Pipeline([
+            ('tfidf', TfidfVectorizer(input='content')),
+            ('clf', model)
+        ])
+
+        if not trained:
+            self.train()
+            if self.model_file != "":
+                with open(self.model_file, 'wb') as f:
+                    pickle.dump(model, f)
 
     def train(self):
         # Collect the training data
@@ -38,14 +61,7 @@ class Classifier(object):
                 train_data.append(message)
                 train_labels.append(score)
 
-                if len(train_data) >= self.train_size:
-                    break
-
         # Train the regressor
-        self.regressor = Pipeline([
-            ('tfidf', TfidfVectorizer(input='content')),
-            ('clf', RandomForestRegressor(n_estimators=1000, n_jobs=-1))
-        ])
         self.regressor.fit(train_data, train_labels)
 
     def split(self, data):
@@ -77,10 +93,11 @@ class Classifier(object):
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
-    train_size = int(argv[1]) if len(argv) > 1 else 1000
+    n_estimators = int(argv[1]) if len(argv) > 1 else 1000
+    model_file = argv[2] if len(argv) > 2 else ""
     
-    classifier = Classifier(group, train_size)
-    classifier.train()
+    classifier = Classifier(group, n_estimators, model_file)
+    classifier.create_model()
     classifier.output(classifier.predict())
 
 if __name__ == "__main__":
