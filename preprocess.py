@@ -104,8 +104,9 @@ class Preprocessor(object):
         print('Converting BSON to JSON and removing unused fields [finished]')
 
 def main(argv):
-    group = argv[1] if len(argv) > 1 else "id"
-    mysql_file = argv[2] if len(argv) > 2 else "projects.sql.gz"
+    group = argv[0] if len(argv) > 0 else "id"
+    mysql_file = argv[1] if len(argv) > 1 else "projects.sql.gz"
+    print(group,mysql_file)
 
     dataset_name = 'commit_comments'
     dataset_url = 'http://ghtorrent.org/downloads/' + dataset_name + '-dump.2015-01-29.tar.gz'
