@@ -105,7 +105,7 @@ class Preprocessor(object):
 
 def main(argv):
     group = argv[1] if len(argv) > 1 else "id"
-    mysql_file = argv[0] if len(argv) > 0 else "projects.sql.gz"
+    mysql_file = argv[2] if len(argv) > 2 else "projects.sql.gz"
 
     dataset_name = 'commit_comments'
     dataset_url = 'http://ghtorrent.org/downloads/' + dataset_name + '-dump.2015-01-29.tar.gz'
