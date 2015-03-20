@@ -27,6 +27,7 @@ class Preprocessor(object):
                 l = l + 1
                 print('Processing line {}'.format(l))
                 if line.startswith('INSERT INTO `projects` VALUES'):
+                    # TODO: Replace SQL parsing with something quicker
                     sql = sqlparse.parse(line)
                     tokens = sql[0].tokens
                     for i in xrange(8, len(tokens), 2):
@@ -88,7 +89,7 @@ class Preprocessor(object):
 
             raw_json['repo'] = self.get_repo(raw_json['url'])
             if raw_json['repo'] in self.languages:
-                raw_jaon['lang'] = self.languages[raw_json['repo']]
+                raw_json['lang'] = self.languages[raw_json['repo']]
 
             preprocessed_json = {}
             for item in self.keep_fields:
@@ -106,7 +107,7 @@ def main(argv):
 
     dataset_name = 'commit_comments'
     dataset_url = 'http://ghtorrent.org/downloads/' + dataset_name + '-dump.2015-01-29.tar.gz'
-    mysql_url = 'http://www.ghtorrent.org/downloads/mysql-2015-01-04.sql.gz'
+    mysql_url = 'http://ghtorrent.org/downloads/mysql-2015-01-04.sql.gz'
 
     preprocessor = Preprocessor(group)
 
