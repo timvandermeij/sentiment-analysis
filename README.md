@@ -76,7 +76,6 @@ Note that this is optional. It's mostly about `wget`, `tar xz`, `./configure --p
 
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
-* OpenMPI: download from http://www.open-mpi.org/software/ompi/v1.8
 
 Update ~/.bashrc
 ----------------
@@ -113,11 +112,8 @@ This installs `pip` for Python 2.7, which is less likely to give troubles with i
     (python)$ pip install scikit-learn==0.16b1
     (python)$ pip install numexpr
     (python)$ pip install matplotlib
-    (python)$ pip install mpi4py
     (python)$ git clone https://github.com/andialbrecht/sqlparse.git
     (python)$ cd sqlparse && python setup.py install
-
-The command for `mpi4py` is optional.
 
 This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
 http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
