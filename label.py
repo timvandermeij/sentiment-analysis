@@ -51,7 +51,7 @@ class Labeler:
                     return
 
             text = self.labels[choice] if choice is not '' else analyzer.score_to_label(label)
-            print('You entered: {}'.format(analyzer.get_colored_text(text, text)))
+            print('You entered: {}\n'.format(analyzer.get_colored_text(text, text)))
 
             self.write(json_object, text)
             self.labeled_num_lines += 1
