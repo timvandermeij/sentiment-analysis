@@ -8,21 +8,19 @@ import re
 import gzip
 
 class Preprocessor(object):
-    def __init__(self, group):
-        self.group = group
-        self.languages = {}
-        self.keep_fields = ['id', 'body']
-        if group not in self.keep_fields:
-            self.keep_fields.append(group)
+    def __init__(self):
+        self.name = ''
+        self.url = ''
+        self.keep_fields = []
 
-    def get_bson_dataset(self, url, name):
-        if not os.path.isfile(name + '.tar.gz'):
-            self.download(url, name + '.tar.gz')
-        if not os.path.isfile(name + '.bson'):
-            self.extract(name, 'dump/github/' + name + '.bson')
+    def get_bson(self):
+        if not os.path.isfile(self.name + '.tar.gz'):
+            self.download(self.name + '.tar.gz')
+        if not os.path.isfile(self.name + '.bson'):
+            self.extract('dump/github/' + self.name + '.bson')
 
-    def download(self, url, target):
-        stream = urllib2.urlopen(url)
+    def download(self, target):
+        stream = urllib2.urlopen(self.url)
         file = open(target, 'wb')
         file_size = int(stream.info().getheaders('Content-Length')[0])
         downloaded_size = 0
@@ -43,13 +41,26 @@ class Preprocessor(object):
         print('Downloading dataset [finished]')
         file.close()
 
-    def extract(self, tarball, file):
-        tar = tarfile.open(tarball + '.tar.gz')
+    def extract(self, file):
+        tar = tarfile.open(self.name + '.tar.gz')
         member = tar.getmember(file)
         member.name = os.path.basename(member.name)
         tar.extract(member)
         tar.close()
         print('Untarring dataset [finished]')
+
+    def bson_to_json(self):
+        raise NotImplementedError("Cannot call bson_to_json on the base class: a subclass must implement this method instead")
+
+class Commit_Comments_Preprocessor(Preprocessor):
+    def __init__(self, group):
+        super(Commit_Comments_Preprocessor, self).__init__()
+        self.name = 'commit_comments'
+        self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
+        self.group = group
+        self.keep_fields = ['id', 'body']
+        if group not in self.keep_fields:
+            self.keep_fields.append(group)
 
     def is_latin(self, string):
         try:
@@ -59,9 +70,9 @@ class Preprocessor(object):
         
         return True
 
-    def bson_to_json(self, file):
-        output = open(file + '.json', 'wb')
-        bson_file = open(file + '.bson', 'rb')
+    def bson_to_json(self):
+        output = open(self.name + '.json', 'wb')
+        bson_file = open(self.name + '.bson', 'rb')
         
         # Read every BSON object as an iterator to save memory.
         for raw_json in bson.decode_file_iter(bson_file):
@@ -76,18 +87,15 @@ class Preprocessor(object):
 
         output.close()
         bson_file.close()
+        os.remove(self.name + '.bson')
         print('Converting BSON to JSON and removing unused fields [finished]')
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
 
-    dataset_name = 'commit_comments'
-    dataset_url = 'http://ghtorrent.org/downloads/' + dataset_name + '-dump.2015-01-29.tar.gz'
-
-    preprocessor = Preprocessor(group)
-    preprocessor.get_bson_dataset(dataset_url, dataset_name)
-    preprocessor.bson_to_json(dataset_name)
-    os.remove(dataset_name + '.bson')
+    commit_comments = Commit_Comments_Preprocessor(group)
+    commit_comments.get_bson()
+    commit_comments.bson_to_json()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
