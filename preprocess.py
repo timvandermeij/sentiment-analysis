@@ -13,6 +13,14 @@ class Preprocessor(object):
         self.url = ''
         self.keep_fields = []
 
+    def preprocess(self):
+        # No need to do anything when the JSON file already exists
+        if os.path.isfile(self.name + '.json'):
+            return
+
+        self.get_bson()
+        self.bson_to_json()
+
     def get_bson(self):
         if not os.path.isfile(self.name + '.tar.gz'):
             self.download(self.name + '.tar.gz')
@@ -117,12 +125,10 @@ def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
 
     commit_comments = Commit_Comments_Preprocessor(group)
-    commit_comments.get_bson()
-    commit_comments.bson_to_json()
+    commit_comments.preprocess()
 
     repos = Repos_Preprocessor()
-    repos.get_bson()
-    repos.bson_to_json()
+    repos.preprocess()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
