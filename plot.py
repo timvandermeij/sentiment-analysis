@@ -1,6 +1,7 @@
 import sys
 import os
 import numpy as np
+import pandas as pd
 from math import factorial
 import matplotlib
 # Make it possible to run matplotlib in SSH
@@ -84,7 +85,8 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
     return np.convolve( m[::-1], y, mode='valid')
 
 class Plot:
-    def __init__(self, data_file, plot_file, title, bins):
+    def __init__(self, group, data_file, plot_file, title, bins):
+        self.group = group
         self.data_file = data_file
         self.plot_file = plot_file
         self.title = title
@@ -92,9 +94,49 @@ class Plot:
 
     def make_plot(self):
         # Initialize plot with data from the input file
-        M = np.loadtxt(self.data_file, delimiter="\t")
+        cols = ['x', 'y']
+        if self.group != "score":
+            cols[:0] = [self.group]
+
+        D = pd.read_csv(self.data_file, delimiter="\t", names=cols)
+        if self.group == "score":
+            M = D[['x','y']].values
+            self.make_freq_hist(M)
+        else:
+            self.make_group_hist(D)
+
+    def make_group_hist(self, D):
+        x = []
+        yNeg = []
+        yPos = []
+        for name, group in D.groupby(self.group):
+            if group.size > 100:
+                x.append(name)
+                gs = float((group['x'] != 0.0).size)
+                yPos.append((group['x'] > 0.0).sum() / gs)
+                yNeg.append(-(group['x'] < 0.0).sum() / gs)
+
+        # Sort on positive, take only largest groups
+        z = zip(x, yPos, yNeg)
+        z.sort(key=lambda v: v[1], reverse=True)
+        z = z[0:20]
+        (x, yPos, yNeg) = zip(*z)
+
+        width = 0.8
+        plt.title(self.title)
+        plt.xlabel(self.group)
+        plt.ylabel('frequency')
+        plt.grid(True)
+        plt.axhline(0, color='black')
+        xi = np.arange(len(x))
+        plt.xticks(xi + width / 2., x)
+        plt.bar(xi, yPos, width, color='g')
+        plt.bar(xi, yNeg, width, color='r')
+
+        self.end_plot()
+
+    def make_freq_hist(self, M):
         # Sort rows on first column's value
-        # TODO: Keep group column in account if it exists...
         M = M[M[:,0].argsort()]
 
         x = M[:,0]
@@ -121,6 +163,8 @@ class Plot:
         plt.plot(x[0:zero], yNeg, 'r')
         plt.plot(x[zero:-1], yPos, 'g')
 
+        self.end_plot()
+
     def end_plot(self):
         # Finish plotting by saving or showing file.
         if NO_DISPLAY:
@@ -137,14 +181,14 @@ class Plot:
                 pass
 
 def main(argv):
-    data_file = argv[0] if len(argv) > 0 else "score.dat"
-    plot_file = argv[1] if len(argv) > 1 else "score.eps"
-    title = argv[2] if len(argv) > 2 else "Histogram"
-    bins = int(argv[3]) if len(argv) > 3 else 100
+    group = argv[0] if len(argv) > 0 else "id"
+    data_file = argv[1] if len(argv) > 1 else "score.dat"
+    plot_file = argv[2] if len(argv) > 2 else "score.eps"
+    title = argv[3] if len(argv) > 3 else "Histogram"
+    bins = int(argv[4]) if len(argv) > 4 else 100
 
-    plot = Plot(data_file, plot_file, title, bins)
+    plot = Plot(group, data_file, plot_file, title, bins)
     plot.make_plot()
-    plot.end_plot()
 
 if __name__ == "__main__":
     main(sys.argv[1:])

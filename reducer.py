@@ -2,8 +2,6 @@ import sys
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
-    if group == "id":
-        print("This doesn't really do anything for the ID group")
 
     last_group = None
     last_score = None

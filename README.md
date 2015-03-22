@@ -42,6 +42,30 @@ The output can be given to the `reducer.py` script, but only if it has been sort
 This can be done using MapReduce as described later on. This generates a histogram of frequencies of the scores which can be passed to `plot.py` to
 make a graph of the frequencies.
 
+Running the code in MapReduce
+-----------------------------
+
+This section assumes that the installation notes below have already been followed and all dependencies and scripts are set up.
+
+Note that the code by default uses the `id` of a record as its group. This means that only the classifier will do something useful. In order to group the classified targets with something else, pass another group, such as `score` or `lang`, to all relevant scripts. Note that for the `lang` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py lang`. The exact command to call the MapReduce scripts is given in this section as well.
+
+First of all, ensure that the data sets are on the HDFS:
+
+    $ hdfs dfs -put commit_comments.json
+    $ hdfs dfs -put commit_comments.labeled.json
+    $ hdfs dfs -put words/positive.txt words/positive.txt
+    $ hdfs dfs -put words/negative.txt words/negative.txt
+
+Now, one can start a MapReduce job which classifies each record in the data set and then counts the frequency of each score as follows:
+
+    $ pyhadoop commit_comments.json score classify.py reducer.py "score 100" score -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
+
+For the naive analyzer, use `analyze.py` instead of `classify.py`, and the last `-file` argument can be omitted. To count frequencies of scores within a specific group, use the following:
+
+    $ pyhadoop commit_comments.json score_lang classify.py reducer.py "lang 100" lang -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
+
+This ensures that MapReduce knows which parts of the outputs are keys and which are values.
+
 Installation notes for the DAS-3
 ================================
 
