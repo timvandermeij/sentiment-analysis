@@ -6,8 +6,6 @@ import bson
 import json
 import re
 import gzip
-import tokenize
-import shelve
 
 class Preprocessor(object):
     def __init__(self, group):
@@ -17,57 +15,6 @@ class Preprocessor(object):
         if group not in self.keep_fields:
             self.keep_fields.append(group)
 
-    def get_repo(self, url):
-        return str(re.search(r"repos/([^/]+/[^/]+)(/|$)", url).group(1))
-
-    def get_mysql_dataset(self, url, name, store_file):
-        if os.path.isfile(store_file):
-            self.languages = shelve.open(store_file)
-            print('Opened existing language store.')
-        else:
-            if not os.path.isfile(name):
-                self.download(url, name)
-
-            self.languages = shelve.open(store_file)
-            self.get_project_langs(name)
-
-    def get_project_langs(self, mysql_file):
-        done = False
-        l = 0
-        state = 0
-        with gzip.open(mysql_file, 'rb') as f:
-            for token in tokenize.generate_tokens(f.readline):
-                if state == 0 and token[1] != "INSERT":
-                    if l > 0:
-                        print('Done processing relevant MySQL lines.')
-                        break
-
-                    print('Skipping irrelevant line')
-                    state = -1
-                if state == 3:
-                    if token[1] == "projects":
-                        l = l + 1
-                        if l % 10 == 0:
-                            print('Processing line {}'.format(l))
-                    else:
-                        print('Skipping irrelevant line')
-                        state = -1
-
-                if token[1] == '\n':
-                    state = 0
-                    continue
-                if state == -1:
-                    continue
-
-                if state >= 9 and (state - 9) % 22 == 0:
-                    url = token[1][1:-1]
-                    project = self.get_repo(url)
-                elif state >= 17 and (state - 17) % 22 == 0:
-                    language = token[1][1:-1]
-                    self.languages[project] = str(language)
-
-                state = state + 1
-    
     def get_bson_dataset(self, url, name):
         if not os.path.isfile(name + '.tar.gz'):
             self.download(url, name + '.tar.gz')
@@ -121,12 +68,6 @@ class Preprocessor(object):
             if not self.is_latin(raw_json['body']):
                 continue
 
-            raw_json['repo'] = self.get_repo(raw_json['url'])
-            if raw_json['repo'] in self.languages:
-                raw_json['lang'] = self.languages[raw_json['repo']]
-            else:
-                raw_json['lang'] = ''
-
             preprocessed_json = {}
             for item in self.keep_fields:
                 preprocessed_json[item] = raw_json[item]
@@ -139,19 +80,12 @@ class Preprocessor(object):
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
-    mysql_file = argv[1] if len(argv) > 1 else "projects.sql.gz"
 
     dataset_name = 'commit_comments'
     dataset_url = 'http://ghtorrent.org/downloads/' + dataset_name + '-dump.2015-01-29.tar.gz'
-    mysql_url = 'http://ghtorrent.org/downloads/mysql-2015-01-04.sql.gz'
-    store_file = 'languages.shelf'
 
     preprocessor = Preprocessor(group)
     preprocessor.get_bson_dataset(dataset_url, dataset_name)
-
-    if group == 'lang':
-        preprocessor.get_mysql_dataset(mysql_url, mysql_file, store_file)
-
     preprocessor.bson_to_json(dataset_name)
     os.remove(dataset_name + '.bson')
 
