@@ -26,7 +26,6 @@ class Preprocessor(object):
         downloaded_size = 0
         block_size = 8192
         
-        print('Downloading to {}'.format(target))
         while True:
             buffer = stream.read(block_size)
             if not buffer:
@@ -34,11 +33,11 @@ class Preprocessor(object):
 
             downloaded_size += len(buffer)
             file.write(buffer)
-            status = 'Downloading dataset [%3.0f%%]' % (downloaded_size * 100. / file_size)
+            status = 'Downloading "' + self.name + '" dataset [%3.0f%%]' % (downloaded_size * 100. / file_size)
             status += chr(8) * (len(status) + 1)
             print(status),
 
-        print('Downloading dataset [finished]')
+        print('Downloading "' + self.name + '" dataset [finished]')
         file.close()
 
     def extract(self, file):
@@ -47,7 +46,7 @@ class Preprocessor(object):
         member.name = os.path.basename(member.name)
         tar.extract(member)
         tar.close()
-        print('Untarring dataset [finished]')
+        print('Untarring "' + self.name + '" dataset [finished]')
 
     def bson_to_json(self):
         raise NotImplementedError("Cannot call bson_to_json on the base class: a subclass must implement this method instead")
@@ -90,12 +89,40 @@ class Commit_Comments_Preprocessor(Preprocessor):
         os.remove(self.name + '.bson')
         print('Converting BSON to JSON and removing unused fields [finished]')
 
+class Repos_Preprocessor(Preprocessor):
+    def __init__(self):
+        super(Repos_Preprocessor, self).__init__()
+        self.name = 'repos'
+        self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
+        self.keep_fields = ['name', 'language']
+
+    def bson_to_json(self):
+        output = open(self.name + '.json', 'wb')
+        bson_file = open(self.name + '.bson', 'rb')
+        
+        # Read every BSON object as an iterator to save memory.
+        for raw_json in bson.decode_file_iter(bson_file):
+            preprocessed_json = {}
+            for item in self.keep_fields:
+                preprocessed_json[item] = raw_json[item]
+            json.dump(preprocessed_json, output)
+            output.write('\n')
+
+        output.close()
+        bson_file.close()
+        os.remove(self.name + '.bson')
+        print('Converting BSON to JSON and removing unused fields [finished]')
+
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
 
     commit_comments = Commit_Comments_Preprocessor(group)
     commit_comments.get_bson()
     commit_comments.bson_to_json()
+
+    repos = Repos_Preprocessor()
+    repos.get_bson()
+    repos.bson_to_json()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
