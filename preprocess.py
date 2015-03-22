@@ -6,7 +6,8 @@ import bson
 import json
 import re
 import gzip
-import sqlparse
+import tokenize
+import shelve
 
 class Preprocessor(object):
     def __init__(self, group):
@@ -17,29 +18,62 @@ class Preprocessor(object):
             self.keep_fields.append(group)
 
     def get_repo(self, url):
-        return re.search(r"repos/([^/]+/[^/]+)(/|$)", url).group(1)
+        return str(re.search(r"repos/([^/]+/[^/]+)(/|$)", url).group(1))
+
+    def get_mysql_dataset(self, url, name, store_file):
+        if os.path.isfile(store_file):
+            self.languages = shelve.open(store_file)
+            print('Opened existing language store.')
+        else:
+            if not os.path.isfile(name):
+                self.download(url, name)
+
+            self.languages = shelve.open(store_file)
+            self.get_project_langs(name)
 
     def get_project_langs(self, mysql_file):
         done = False
         l = 0
+        state = 0
         with gzip.open(mysql_file, 'rb') as f:
-            for line in f:
-                l = l + 1
-                print('Processing line {}'.format(l))
-                if line.startswith('INSERT INTO `projects` VALUES'):
-                    # TODO: Replace SQL parsing with something quicker
-                    sql = sqlparse.parse(line)
-                    tokens = sql[0].tokens
-                    for i in xrange(8, len(tokens), 2):
-                        url = str(tokens[i].tokens[1].tokens[2])[1:-1]
-                        project = self.get_repo(url)
-                        language = str(tokens[i].tokens[1].tokens[10])[1:-1]
-                        self.languages[project] = language
+            for token in tokenize.generate_tokens(f.readline):
+                if state == 0 and token[1] != "INSERT":
+                    if l > 0:
+                        print('Done processing relevant MySQL lines.')
+                        break
 
-                    done = True
-                elif done:
-                    break
-        
+                    print('Skipping irrelevant line')
+                    state = -1
+                if state == 3:
+                    if token[1] == "projects":
+                        l = l + 1
+                        if l % 10 == 0:
+                            print('Processing line {}'.format(l))
+                    else:
+                        print('Skipping irrelevant line')
+                        state = -1
+
+                if token[1] == '\n':
+                    state = 0
+                    continue
+                if state == -1:
+                    continue
+
+                if state >= 9 and (state - 9) % 22 == 0:
+                    url = token[1][1:-1]
+                    project = self.get_repo(url)
+                elif state >= 17 and (state - 17) % 22 == 0:
+                    language = token[1][1:-1]
+                    self.languages[project] = str(language)
+
+                state = state + 1
+    
+    def get_bson_dataset(self, url, name):
+        if not os.path.isfile(name + '.tar.gz'):
+            self.download(url, name + '.tar.gz')
+        if not os.path.isfile(name + '.bson'):
+            self.extract(name, 'dump/github/' + name + '.bson')
+
     def download(self, url, target):
         stream = urllib2.urlopen(url)
         file = open(target, 'wb')
@@ -90,6 +124,8 @@ class Preprocessor(object):
             raw_json['repo'] = self.get_repo(raw_json['url'])
             if raw_json['repo'] in self.languages:
                 raw_json['lang'] = self.languages[raw_json['repo']]
+            else:
+                raw_json['lang'] = ''
 
             preprocessed_json = {}
             for item in self.keep_fields:
@@ -108,17 +144,13 @@ def main(argv):
     dataset_name = 'commit_comments'
     dataset_url = 'http://ghtorrent.org/downloads/' + dataset_name + '-dump.2015-01-29.tar.gz'
     mysql_url = 'http://ghtorrent.org/downloads/mysql-2015-01-04.sql.gz'
+    store_file = 'languages.shelf'
 
     preprocessor = Preprocessor(group)
+    preprocessor.get_bson_dataset(dataset_url, dataset_name)
 
-    if not os.path.isfile(dataset_name + '.tar.gz'):
-        preprocessor.download(dataset_url, dataset_name + '.tar.gz')
-    if not os.path.isfile(dataset_name + '.bson'):
-        preprocessor.extract(dataset_name, 'dump/github/' + dataset_name + '.bson')
     if group == 'lang':
-        if not os.path.isfile(mysql_file):
-            preprocessor.download(mysql_url, mysql_file)
-        preprocessor.get_project_langs(mysql_file)
+        preprocessor.get_mysql_dataset(mysql_url, mysql_file, store_file)
 
     preprocessor.bson_to_json(dataset_name)
     os.remove(dataset_name + '.bson')

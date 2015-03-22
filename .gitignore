@@ -8,10 +8,13 @@
 *.json
 !commit_comments.labeled.json
 *.bson
-*.tar.gz
 *.tgz
+*.gz
 
-# Models, output data and plot files
+# Models and persistent data
 *.pickle
+*.shelf
+
+# Output data and plot files
 *.dat
 *.eps
