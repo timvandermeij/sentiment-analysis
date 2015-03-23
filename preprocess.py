@@ -102,7 +102,7 @@ class Repos_Preprocessor(Preprocessor):
         super(Repos_Preprocessor, self).__init__()
         self.name = 'repos'
         self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
-        self.keep_fields = ['name', 'language']
+        self.keep_fields = ['full_name', 'language']
 
     def bson_to_json(self):
         output = open(self.name + '.json', 'wb')
