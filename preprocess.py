@@ -6,6 +6,7 @@ import bson
 import json
 import re
 import gzip
+import shelve
 
 class Preprocessor(object):
     def __init__(self):
@@ -19,7 +20,7 @@ class Preprocessor(object):
             return
 
         self.get_bson()
-        self.bson_to_json()
+        self.convert_bson()
 
     def get_bson(self):
         if not os.path.isfile(self.name + '.tar.gz'):
@@ -56,8 +57,8 @@ class Preprocessor(object):
         tar.close()
         print('Untarring "' + self.name + '" dataset [finished]')
 
-    def bson_to_json(self):
-        raise NotImplementedError("Cannot call bson_to_json on the base class: a subclass must implement this method instead")
+    def convert_bson(self):
+        raise NotImplementedError("Cannot call convert_bson on the base class: a subclass must implement this method instead")
 
 class Commit_Comments_Preprocessor(Preprocessor):
     def __init__(self, group):
@@ -77,7 +78,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         
         return True
 
-    def bson_to_json(self):
+    def convert_bson(self):
         output = open(self.name + '.json', 'wb')
         bson_file = open(self.name + '.bson', 'rb')
         
@@ -102,24 +103,21 @@ class Repos_Preprocessor(Preprocessor):
         super(Repos_Preprocessor, self).__init__()
         self.name = 'repos'
         self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
-        self.keep_fields = ['full_name', 'language']
 
-    def bson_to_json(self):
-        output = open(self.name + '.json', 'wb')
+    def convert_bson(self):
         bson_file = open(self.name + '.bson', 'rb')
         
         # Read every BSON object as an iterator to save memory.
+        languages = shelve.open('languages.shelf')
         for raw_json in bson.decode_file_iter(bson_file):
-            preprocessed_json = {}
-            for item in self.keep_fields:
-                preprocessed_json[item] = raw_json[item]
-            json.dump(preprocessed_json, output)
-            output.write('\n')
+            repository = raw_json['full_name'].encode('utf-8')
+            language = raw_json['language'].encode('utf-8') if raw_json['language'] is not None else ''
+            languages[repository] = language
 
-        output.close()
+        languages.close()
         bson_file.close()
         os.remove(self.name + '.bson')
-        print('Converting BSON to JSON and removing unused fields [finished]')
+        print('Converting BSON to shelf and removing unused fields [finished]')
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
