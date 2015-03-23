@@ -13,10 +13,11 @@ class Preprocessor(object):
         self.name = ''
         self.url = ''
         self.keep_fields = []
+        self.output = ''
 
     def preprocess(self):
-        # No need to do anything when the JSON file already exists
-        if os.path.isfile(self.name + '.json'):
+        # No need to do anything when the output file already exists
+        if os.path.isfile(self.output):
             return
 
         self.get_bson()
@@ -65,6 +66,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         super(Commit_Comments_Preprocessor, self).__init__()
         self.name = 'commit_comments'
         self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
+        self.output = self.name + '.json'
         self.group = group
         self.keep_fields = ['id', 'body']
         if group not in self.keep_fields:
@@ -83,6 +85,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         bson_file = open(self.name + '.bson', 'rb')
         
         # Read every BSON object as an iterator to save memory.
+        languages = shelve.open('languages.shelf')
         for raw_json in bson.decode_file_iter(bson_file):
             if not self.is_latin(raw_json['body']):
                 continue
@@ -90,6 +93,10 @@ class Commit_Comments_Preprocessor(Preprocessor):
             preprocessed_json = {}
             for item in self.keep_fields:
                 preprocessed_json[item] = raw_json[item]
+            repository = str(re.search(r"repos/([^/]+/[^/]+)(/|$)", raw_json['url']).group(1))
+            preprocessed_json['language'] = ''
+            if repository in languages:
+                preprocessed_json['language'] = languages[repository]
             json.dump(preprocessed_json, output)
             output.write('\n')
 
@@ -103,12 +110,13 @@ class Repos_Preprocessor(Preprocessor):
         super(Repos_Preprocessor, self).__init__()
         self.name = 'repos'
         self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
+        self.output = 'languages.shelf'
 
     def convert_bson(self):
         bson_file = open(self.name + '.bson', 'rb')
         
         # Read every BSON object as an iterator to save memory.
-        languages = shelve.open('languages.shelf')
+        languages = shelve.open(self.output)
         for raw_json in bson.decode_file_iter(bson_file):
             repository = raw_json['full_name'].encode('utf-8')
             language = raw_json['language'].encode('utf-8') if raw_json['language'] is not None else ''
@@ -122,11 +130,12 @@ class Repos_Preprocessor(Preprocessor):
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
 
-    commit_comments = Commit_Comments_Preprocessor(group)
-    commit_comments.preprocess()
-
+    # First prepare the languages as the commit comments dataset depends on that.
     repos = Repos_Preprocessor()
     repos.preprocess()
+
+    commit_comments = Commit_Comments_Preprocessor(group)
+    commit_comments.preprocess()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
