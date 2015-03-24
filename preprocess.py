@@ -12,22 +12,19 @@ class Preprocessor(object):
     def __init__(self):
         self.name = ''
         self.url = ''
+        self.file = ''
         self.keep_fields = []
         self.output = ''
 
     def preprocess(self):
-        # No need to do anything when the output file already exists
-        if os.path.isfile(self.output):
-            return
-
         self.get_bson()
         self.convert_bson()
 
     def get_bson(self):
         if not os.path.isfile(self.name + '.tar.gz'):
             self.download(self.name + '.tar.gz')
-        if not os.path.isfile(self.name + '.bson'):
-            self.extract('dump/github/' + self.name + '.bson')
+        if not os.path.isfile(self.file + '.bson'):
+            self.extract('dump/github/' + self.file + '.bson')
 
     def download(self, target):
         stream = urllib2.urlopen(self.url)
@@ -66,6 +63,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         super(Commit_Comments_Preprocessor, self).__init__()
         self.name = 'commit_comments'
         self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
+        self.file = 'commit_comments'
         self.output = self.name + '.json'
         self.group = group
         self.keep_fields = ['id', 'body']
@@ -81,11 +79,13 @@ class Commit_Comments_Preprocessor(Preprocessor):
         return True
 
     def convert_bson(self):
-        output = open(self.name + '.json', 'wb')
+        output = open(self.output, 'wb')
         bson_file = open(self.name + '.bson', 'rb')
         
         # Read every BSON object as an iterator to save memory.
         languages = shelve.open('languages.shelf')
+        failed = 0
+        total = 0
         for raw_json in bson.decode_file_iter(bson_file):
             if not self.is_latin(raw_json['body']):
                 continue
@@ -97,23 +97,28 @@ class Commit_Comments_Preprocessor(Preprocessor):
             preprocessed_json['language'] = ''
             if repository in languages:
                 preprocessed_json['language'] = languages[repository]
+            else:
+                failed += 1
+            total += 1
             json.dump(preprocessed_json, output)
             output.write('\n')
 
+        print(str(failed) + ' failed from ' + str(total) + ' in total')
         output.close()
         bson_file.close()
-        os.remove(self.name + '.bson')
+        os.remove(self.file + '.bson')
         print('Converting BSON to JSON and removing unused fields [finished]')
 
 class Repos_Preprocessor(Preprocessor):
-    def __init__(self):
+    def __init__(self, date):
         super(Repos_Preprocessor, self).__init__()
-        self.name = 'repos'
-        self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
+        self.name = 'repos-dump.' + date
+        self.file = 'repos'
+        self.url = 'http://ghtorrent.org/downloads/' + self.name + '.tar.gz'
         self.output = 'languages.shelf'
 
     def convert_bson(self):
-        bson_file = open(self.name + '.bson', 'rb')
+        bson_file = open(self.file + '.bson', 'rb')
         
         # Read every BSON object as an iterator to save memory.
         languages = shelve.open(self.output)
@@ -124,15 +129,61 @@ class Repos_Preprocessor(Preprocessor):
 
         languages.close()
         bson_file.close()
-        os.remove(self.name + '.bson')
+        os.remove(self.file + '.bson')
         print('Converting BSON to shelf and removing unused fields [finished]')
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
 
     # First prepare the languages as the commit comments dataset depends on that.
-    repos = Repos_Preprocessor()
-    repos.preprocess()
+    if not os.path.isfile('repos-dump.2015-01-29.tar.gz'):
+        repos = Repos_Preprocessor('2015-01-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2014-11-29.tar.gz'):
+        repos = Repos_Preprocessor('2014-11-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2014-09-29.tar.gz'):
+        repos = Repos_Preprocessor('2014-09-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2014-07-29.tar.gz'):
+        repos = Repos_Preprocessor('2014-07-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2014-05-29.tar.gz'):
+        repos = Repos_Preprocessor('2014-05-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2014-03-29.tar.gz'):
+        repos = Repos_Preprocessor('2014-03-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2014-01-29.tar.gz'):
+        repos = Repos_Preprocessor('2014-01-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2013-11-29.tar.gz'):
+        repos = Repos_Preprocessor('2013-11-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2013-09-29.tar.gz'):
+        repos = Repos_Preprocessor('2013-09-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2013-07-29.tar.gz'):
+        repos = Repos_Preprocessor('2013-07-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2013-05-29.tar.gz'):
+        repos = Repos_Preprocessor('2013-05-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2013-03-29.tar.gz'):
+        repos = Repos_Preprocessor('2013-03-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2013-01-29.tar.gz'):
+        repos = Repos_Preprocessor('2013-01-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2012-11-29.tar.gz'):
+        repos = Repos_Preprocessor('2012-11-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2012-09-29.tar.gz'):
+        repos = Repos_Preprocessor('2012-09-29')
+        repos.preprocess()
+    if not os.path.isfile('repos-dump.2012-07-30.tar.gz'):
+        repos = Repos_Preprocessor('2012-07-30')
+        repos.preprocess()
 
     commit_comments = Commit_Comments_Preprocessor(group)
     commit_comments.preprocess()
