@@ -91,13 +91,13 @@ class Commit_Comments_Preprocessor(Preprocessor):
                 continue
 
             preprocessed_json = {}
+            repository = str(re.search(r"repos/([^/]+/[^/]+)(/|$)", raw_json['url']).group(1))
+            raw_json['language'] = ''
+            if repository in languages:
+                raw_json['language'] = languages[repository]
             for item in self.keep_fields:
                 preprocessed_json[item] = raw_json[item]
-            repository = str(re.search(r"repos/([^/]+/[^/]+)(/|$)", raw_json['url']).group(1))
-            preprocessed_json['language'] = ''
-            if repository in languages:
-                preprocessed_json['language'] = languages[repository]
-            
+           
             json.dump(preprocessed_json, output)
             output.write('\n')
 
@@ -133,10 +133,9 @@ class Repos_Preprocessor(Preprocessor):
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
 
-    if group == "language":
+    if group == "language" and not os.path.isfile('languages.shelf'):
         # First prepare the languages as the commit comments dataset depends on 
-        # that.
-        # Fetch all the repos dumps.
+        # that. Fetch all the repo dumps.
         preprocessors = []
         html_page = urllib2.urlopen(Preprocessor.DOWNLOADS_URL)
         soup = BeautifulSoup(html_page)
