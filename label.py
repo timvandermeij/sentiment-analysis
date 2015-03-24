@@ -58,6 +58,7 @@ class Labeler:
 
     def write(self, json_object, label):
         del json_object['body']
+        del json_object['language']
         json_object['label'] = label
         output = open(self.dataset + '.labeled.json', 'a')
         output.write(json.dumps(json_object) + '\n')
