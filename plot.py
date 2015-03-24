@@ -110,7 +110,7 @@ class Plot:
         yNeg = []
         yPos = []
         for name, group in D.groupby(self.group):
-            if group.size > 100:
+            if name != '' and group.size > 100:
                 x.append(name)
                 gs = float((group['x'] != 0.0).size)
                 yPos.append((group['x'] > 0.0).sum() / gs)

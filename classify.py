@@ -8,7 +8,7 @@ import linecache
 import json
 import os
 import pickle
-from analyze import Analyzer # for some train data labelling
+from analyze import Analyzer # TODO: Only used for output display, move elsewhere
 from utils import Utilities
 
 class Classifier(object):

@@ -8,7 +8,6 @@ import json
 import re
 import shelve
 
-# TODO: what to do with remaining repositories without a language (empty string)?
 class Preprocessor(object):
     DOWNLOADS_URL = "http://ghtorrent.org/downloads/"
     BSON_FILE_DIR = "dump/github/"
