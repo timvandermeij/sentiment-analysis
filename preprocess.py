@@ -9,8 +9,7 @@ import re
 import shelve
 
 # TODO: change labeler with new dataset names
-# TODO: what to do with remaining repositories without a language?
-# TODO: what to do with 'null' language?
+# TODO: what to do with remaining repositories without a language (empty string)?
 class Preprocessor(object):
     DOWNLOADS_URL = "http://ghtorrent.org/downloads/"
     BSON_FILE_DIR = "dump/github/"
@@ -86,8 +85,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
             languages = shelve.open('languages.shelf')
         else:
             languages = {}
-        failed = 0
-        total = 0
+        
         # Read every BSON object as an iterator to save memory.
         for raw_json in bson.decode_file_iter(bson_file):
             if not self.is_latin(raw_json['body']):
@@ -100,18 +98,15 @@ class Commit_Comments_Preprocessor(Preprocessor):
             preprocessed_json['language'] = ''
             if repository in languages:
                 preprocessed_json['language'] = languages[repository]
-            else:
-                failed += 1
-            total += 1
+            
             json.dump(preprocessed_json, output)
             output.write('\n')
 
-        print(str(failed) + ' failed from ' + str(total) + ' in total')
         output.close()
         bson_file.close()
         os.remove(self.bson_file)
         os.removedirs(self.BSON_FILE_DIR)
-        print('Converting BSON to JSON and removing unused fields [finished]')
+        print('Converting BSON and removing unused fields [finished]')
 
 class Repos_Preprocessor(Preprocessor):
     def __init__(self, date):
@@ -134,7 +129,7 @@ class Repos_Preprocessor(Preprocessor):
         bson_file.close()
         os.remove(self.bson_file)
         os.removedirs(self.BSON_FILE_DIR)
-        print('Converting BSON to shelf and removing unused fields [finished]')
+        print('Converting BSON and removing unused fields [finished]')
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
