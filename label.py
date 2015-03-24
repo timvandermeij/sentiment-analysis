@@ -64,7 +64,7 @@ class Labeler:
         output.close()
 
 def main(argv):
-    dataset = argv[0] if len(argv) > 0 else 'commit_comments'
+    dataset = argv[0] if len(argv) > 0 else 'commit_comments-dump.2015-01-29'
     labeler = Labeler(dataset)
     labeler.start()
 
