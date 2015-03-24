@@ -54,9 +54,7 @@ class Preprocessor(object):
 
     def extract(self, file):
         tar = tarfile.open(self.name + '.tar.gz')
-        member = tar.getmember(file)
-        member.name = os.path.basename(member.name)
-        tar.extract(member)
+        tar.extractall()
         tar.close()
         print('Untarring "' + self.name + '" dataset [finished]')
 
@@ -68,7 +66,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         super(Commit_Comments_Preprocessor, self).__init__()
         self.name = 'commit_comments'
         self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
-        self.file = 'commit_comments'
+        self.file = 'dump/github/commit_comments.bson'
         self.output = self.name + '.json'
         self.group = group
         self.keep_fields = ['id', 'body']
@@ -85,7 +83,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
 
     def convert_bson(self):
         output = open(self.output, 'wb')
-        bson_file = open(self.name + '.bson', 'rb')
+        bson_file = open(self.file, 'rb')
         
         # Read every BSON object as an iterator to save memory.
         languages = shelve.open('languages.shelf')
@@ -111,19 +109,19 @@ class Commit_Comments_Preprocessor(Preprocessor):
         print(str(failed) + ' failed from ' + str(total) + ' in total')
         output.close()
         bson_file.close()
-        os.remove(self.file + '.bson')
+        os.remove(self.file)
         print('Converting BSON to JSON and removing unused fields [finished]')
 
 class Repos_Preprocessor(Preprocessor):
     def __init__(self, date):
         super(Repos_Preprocessor, self).__init__()
         self.name = 'repos-dump.' + date
-        self.file = 'repos'
+        self.file = 'dump/github/repos.bson'
         self.url = 'http://ghtorrent.org/downloads/' + self.name + '.tar.gz'
         self.output = 'languages.shelf'
 
     def convert_bson(self):
-        bson_file = open(self.file + '.bson', 'rb')
+        bson_file = open(self.file, 'rb')
         
         # Read every BSON object as an iterator to save memory.
         languages = shelve.open(self.output)
@@ -134,7 +132,7 @@ class Repos_Preprocessor(Preprocessor):
 
         languages.close()
         bson_file.close()
-        os.remove(self.file + '.bson')
+        os.remove(self.file)
         print('Converting BSON to shelf and removing unused fields [finished]')
 
 def main(argv):
