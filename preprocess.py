@@ -12,6 +12,9 @@ import shelve
 # TODO: what to do with remaining repositories without a language?
 # TODO: what to do with 'null' language?
 class Preprocessor(object):
+    DOWNLOADS_URL = "http://ghtorrent.org/downloads/"
+    BSON_FILE_DIR = "dump/github/"
+
     def __init__(self):
         self.dataset = ''
         self.bson_file = ''
@@ -28,7 +31,7 @@ class Preprocessor(object):
             self.extract(self.bson_file + '.bson')
 
     def download(self, target):
-        stream = urllib2.urlopen('http://ghtorrent.org/downloads/' + self.dataset + '.tar.gz')
+        stream = urllib2.urlopen(self.DOWNLOADS_URL + self.dataset + '.tar.gz')
         file = open(target, 'wb')
         file_size = int(stream.info().getheaders('Content-Length')[0])
         downloaded_size = 0
@@ -61,7 +64,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
     def __init__(self, group):
         super(Commit_Comments_Preprocessor, self).__init__()
         self.dataset = 'commit_comments-dump.2015-01-29'
-        self.bson_file = 'dump/github/commit_comments.bson'
+        self.bson_file = self.BSON_FILE_DIR + 'commit_comments.bson'
         self.group = group
         self.keep_fields = ['id', 'body']
         if group not in self.keep_fields:
@@ -107,14 +110,14 @@ class Commit_Comments_Preprocessor(Preprocessor):
         output.close()
         bson_file.close()
         os.remove(self.bson_file)
-        os.removedirs('dump/github')
+        os.removedirs(self.BSON_FILE_DIR)
         print('Converting BSON to JSON and removing unused fields [finished]')
 
 class Repos_Preprocessor(Preprocessor):
     def __init__(self, date):
         super(Repos_Preprocessor, self).__init__()
         self.dataset = 'repos-dump.' + date
-        self.bson_file = 'dump/github/repos.bson'
+        self.bson_file = self.BSON_FILE_DIR + 'repos.bson'
 
     def convert_bson(self):
         bson_file = open(self.bson_file, 'rb')
@@ -130,7 +133,7 @@ class Repos_Preprocessor(Preprocessor):
         languages.close()
         bson_file.close()
         os.remove(self.bson_file)
-        os.removedirs('dump/github')
+        os.removedirs(self.BSON_FILE_DIR)
         print('Converting BSON to shelf and removing unused fields [finished]')
 
 def main(argv):
@@ -141,8 +144,7 @@ def main(argv):
         # that.
         # Fetch all the repos dumps.
         preprocessors = []
-        downloads_page = "http://ghtorrent.org/downloads/"
-        html_page = urllib2.urlopen(downloads_page)
+        html_page = urllib2.urlopen(Preprocessor.DOWNLOADS_URL)
         soup = BeautifulSoup(html_page)
         for link in soup.findAll('a'):
             href = link.get('href')
