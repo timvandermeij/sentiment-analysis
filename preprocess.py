@@ -108,6 +108,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         output.close()
         bson_file.close()
         os.remove(self.file)
+        os.removedirs('dump/github')
         print('Converting BSON to JSON and removing unused fields [finished]')
 
 class Repos_Preprocessor(Preprocessor):
@@ -126,11 +127,13 @@ class Repos_Preprocessor(Preprocessor):
         for raw_json in bson.decode_file_iter(bson_file):
             repository = raw_json['full_name'].encode('utf-8')
             language = raw_json['language'].encode('utf-8') if raw_json['language'] is not None else ''
-            languages[repository] = language
+            if repository not in languages:
+                languages[repository] = language
 
         languages.close()
         bson_file.close()
         os.remove(self.file)
+        os.removedirs('dump/github')
         print('Converting BSON to shelf and removing unused fields [finished]')
 
 def main(argv):
