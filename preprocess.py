@@ -1,5 +1,6 @@
 import sys
 import urllib2
+from BeautifulSoup import BeautifulSoup
 import os.path
 import tarfile
 import bson
@@ -8,7 +9,6 @@ import re
 import shelve
 
 # TODO: change labeler with new dataset names
-# TODO: cleanup main function (pass in an array of dates)
 # TODO: what to do with remaining repositories without a language?
 # TODO: what to do with 'null' language?
 class Preprocessor(object):
@@ -79,10 +79,13 @@ class Commit_Comments_Preprocessor(Preprocessor):
         output = open(self.dataset + '.json', 'wb')
         bson_file = open(self.bson_file, 'rb')
         
-        # Read every BSON object as an iterator to save memory.
-        languages = shelve.open('languages.shelf')
+        if os.path.isfile('languages.shelf'):
+            languages = shelve.open('languages.shelf')
+        else:
+            languages = {}
         failed = 0
         total = 0
+        # Read every BSON object as an iterator to save memory.
         for raw_json in bson.decode_file_iter(bson_file):
             if not self.is_latin(raw_json['body']):
                 continue
@@ -133,55 +136,22 @@ class Repos_Preprocessor(Preprocessor):
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
 
-    # First prepare the languages as the commit comments dataset depends on that.
-    if not os.path.isfile('repos-dump.2015-01-29.tar.gz'):
-        repos = Repos_Preprocessor('2015-01-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2014-11-29.tar.gz'):
-        repos = Repos_Preprocessor('2014-11-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2014-09-29.tar.gz'):
-        repos = Repos_Preprocessor('2014-09-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2014-07-29.tar.gz'):
-        repos = Repos_Preprocessor('2014-07-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2014-05-29.tar.gz'):
-        repos = Repos_Preprocessor('2014-05-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2014-03-29.tar.gz'):
-        repos = Repos_Preprocessor('2014-03-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2014-01-29.tar.gz'):
-        repos = Repos_Preprocessor('2014-01-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2013-11-29.tar.gz'):
-        repos = Repos_Preprocessor('2013-11-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2013-09-29.tar.gz'):
-        repos = Repos_Preprocessor('2013-09-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2013-07-29.tar.gz'):
-        repos = Repos_Preprocessor('2013-07-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2013-05-29.tar.gz'):
-        repos = Repos_Preprocessor('2013-05-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2013-03-29.tar.gz'):
-        repos = Repos_Preprocessor('2013-03-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2013-01-29.tar.gz'):
-        repos = Repos_Preprocessor('2013-01-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2012-11-29.tar.gz'):
-        repos = Repos_Preprocessor('2012-11-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2012-09-29.tar.gz'):
-        repos = Repos_Preprocessor('2012-09-29')
-        repos.preprocess()
-    if not os.path.isfile('repos-dump.2012-07-30.tar.gz'):
-        repos = Repos_Preprocessor('2012-07-30')
-        repos.preprocess()
+    if group == "language":
+        # First prepare the languages as the commit comments dataset depends on 
+        # that.
+        # Fetch all the repos dumps.
+        preprocessors = []
+        downloads_page = "http://ghtorrent.org/downloads/"
+        html_page = urllib2.urlopen(downloads_page)
+        soup = BeautifulSoup(html_page)
+        for link in soup.findAll('a'):
+            href = link.get('href')
+            if href.startswith('repos-dump'):
+                date = href[11:-7]
+                preprocessors[:0] = [Repos_Preprocessor(date)]
+
+        for preprocessor in preprocessors:
+            preprocessor.preprocess()
 
     commit_comments = Commit_Comments_Preprocessor(group)
     commit_comments.preprocess()
