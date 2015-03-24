@@ -4,6 +4,7 @@ import linecache
 import json
 from collections import OrderedDict
 from analyze import Analyzer
+from utils import Utilities
 
 class Labeler:
     def __init__(self, dataset):
@@ -28,7 +29,7 @@ class Labeler:
         analyzer = Analyzer('id')
         options = []
         for k, v in self.labels.items():
-            opt = '[{}]'.format(analyzer.get_colored_text(v, k))
+            opt = '[{}]'.format(Utilities.get_colored_text(v, k))
             options.append(v.replace(k, opt) if k in v else "{} {}".format(opt, v))
         choices = ', '.join(options)
 
@@ -41,26 +42,21 @@ class Labeler:
             message = json_object['body']
             (label, disp, message) = analyzer.analyze(message)
             
-            print(analyzer.get_colored_text('head', '--- Labeling message {} (ID: {}) ---'.format(line, json_object['id'])))
+            print(Utilities.get_colored_text('head', '--- Labeling message {} (ID: {}) ---'.format(line, json_object['id'])))
             print(message + '\n')
-            print('Guess: {}'.format(analyzer.get_colored_text(label)))
+            print('Guess: {}'.format(Utilities.get_colored_text(label)))
             choice = '?'
             while choice != '' and choice not in self.labels:
                 choice = raw_input('Label (Enter to confirm, or {}): '.format(choices))
                 if choice == 'q':
                     return
 
-            text = self.labels[choice] if choice is not '' else analyzer.score_to_label(label)
-            print('You entered: {}\n'.format(analyzer.get_colored_text(text, text)))
+            text = self.labels[choice] if choice is not '' else Utilities.score_to_label(label)
+            print('You entered: {}\n'.format(Utilities.get_colored_text(text, text)))
 
             json_object['label'] = text
-            self.write(analyzer.filter_fields(json_object, {"id": "id", "label": "label"}))
+            Utilities.write_json(self.dataset + '.labeled.json', json_object, ["id", "label"])
             self.labeled_num_lines += 1
-
-    def write(self, json_object):
-        output = open(self.dataset + '.labeled.json', 'a')
-        output.write(json.dumps(json_object) + '\n')
-        output.close()
 
 def main(argv):
     dataset = argv[0] if len(argv) > 0 else 'commit_comments-dump.2015-01-29'

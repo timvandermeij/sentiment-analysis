@@ -9,10 +9,11 @@ import json
 import os
 import pickle
 from analyze import Analyzer # for some train data labelling
+from utils import Utilities
 
 class Classifier(object):
     def __init__(self, group, n_estimators, model_file):
-        self.dataset_name = "commit_comments"
+        self.dataset_name = "commit_comments-dump.2015-01-29"
         self.group = group
         self.model_file = model_file
         self.n_estimators = n_estimators
@@ -45,9 +46,9 @@ class Classifier(object):
         train_labels = []
         with open(self.dataset_name + ".labeled.json", 'r') as f:
             i = 0
-            for data in self.analyzer.read_json(f, ['id','label']):
+            for data in Utilities.read_json(f, ['id','label'], self.group):
                 i = i + 1
-                score = self.analyzer.label_to_score(data["label"])
+                score = Utilities.label_to_score(data["label"])
                 if score is None: # unknown
                     continue
 
@@ -65,7 +66,7 @@ class Classifier(object):
         self.regressor.fit(train_data, train_labels)
 
     def split(self, data):
-        if self.analyzer.group != "score":
+        if self.group != "score":
             self.test_group.append(data['group'])
         return data['message']
 
@@ -75,7 +76,7 @@ class Classifier(object):
     def predict(self):
         self.test_group = []
 
-        self.test_data = itertools.imap(self.split, itertools.ifilter(self.filter, self.analyzer.read_json(sys.stdin, 'id')))
+        self.test_data = itertools.imap(self.split, itertools.ifilter(self.filter, Utilities.read_json(sys.stdin, 'id', self.group)))
         if self.analyzer.display:
             self.test_data = list(self.test_data)
 
@@ -85,9 +86,9 @@ class Classifier(object):
         for i in xrange(len(predictions)):
             prediction = predictions[i]
             message = ""
-            group = self.test_group[i] if self.analyzer.group != "score" else ""
+            group = self.test_group[i] if self.group != "score" else ""
             if self.analyzer.display:
-                message = self.analyzer.get_colored_text(prediction, self.test_data[i])
+                message = Utilities.get_colored_text(prediction, self.test_data[i])
             
             self.analyzer.output(group, message, prediction, "")
 
