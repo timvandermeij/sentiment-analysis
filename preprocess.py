@@ -7,30 +7,27 @@ import json
 import re
 import shelve
 
-# TODO: cleanup name, url, file and output parameters
 # TODO: cleanup main function (pass in an array of dates)
 # TODO: what to do with remaining repositories without a language?
 # TODO: what to do with 'null' language?
 class Preprocessor(object):
     def __init__(self):
-        self.name = ''
-        self.url = ''
-        self.file = ''
+        self.dataset = ''
+        self.bson_file = ''
         self.keep_fields = []
-        self.output = ''
 
     def preprocess(self):
         self.get_bson()
         self.convert_bson()
 
     def get_bson(self):
-        if not os.path.isfile(self.name + '.tar.gz'):
-            self.download(self.name + '.tar.gz')
-        if not os.path.isfile(self.file + '.bson'):
-            self.extract('dump/github/' + self.file + '.bson')
+        if not os.path.isfile(self.dataset + '.tar.gz'):
+            self.download(self.dataset + '.tar.gz')
+        if not os.path.isfile(self.bson_file + '.bson'):
+            self.extract(self.bson_file + '.bson')
 
     def download(self, target):
-        stream = urllib2.urlopen(self.url)
+        stream = urllib2.urlopen('http://ghtorrent.org/downloads/' + self.dataset + '.tar.gz')
         file = open(target, 'wb')
         file_size = int(stream.info().getheaders('Content-Length')[0])
         downloaded_size = 0
@@ -43,18 +40,18 @@ class Preprocessor(object):
 
             downloaded_size += len(buffer)
             file.write(buffer)
-            status = 'Downloading "' + self.name + '" dataset [%3.0f%%]' % (downloaded_size * 100. / file_size)
+            status = 'Downloading "' + self.dataset + '" dataset [%3.0f%%]' % (downloaded_size * 100. / file_size)
             status += chr(8) * (len(status) + 1)
             print(status),
 
-        print('Downloading "' + self.name + '" dataset [finished]')
+        print('Downloading "' + self.dataset + '" dataset [finished]')
         file.close()
 
     def extract(self, file):
-        tar = tarfile.open(self.name + '.tar.gz')
+        tar = tarfile.open(self.dataset + '.tar.gz')
         tar.extractall()
         tar.close()
-        print('Untarring "' + self.name + '" dataset [finished]')
+        print('Untarring "' + self.dataset + '" dataset [finished]')
 
     def convert_bson(self):
         raise NotImplementedError("Cannot call convert_bson on the base class: a subclass must implement this method instead")
@@ -62,10 +59,8 @@ class Preprocessor(object):
 class Commit_Comments_Preprocessor(Preprocessor):
     def __init__(self, group):
         super(Commit_Comments_Preprocessor, self).__init__()
-        self.name = 'commit_comments'
-        self.url = 'http://ghtorrent.org/downloads/' + self.name + '-dump.2015-01-29.tar.gz'
-        self.file = 'dump/github/commit_comments.bson'
-        self.output = self.name + '.json'
+        self.dataset = 'commit_comments-dump.2015-01-29'
+        self.bson_file = 'dump/github/commit_comments.bson'
         self.group = group
         self.keep_fields = ['id', 'body']
         if group not in self.keep_fields:
@@ -80,8 +75,8 @@ class Commit_Comments_Preprocessor(Preprocessor):
         return True
 
     def convert_bson(self):
-        output = open(self.output, 'wb')
-        bson_file = open(self.file, 'rb')
+        output = open(self.dataset + '.json', 'wb')
+        bson_file = open(self.bson_file, 'rb')
         
         # Read every BSON object as an iterator to save memory.
         languages = shelve.open('languages.shelf')
@@ -107,23 +102,21 @@ class Commit_Comments_Preprocessor(Preprocessor):
         print(str(failed) + ' failed from ' + str(total) + ' in total')
         output.close()
         bson_file.close()
-        os.remove(self.file)
+        os.remove(self.bson_file)
         os.removedirs('dump/github')
         print('Converting BSON to JSON and removing unused fields [finished]')
 
 class Repos_Preprocessor(Preprocessor):
     def __init__(self, date):
         super(Repos_Preprocessor, self).__init__()
-        self.name = 'repos-dump.' + date
-        self.file = 'dump/github/repos.bson'
-        self.url = 'http://ghtorrent.org/downloads/' + self.name + '.tar.gz'
-        self.output = 'languages.shelf'
+        self.dataset = 'repos-dump.' + date
+        self.bson_file = 'dump/github/repos.bson'
 
     def convert_bson(self):
-        bson_file = open(self.file, 'rb')
+        bson_file = open(self.bson_file, 'rb')
         
         # Read every BSON object as an iterator to save memory.
-        languages = shelve.open(self.output)
+        languages = shelve.open('languages.shelf')
         for raw_json in bson.decode_file_iter(bson_file):
             repository = raw_json['full_name'].encode('utf-8')
             language = raw_json['language'].encode('utf-8') if raw_json['language'] is not None else ''
@@ -132,7 +125,7 @@ class Repos_Preprocessor(Preprocessor):
 
         languages.close()
         bson_file.close()
-        os.remove(self.file)
+        os.remove(self.bson_file)
         os.removedirs('dump/github')
         print('Converting BSON to shelf and removing unused fields [finished]')
 
