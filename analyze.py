@@ -52,7 +52,31 @@ class Analyzer(object):
 
         return None
 
+    def convert_keep_fields(self, keep_fields):
+        if type(keep_fields) == list:
+            keep_fields = dict([(k,k) for k in keep_fields])
+        elif type(keep_fields) != dict:
+            k = {"message": "body"}
+            if type(keep_fields) == str:
+                k[keep_fields] = keep_fields
+            if self.group != "score":
+                k["group"] = self.group
+
+            keep_fields = k
+
+        return keep_fields
+
+    def filter_fields(self, data, keep_fields):
+        # Rename the fields and filter
+        fields = {}
+        for new,old in keep_fields.iteritems():
+            fields[new] = data[old]
+
+        return fields
+
     def read_json(self, file, keep_fields=True):
+        keep_fields = self.convert_keep_fields(keep_fields)
+
         i = 0
         for jsonObject in file:
             data = json.loads(jsonObject)
@@ -60,21 +84,7 @@ class Analyzer(object):
             if "body" in data:
                 data["body"] = data["body"].replace('\r\n', '\n')
 
-            if type(keep_fields) == list:
-                keep_fields = dict([(k,k) for k in keep_fields])
-            elif type(keep_fields) != dict:
-                k = {"message": "body"}
-                if type(keep_fields) == str:
-                    k[keep_fields] = keep_fields
-                if self.group != "score":
-                    k["group"] = self.group
-
-                keep_fields = k
-
-            fields = {}
-            # Rename the fields and filter
-            for new,old in keep_fields.iteritems():
-                fields[new] = data[old]
+            fields = self.filter_fields(data, keep_fields)
 
             yield fields
             i = i + 1

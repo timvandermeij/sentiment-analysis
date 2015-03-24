@@ -53,13 +53,11 @@ class Labeler:
             text = self.labels[choice] if choice is not '' else analyzer.score_to_label(label)
             print('You entered: {}\n'.format(analyzer.get_colored_text(text, text)))
 
-            self.write(json_object, text)
+            json_object['label'] = text
+            self.write(analyzer.filter_fields(json_object, {"id": "id", "label": "label"}))
             self.labeled_num_lines += 1
 
-    def write(self, json_object, label):
-        del json_object['body']
-        del json_object['language']
-        json_object['label'] = label
+    def write(self, json_object):
         output = open(self.dataset + '.labeled.json', 'a')
         output.write(json.dumps(json_object) + '\n')
         output.close()
