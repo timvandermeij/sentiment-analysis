@@ -8,6 +8,11 @@ import re
 import gzip
 import shelve
 
+# TODO: do not untar completely, but use directly when untarring
+# TODO: cleanup name, url, file and output parameters
+# TODO: cleanup main function (pass in an array of dates)
+# TODO: what to do with remaining repositories without a language?
+# TODO: what to do with 'null' language?
 class Preprocessor(object):
     def __init__(self):
         self.name = ''
