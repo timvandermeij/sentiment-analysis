@@ -117,7 +117,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         
         if os.path.isfile('languages.shelf'):
-            languages = shelve.open('languages.shelf')
+            languages = shelve.open('languages.shelf', writeback=True)
         else:
             languages = {}
         
