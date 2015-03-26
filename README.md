@@ -152,6 +152,8 @@ http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integr
 
 Note that installing `numpy` from source might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`. This does not work in relation with `h5py`, where one should just use `Ctrl-C` to end the install command when it is processing dependencies.
 
+Additionally, after using for example `import h5py` in a virtualenv `python` terminal, one might get a warning related to a directory `~/.python-eggs` having wrong permissions. This should then be fixed with `chmod g-wx,o-wx ~/.python-eggs`.
+
 HDFS
 ----
 
