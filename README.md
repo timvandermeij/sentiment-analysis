@@ -96,7 +96,7 @@ We have now created a virtual environment called `python`. The goal is to distri
 Shared libraries
 ----------------
 
-Note that this is optional. It's mostly about `wget`, `tar xz`, `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
+Note that this is optional. The steps are roughly `wget`, `tar xz`, `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
 
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
@@ -126,7 +126,9 @@ We now have a Python 2.7 virtual environment, but `pip` is still from Python 2.6
     (python)$ wget https://bootstrap.pypa.io/get-pip.py
     (python)$ python get-pip.py -U -I
 
-This installs `pip` for Python 2.7, which is less likely to give troubles with installing or upgrading dependencies:
+This installs `pip` for Python 2.7, which is less likely to give troubles with installing or upgrading dependencies.
+
+We use the following dependencies in this project:
 
     (python)$ pip install cython
     (python)$ pip install readline
@@ -136,6 +138,7 @@ This installs `pip` for Python 2.7, which is less likely to give troubles with i
     (python)$ pip install scikit-learn==0.16b1
     (python)$ pip install numexpr
     (python)$ pip install matplotlib
+	(python)$ pip install BeautifulSoup
 
 This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
 http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
@@ -186,7 +189,7 @@ If you have hardcoded paths, sometimes you can circumvent these directory proble
 Additional notes for installing Qt
 ----------------------------------
 
-Note that installing Python from source on the DAS has the strange effect that among others, the default Tk GUI library in Python does not function. It's probably related to missing dependencies (development headers) or to configuration flags. Either way, it might be better to use something like GTK or Qt, although it is certainly not easy.
+Note that installing Python from source on the DAS has the strange effect that among others, the default Tk GUI library in Python does not function. This is probably related to missing dependencies (development headers) or to configuration flags. Either way, it might be better to use something like GTK or Qt, although it is certainly not easy.
 
 Also, this section is of limited use: one can display `matplotlib` files through X forwarding (make sure to use `ssh -X` on all connections between you and the DAS).
 
@@ -201,7 +204,7 @@ Installation will cost at least 4 hours. We assume you are in an `activate`d vir
         $ make
         $ make install
 
-  Each step takes a long time. Answer `yes` to the license question during `./configure`, and check at the end whether the configuration makes sense. We probably didn't need the entirety of Qt, but it is the easiest way, and the binary installation did not work.
+  Each step takes a long time. Answer `yes` to the license question during `./configure`, and check at the end whether the configuration makes sense. We probably did not need the entirety of Qt, but it is the easiest way, and the binary installation did not work.
 - Download and install SIP:
   
         $ wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.6/sip-4.16.6.tar.gz
