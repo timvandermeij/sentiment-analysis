@@ -8,6 +8,41 @@ import json
 import re
 import shelve
 
+class Progress(object):
+    def __init__(self, message, total_size):
+        self.message = message
+        self.total_size = total_size
+        self.previous_percent = -1
+
+    def show_progress(self, current_size):
+        percent = int(current_size * 100. / self.total_size)
+        if percent != self.previous_percent:
+            status = self.message + ' [%3d%%]' % percent
+            clear = chr(8) * len(status)
+            if self.previous_percent != -1:
+                sys.stdout.write(clear)
+
+            sys.stdout.write(status)
+            sys.stdout.flush()
+            self.previous_percent = percent
+            if percent == 100:
+                sys.stdout.write(clear)
+
+class ProgressFile(file, Progress):
+    def __init__(self, *a, **kw):
+        message = kw.pop('message', None)
+
+        file.__init__(self, *a, **kw)
+
+        if message is None:
+            message = 'Reading file ' + self.name
+
+        Progress.__init__(self, message, os.path.getsize(self.name))
+
+    def read(self, size):
+        self.show_progress(self.tell())
+        return file.read(self, size)
+
 class Preprocessor(object):
     DOWNLOADS_URL = "http://ghtorrent.org/downloads/"
     BSON_FILE_DIR = "dump/github/"
@@ -33,7 +68,9 @@ class Preprocessor(object):
         file_size = int(stream.info().getheaders('Content-Length')[0])
         downloaded_size = 0
         block_size = 8192
-        
+        message = 'Downloading "' + self.dataset + '" dataset'
+        progress = Progress(message, file_size)
+
         while True:
             buffer = stream.read(block_size)
             if not buffer:
@@ -41,18 +78,17 @@ class Preprocessor(object):
 
             downloaded_size += len(buffer)
             file.write(buffer)
-            status = 'Downloading "' + self.dataset + '" dataset [%3.0f%%]' % (downloaded_size * 100. / file_size)
-            status += chr(8) * (len(status) + 1)
-            print(status),
+            progress.show_progress(downloaded_size)
 
-        print('Downloading "' + self.dataset + '" dataset [finished]')
+        print(message + ' [finished]')
         file.close()
 
     def extract(self, file):
-        tar = tarfile.open(self.dataset + '.tar.gz')
+        message = 'Untarring "' + self.dataset + '" dataset'
+        tar = tarfile.open(fileobj=ProgressFile(self.dataset + '.tar.gz', message=message))
         tar.extractall()
         tar.close()
-        print('Untarring "' + self.dataset + '" dataset [finished]')
+        print(message + ' [finished]')
 
     def convert_bson(self):
         raise NotImplementedError("Cannot call convert_bson on the base class: a subclass must implement this method instead")
@@ -77,7 +113,8 @@ class Commit_Comments_Preprocessor(Preprocessor):
 
     def convert_bson(self):
         output = open(self.dataset + '.json', 'wb')
-        bson_file = open(self.bson_file, 'rb')
+        message = 'Converting BSON and removing unused fields'
+        bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         
         if os.path.isfile('languages.shelf'):
             languages = shelve.open('languages.shelf')
@@ -104,7 +141,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         bson_file.close()
         os.remove(self.bson_file)
         os.removedirs(self.BSON_FILE_DIR)
-        print('Converting BSON and removing unused fields [finished]')
+        print(message + ' [finished]')
 
 class Repos_Preprocessor(Preprocessor):
     def __init__(self, date):
@@ -113,10 +150,11 @@ class Repos_Preprocessor(Preprocessor):
         self.bson_file = self.BSON_FILE_DIR + 'repos.bson'
 
     def convert_bson(self):
-        bson_file = open(self.bson_file, 'rb')
+        message = 'Converting BSON and removing unused fields'
+        bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         
         # Read every BSON object as an iterator to save memory.
-        languages = shelve.open('languages.shelf')
+        languages = shelve.open('languages.shelf', writeback=True)
         for raw_json in bson.decode_file_iter(bson_file):
             repository = raw_json['full_name'].encode('utf-8')
             language = raw_json['language'].encode('utf-8') if raw_json['language'] is not None else ''
