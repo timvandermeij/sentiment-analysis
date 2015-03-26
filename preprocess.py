@@ -165,7 +165,7 @@ class Repos_Preprocessor(Preprocessor):
         bson_file.close()
         os.remove(self.bson_file)
         os.removedirs(self.BSON_FILE_DIR)
-        print('Converting BSON and removing unused fields [finished]')
+        print(message + ' [finished]')
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
