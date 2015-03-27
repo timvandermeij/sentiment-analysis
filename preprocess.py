@@ -8,6 +8,8 @@ import json
 import re
 import shelve
 from mpi4py import MPI
+from array import array
+import time
 
 class Progress(object):
     def __init__(self, message, total_size):
@@ -205,39 +207,86 @@ def get_downloads(prefix):
     return dates
 
 def main(argv):
-    preprocess = argv[0] if len(argv) > 0 else "commit_comments"
+    task = argv[0] if len(argv) > 0 else "commit_comments"
     group = argv[1] if len(argv) > 1 else "id"
-    num_processes = int(argv[2]) if len(argv) > 2 else 4
 
-    date = status = ""
+    date = ""
+    ready = array('c', '\0')
 
-    if preprocess == "repos":
+    if task == "repos":
         if group == "language" and not os.path.isfile('languages.shelf'):
-            # Fetch the repo dumps from the GHTorrent website and
-            # process them in parallel.
             comm = MPI.COMM_WORLD
+            num_processes = comm.size
+
+            # Fetch the repo dumps from the GHTorrent website and
+            # process them in parallel if possible.
             process_id = comm.rank
             if process_id == 0:
                 dates = get_downloads('repos-dump')
-                
-                for process in range(1, len(dates) + 1):
-                    comm.send(dates[process - 1], dest=process, tag=process_id)
-                    if process >= num_processes:
-                        status = comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=MPI.Status())
-                        if status == "done":
-                            continue
+
+                if num_processes == 1:
+                    # Perform sequentially
+                    for tag in range(len(dates)):
+                        preprocessor = Repos_Preprocessor(tag, dates[tag])
+                        preprocessor.preprocess()
+                else:
+                    # Automatically balance the jobs across the processes by 
+                    # sending jobs to processes that tell us they are free.
+                    # We run another cycle through all the other processes to 
+                    # let them know they are done.
+                    tag = 0
+                    done = 0
+                    num_jobs = len(dates)
+                    while tag < num_jobs + num_processes - 1:
+                        # Wait for processes to be ready. We poll a receive of 
+                        # a message from any process. In order to reduce CPU 
+                        # usage of the idle master, we use our own sleep loop.
+                        status = MPI.Status()
+                        req = comm.Irecv(ready, source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG)
+                        while not req.Test(status=status):
+                            time.sleep(1)
+
+                        # Finish the request
+                        req.Wait()
+                        if ready.tostring() == '\1':
+                            process = status.Get_source()
+
+                            if tag < num_jobs:
+                                # A process is ready to receive, so send a job
+                                print('MASTER: Process {} receives job {}'.format(process, tag))
+                                comm.send(dates[tag], dest=process, tag=tag)
+                            else:
+                                # We are done sending jobs, so tell the process 
+                                # that it is done
+                                print('MASTER: Process {} is done'.format(process))
+                                comm.send("", dest=process, tag=tag)
+
+                            tag = tag + 1
             else:
-                # Execute only the preprocessor for this particular job
-                # if it received the signal to run.
-                date = comm.recv(source=0, tag=MPI.ANY_TAG, status=MPI.Status())
-                preprocessor = Repos_Preprocessor(process_id - 1, date)
-                preprocessor.preprocess()
-                comm.send("done", dest=0, tag=process_id)
-    elif preprocess == "commit_comments":
+                # Keep on running until the master lets us know we quit.
+                while True:
+                    # Let the master know that this process is ready
+                    comm.Isend(array('c', '\1'), dest=0, tag=process_id)
+
+                    # Execute only the preprocessor for this particular job
+                    # if it received the signal to run.
+                    status = MPI.Status()
+                    date = comm.recv(source=0, tag=MPI.ANY_TAG, status=status)
+                    tag = status.Get_tag()
+                    if date == "":
+                        print('PROCESS {}: Done'.format(process_id))
+                        break
+
+                    print('PROCESS {}: Received job {} with date {} for preprocessing'.format(process_id, tag, date))
+                    preprocessor = Repos_Preprocessor(tag, date)
+                    preprocessor.preprocess()
+    elif task == "commit_comments":
         commit_comments = Commit_Comments_Preprocessor(group)
         commit_comments.preprocess()
     else:
-        print("Unrecognized value for 'preprocess'")
+        print("Unrecognized value for 'task': '{}'".format(task))
+        print("Must be either 'repos' or 'commit_comments'")
+        print("Usage: [mpiexec -n <num_processes>] python preprocess.py <task> [group]")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
