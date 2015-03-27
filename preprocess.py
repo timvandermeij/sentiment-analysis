@@ -192,6 +192,18 @@ class Repos_Preprocessor(Preprocessor):
         os.removedirs(self.process_id + '/' + self.BSON_FILE_DIR)
         print(message + ' [finished]')
 
+def get_downloads(prefix):
+    dates = []
+    html_page = urllib2.urlopen(Preprocessor.DOWNLOADS_URL)
+    soup = BeautifulSoup(html_page)
+    for link in soup.findAll('a'):
+        href = link.get('href')
+        if href.startswith(prefix):
+            date = href[len(prefix)+1:-7]
+            dates.append(date)
+
+    return dates
+
 def main(argv):
     preprocess = argv[0] if len(argv) > 0 else "commit_comments"
     group = argv[1] if len(argv) > 1 else "id"
@@ -206,14 +218,7 @@ def main(argv):
             comm = MPI.COMM_WORLD
             process_id = comm.rank
             if process_id == 0:
-                dates = []
-                html_page = urllib2.urlopen(Preprocessor.DOWNLOADS_URL)
-                soup = BeautifulSoup(html_page)
-                for link in soup.findAll('a'):
-                    href = link.get('href')
-                    if href.startswith('repos-dump'):
-                        date = href[11:-7]
-                        dates.append(date)
+                dates = get_downloads('repos-dump')
                 
                 for process in range(1, len(dates) + 1):
                     comm.send(dates[process - 1], dest=process, tag=process_id)
