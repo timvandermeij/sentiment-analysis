@@ -124,7 +124,8 @@ class Commit_Comments_Preprocessor(Preprocessor):
                 count += 1
 
         merged = shelve.open('languages.shelf')
-        for index in reversed(range(0, count)):
+        for index in range(0, count):
+            print('Processing shelf ' + str(index) + '...')
             shelf = shelve.open('languages-' + str(index) + '.shelf')
             merged.update(shelf)
             shelf.close()
@@ -194,23 +195,39 @@ class Repos_Preprocessor(Preprocessor):
 def main(argv):
     preprocess = argv[0] if len(argv) > 0 else "commit_comments"
     group = argv[1] if len(argv) > 1 else "id"
+    num_processes = int(argv[2]) if len(argv) > 2 else 4
+
+    date = status = ""
 
     if preprocess == "repos":
         if group == "language" and not os.path.isfile('languages.shelf'):
             # Fetch the repo dumps from the GHTorrent website and
             # process them in parallel.
-            process_id = MPI.COMM_WORLD.rank
-            preprocessors = []
-            html_page = urllib2.urlopen(Preprocessor.DOWNLOADS_URL)
-            soup = BeautifulSoup(html_page)
-            for link in soup.findAll('a'):
-                href = link.get('href')
-                if href.startswith('repos-dump'):
-                    date = href[11:-7]
-                    preprocessors[:0] = [Repos_Preprocessor(process_id, date)]
-
-            # Execute only the preprocessor for this particular job.
-            preprocessors[process_id].preprocess()
+            comm = MPI.COMM_WORLD
+            process_id = comm.rank
+            if process_id == 0:
+                dates = []
+                html_page = urllib2.urlopen(Preprocessor.DOWNLOADS_URL)
+                soup = BeautifulSoup(html_page)
+                for link in soup.findAll('a'):
+                    href = link.get('href')
+                    if href.startswith('repos-dump'):
+                        date = href[11:-7]
+                        dates.append(date)
+                
+                for process in range(1, len(dates) + 1):
+                    comm.send(dates[process - 1], dest=process, tag=process_id)
+                    if process >= num_processes:
+                        status = comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=MPI.Status())
+                        if status == "done":
+                            continue
+            else:
+                # Execute only the preprocessor for this particular job
+                # if it received the signal to run.
+                date = comm.recv(source=0, tag=MPI.ANY_TAG, status=MPI.Status())
+                preprocessor = Repos_Preprocessor(process_id - 1, date)
+                preprocessor.preprocess()
+                comm.send("done", dest=0, tag=process_id)
     elif preprocess == "commit_comments":
         commit_comments = Commit_Comments_Preprocessor(group)
         commit_comments.preprocess()
