@@ -99,7 +99,6 @@ Shared libraries
 Note that this is optional. The steps are roughly `wget http://{url}/{file}`, `tar xz {file}`, `cd {dir}/` `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
 
 * OpenMPI: http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
-* HDF5: http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.14.tar.gz Use `./configure --enable-parallel --enable-shared`
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
 
@@ -142,17 +141,11 @@ We use the following dependencies in this project:
     (python)$ pip install matplotlib
     (python)$ pip install BeautifulSoup
     (python)$ pip install mpi4py
-    (python)$ wget https://pypi.python.org/packages/source/h/h5py/h5py-2.4.0.tar.gz
-    (python)$ tar xzf h5py-2.4.0.tar.gz && cd h5py-2.4.0
-    (python)$ CC=mpicc python setup.py configure --mpi --hdf5=/scratch/scratch/{username}/opt/hdf5
-    (python)$ CC=mpicc python setup.py build && python setup.py install
 
 This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
 http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
 
-Note that installing `numpy` from source might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`. This does not work in relation with `h5py`, where one should just use `Ctrl-C` to end the install command when it is processing dependencies.
-
-Additionally, after using for example `import h5py` in a virtualenv `python` terminal, one might get a warning related to a directory `~/.python-eggs` having wrong permissions. This should then be fixed with `chmod g-wx,o-wx ~/.python-eggs`.
+Note that installing `numpy` from source might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`.
 
 HDFS
 ----
