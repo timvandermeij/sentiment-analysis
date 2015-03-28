@@ -5,6 +5,7 @@ import os.path
 import tarfile
 import bson
 import json
+from glob import glob
 import re
 import shelve
 from mpi4py import MPI
@@ -20,16 +21,25 @@ class Progress(object):
     def show_progress(self, current_size):
         percent = int(current_size * 100. / self.total_size)
         if percent != self.previous_percent:
-            status = self.message + ' [%3d%%]' % percent
-            clear = chr(8) * len(status)
+            self.print_progress('{:3d}%'.format(percent))
+            self.previous_percent = percent
+
+    def print_progress(self, text):
+        status = '{} [{}]'.format(self.message, text)
+        if MPI.COMM_WORLD.size > 1:
+            status = '#{}. {}\n'.format(MPI.COMM_WORLD.rank, status)
+        else:
+            # Clear previous message and progress
+            clear = chr(8) * (len(self.message) + 7)
             if self.previous_percent != -1:
                 sys.stdout.write(clear)
 
-            sys.stdout.write(status)
-            sys.stdout.flush()
-            self.previous_percent = percent
-            if percent == 100:
-                sys.stdout.write(clear)
+        sys.stdout.write(status)
+        sys.stdout.flush()
+
+    def finish(self):
+        self.print_progress("finished")
+        sys.stdout.write('\n')
 
 class ProgressFile(file, Progress):
     def __init__(self, *a, **kw):
@@ -38,13 +48,18 @@ class ProgressFile(file, Progress):
         file.__init__(self, *a, **kw)
 
         if message is None:
-            message = 'Reading file ' + self.name
+            message = 'Reading file {}'.format(self.name)
 
         Progress.__init__(self, message, os.path.getsize(self.name))
 
     def read(self, size):
         self.show_progress(self.tell())
         return file.read(self, size)
+
+    def close(self):
+        if not self.closed:
+            self.finish()
+        file.close(self)
 
 class Preprocessor(object):
     DOWNLOADS_URL = "http://ghtorrent.org/downloads/"
@@ -64,7 +79,7 @@ class Preprocessor(object):
         if not os.path.isfile(self.dataset + '.tar.gz'):
             self.download(self.dataset + '.tar.gz')
         if not os.path.isfile(self.bson_file + '.bson'):
-            self.extract(self.bson_file + '.bson')
+            self.extract()
 
     def download(self, target):
         stream = urllib2.urlopen(self.DOWNLOADS_URL + self.dataset + '.tar.gz')
@@ -72,7 +87,7 @@ class Preprocessor(object):
         file_size = int(stream.info().getheaders('Content-Length')[0])
         downloaded_size = 0
         block_size = 8192
-        message = 'Downloading "' + self.dataset + '" dataset'
+        message = 'Downloading "{}" dataset'.format(self.dataset)
         progress = Progress(message, file_size)
 
         while True:
@@ -84,18 +99,19 @@ class Preprocessor(object):
             file.write(buffer)
             progress.show_progress(downloaded_size)
 
-        print(message + ' [finished]')
+        progress.finish()
         file.close()
 
-    def extract(self, file):
-        message = 'Untarring "' + self.dataset + '" dataset'
-        tar = tarfile.open(fileobj=ProgressFile(self.dataset + '.tar.gz', message=message))
+    def extract(self):
+        message = 'Untarring "{}" dataset'.format(self.dataset)
+        file = ProgressFile(self.dataset + '.tar.gz', message=message)
+        tar = tarfile.open(fileobj=file)
         if self.process_id != None:
             tar.extractall(self.process_id)
         else:
             tar.extractall()
         tar.close()
-        print(message + ' [finished]')
+        file.close()
 
     def convert_bson(self):
         raise NotImplementedError("Cannot call convert_bson on the base class: a subclass must implement this method instead")
@@ -119,20 +135,20 @@ class Commit_Comments_Preprocessor(Preprocessor):
         return True
 
     def merge_shelves(self):
-        files = [f for f in os.listdir('.') if os.path.isfile(f)]
-        count = 0
-        for f in files:
-            if f.startswith('languages-'):
-                count += 1
+        files = sorted(glob('languages-*.shelf'))
+        count = len(files)
+        message = 'Merging partial shelves'
+        progress = Progress(message, count)
 
         merged = shelve.open('languages.shelf')
-        for index in range(0, count):
-            print('Processing shelf ' + str(index) + '...')
-            shelf = shelve.open('languages-' + str(index) + '.shelf')
+        for index in range(count):
+            progress.show_progress(index)
+            shelf = shelve.open(files[index])
             merged.update(shelf)
             shelf.close()
-            os.remove('languages-' + str(index) + '.shelf')
+            os.remove(files[index])
         merged.close()
+        progress.finish()
 
     def convert_bson(self):
         output = open(self.dataset + '.json', 'wb')
@@ -168,7 +184,6 @@ class Commit_Comments_Preprocessor(Preprocessor):
         bson_file.close()
         os.remove(self.bson_file)
         os.removedirs(self.BSON_FILE_DIR)
-        print(message + ' [finished]')
 
 class Repos_Preprocessor(Preprocessor):
     def __init__(self, process_id, date):
@@ -192,7 +207,6 @@ class Repos_Preprocessor(Preprocessor):
         bson_file.close()
         os.remove(self.bson_file)
         os.removedirs(self.process_id + '/' + self.BSON_FILE_DIR)
-        print(message + ' [finished]')
 
 def get_downloads(prefix):
     dates = []
