@@ -11,6 +11,9 @@
 *.tgz
 *.gz
 
+# MPI and SSH configuration
+hosts
+
 # Models and persistent data
 *.pickle
 *.shelf

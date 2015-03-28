@@ -26,7 +26,7 @@ All code is written in Python. To run the simple sentiment analysis program, exe
     $ python preprocess.py
     $ echo "Yay, sentiment analysis is working perfectly!" | python analyze.py
 
-Running `preprocess.py` only needs to be done once. If all required data is available, `preprocess.py` will do nothing.
+For the default group, running `preprocess.py` only needs to be done once. If all required data is available, `preprocess.py` will do nothing.
 
 The output of the analysis program are lines containing scores between -1 and 1, where -1 indicates that the message is negative, 1 indicates that the
 message is positive and 0 indicates that the message is neutral. The output can also contain grouping data or some visualization of the message.
@@ -42,12 +42,17 @@ The output can be given to the `reducer.py` script, but only if it has been sort
 This can be done using MapReduce as described later on. This generates a histogram of frequencies of the scores which can be passed to `plot.py` to
 make a graph of the frequencies.
 
+Groups
+------
+
+The code by default uses the `id` of a record as its group. This means that only the analyzer and classifier will do something useful. The reducer and plot scripts do not work nicely when the data is grouped this way. In order to group the classified targets with something else, pass another group, such as `score` or `language`, to all relevant scripts.
+
+Note that for the `language` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py repos language` and then again use `python preprocess.py commit_comments`. The first command can also be parallelized using MPI. This can be done on one machine using `mpirun -n <num_processes> python preprocess.py repos language`. The instructions for running this distributed on the DAS are given in the installation instructions there.
+
 Running the code in MapReduce
 -----------------------------
 
-This section assumes that the installation notes below have already been followed and all dependencies and scripts are set up.
-
-Note that the code by default uses the `id` of a record as its group. This means that only the classifier will do something useful. In order to group the classified targets with something else, pass another group, such as `score` or `lang`, to all relevant scripts. Note that for the `lang` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py lang`. The exact command to call the MapReduce scripts is given in this section as well.
+This section assumes that the installation notes below have already been followed and all dependencies and scripts are set up. The exact commands to call the MapReduce scripts, for various group parameters, are given in this section.
 
 First of all, ensure that the data sets are on the HDFS:
 
@@ -68,6 +73,8 @@ This ensures that MapReduce knows which parts of the outputs are keys and which 
 
 Installation notes for the DAS-3
 ================================
+
+This section describes how to set up all dependencies for running the code on the Distributed ASCI Supercomputer 3 at LIACS. Along others, this gives instructions for Python 2.7 that can be run in virtualenv, Hadoop configuration, MPI, and libraries we depend on.
 
 Python 2.7.9
 ------------
@@ -142,17 +149,11 @@ We use the following dependencies in this project:
     (python)$ pip install matplotlib
     (python)$ pip install BeautifulSoup
     (python)$ pip install mpi4py
-    (python)$ wget https://pypi.python.org/packages/source/h/h5py/h5py-2.4.0.tar.gz
-    (python)$ tar xzf h5py-2.4.0.tar.gz && cd h5py-2.4.0
-    (python)$ CC=mpicc python setup.py configure --mpi --hdf5=/scratch/scratch/{username}/opt/hdf5
-    (python)$ CC=mpicc python setup.py build && python setup.py install
 
 This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
 http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
 
-Note that installing `numpy` from source might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`. This does not work in relation with `h5py`, where one should just use `Ctrl-C` to end the install command when it is processing dependencies.
-
-Additionally, after using for example `import h5py` in a virtualenv `python` terminal, one might get a warning related to a directory `~/.python-eggs` having wrong permissions. This should then be fixed with `chmod g-wx,o-wx ~/.python-eggs`.
+Note that installing `numpy` from source might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`.
 
 HDFS
 ----
@@ -194,6 +195,36 @@ The rest of the command is interpreted as extra arguments to `hadoop`, such as a
     $ pyhadoop input.txt result mapper.py reducer.py "data/data 123" "data/data 42" -archives "$HDFS_URL/data.tgz#data"
 
 If you have hardcoded paths, sometimes you can circumvent these directory problems by using e.g. `-files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\"`
+
+MPI
+---
+
+To get the `preprocess.py` script running on distributed nodes, MPI must be able to connect to other nodes via SSH. Although SSH access is possible, one must ensure that there are no interactive authentication prompts when MPI tries to open an SSH connection. This is complicated further by the fact that MPI might open SSH connections on other nodes as well.
+
+Let us first start with setting up an SSH key. Run `ssh-keygen -t rsa`. For the first question, keep the default file of `~/.ssh/id_rsa`. For the next two questions, enter and confirm a strong passphrase. Not entering one would make it easier to share the key, but is extremely unsafe and should not be done. After this, `cd $HOME/.ssh` and make the key authorized: `cp id_rsa.pub authorized_keys`. Ensure that these two files are world-readable for SSH and that `id_rsa` is only read/writable by the user with `ls -la`.
+
+Once again, add the following to `~/.bashrc` to make running the SSH authentication and MPI easier:
+
+    alias ssh-activate='eval $(ssh-agent);ssh-add ~/.ssh/id_rsa'
+    pympi () {
+            procs=$1;shift;
+            if [[ "x$procs" = "x" ]]; then
+                    echo "Usage: pympi <procs> <program> <progargs> [...]"
+                    echo "Program is a file in this directory."
+                    echo "For files on the scratch, use \\\$SCRATCH/path/to/file."
+                    echo "Specify program arguments between quotes."
+                    echo "Rest of the parameters are used for the mpi command."
+                    echo "Example: pympi 8 test.py \"\" --hostfile hosts"
+                    return
+            fi
+            prog=$1;shift;
+            args=$1;shift;
+            mpirun -np $1 $@ bash -c "source ~/.bashrc;source activate;python $prog $args"
+    }
+
+Now `source ~/.bashrc` and then run `ssh-activate` in order to set up an SSH agent with your key by entering your passphrase. We can already use the `pympi` function to run a program locally without problem, however we are not yet done setting up which hosts we can connect to. Use `./ssh-setup.sh /scratch/spark/conf/slaves` to set up a hosts file as well as check if all connections are OK. Follow the instructions there and rerun it in case something goes wrong. Note that `ssh-activate` must be run every session before using `pympi`, while setup only needs to be done once.
+
+Once all is set up, run the preprocess script distributed as follows: `pympi 8 preprocess.py "repos language" --hostfile hosts`. Note that if your checkout is in `/scratch/scratch`, then instead use the filename `\$SCRATCH/SDDM/preprocess.py`, including the backslash.
 
 Additional notes for installing Qt
 ----------------------------------
