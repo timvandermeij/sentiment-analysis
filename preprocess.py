@@ -250,7 +250,6 @@ def main(argv):
                     # We run another cycle through all the other processes to 
                     # let them know they are done.
                     tag = 0
-                    done = 0
                     num_jobs = len(dates)
                     while tag < num_jobs + num_processes - 1:
                         # Wait for processes to be ready. We poll a receive of 

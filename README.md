@@ -106,7 +106,6 @@ Shared libraries
 Note that this is optional. The steps are roughly `wget http://{url}/{file}`, `tar xz {file}`, `cd {dir}/` `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
 
 * OpenMPI: http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
-* HDF5: http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.14.tar.gz Use `./configure --enable-parallel --enable-shared`
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
   with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
 
