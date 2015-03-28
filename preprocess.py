@@ -210,6 +210,7 @@ def main(argv):
     task = argv[0] if len(argv) > 0 else "commit_comments"
     group = argv[1] if len(argv) > 1 else "id"
 
+    # Buffers of MPI
     date = ""
     ready = array('c', '\0')
 
@@ -218,10 +219,10 @@ def main(argv):
             comm = MPI.COMM_WORLD
             num_processes = comm.size
 
-            # Fetch the repo dumps from the GHTorrent website and
-            # process them in parallel if possible.
             process_id = comm.rank
             if process_id == 0:
+                # Fetch the repo dumps from the GHTorrent website and
+                # process them in parallel if possible.
                 dates = get_downloads('repos-dump')
 
                 if num_processes == 1:
@@ -263,7 +264,8 @@ def main(argv):
 
                             tag = tag + 1
             else:
-                # Keep on running until the master lets us know we quit.
+                # Process repo dumps as jobs that we receive from the master.
+                # Keep on running until the master lets us know we are done.
                 while True:
                     # Let the master know that this process is ready
                     comm.Isend(array('c', '\1'), dest=0, tag=process_id)
