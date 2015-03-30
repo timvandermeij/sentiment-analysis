@@ -250,8 +250,8 @@ class Process(object):
         # Fetch the repo dumps from the GHTorrent website and
         # perform sequentially
         dates = self.get_downloads('repos-dump')
-        for tag in range(len(dates)):
-            preprocessor = Repos_Preprocessor(tag, dates[tag], self.path)
+        for tag in xrange(len(dates)):
+            preprocessor = Repos_Preprocessor(tag, dates[tag]['date'], self.path)
             preprocessor.preprocess()
 
     def run_master(self):
@@ -259,31 +259,35 @@ class Process(object):
 
         # Fetch the repo dumps from the GHTorrent website and
         # process them in parallel on the other processes.
+        # Start with the largest data sets so that we have better balancing
         dates = self.get_downloads('repos-dump')
+        dates = sorted(dates, key=lambda v: v['size'], reverse=True)
 
         print('MASTER: Waiting to distribute {} jobs'.format(len(dates)))
         # Automatically balance the jobs across the processes by sending jobs 
         # to processes that tell us they are free.
-        # We run another cycle through all the other processes to let them know 
-        # they are done.
-        tag = 0
-        num_jobs = len(dates)
-        while tag < num_jobs + self.num_processes - 1:
+        for tag in xrange(len(dates))):
             ready = self.wait_ready()
             if ready == '\1':
                 pid = status.Get_source()
 
-                if tag < num_jobs:
-                    # A process is ready to receive, so send a job
-                    print('MASTER: Process {} receives job {}'.format(pid, tag))
-                    comm.send(dates[tag], dest=pid, tag=tag)
-                else:
-                    # We are done with sending jobs, so tell the process that 
-                    # it is done
-                    print('MASTER: Process {} is done'.format(pid))
-                    comm.send("", dest=pid, tag=tag)
-
+                # A process is ready to receive, so send a job
+                print('MASTER: Process {} receives job {}'.format(pid, tag))
+                comm.send(dates[tag]['date'], dest=pid, tag=tag)
                 tag = tag + 1
+
+        self.finish_master()
+
+    def finish_master(self):
+        # We run another cycle through all the other processes to let them know 
+        # they are done.
+        for i in xrange(self.num_processes - 1):
+            ready = self.wait_ready()
+            if ready == '\1':
+                # We are done sending jobs, so tell the process that it is done
+                pid = status.Get_source()
+                print('MASTER: Process {} is done'.format(pid))
+                comm.send("", dest=pid, tag=tag)
 
     def run_process(self):
         print('PROCESS {} on node {}'.format(self.process_id, socket.gethostname()))
@@ -329,7 +333,8 @@ class Process(object):
             href = link.get('href')
             if href.startswith(prefix):
                 date = href[len(prefix)+1:-7]
-                dates.append(date)
+                attrs = re.split('\s\s+', link.nextSibling)
+                dates.append({'date': date, 'size': int(attrs[2])})
 
         return dates
 
