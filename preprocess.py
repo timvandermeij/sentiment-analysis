@@ -2,6 +2,7 @@ import sys
 import urllib2
 from BeautifulSoup import BeautifulSoup
 import os.path
+import shutil
 import tarfile
 import bson
 import json
@@ -11,6 +12,7 @@ import shelve
 from mpi4py import MPI
 from array import array
 import time
+import socket
 
 class Progress(object):
     def __init__(self, message, total_size):
@@ -65,29 +67,36 @@ class Preprocessor(object):
     DOWNLOADS_URL = "http://ghtorrent.org/downloads/"
     BSON_FILE_DIR = "dump/github/"
 
-    def __init__(self, process_id):
+    def __init__(self):
         self.dataset = ''
         self.bson_file = ''
+        self.path = ''
         self.keep_fields = []
-        self.process_id = str(process_id) if process_id != None else None
 
     def preprocess(self):
         self.get_bson()
         self.convert_bson()
 
     def get_bson(self):
-        if not os.path.isfile(self.dataset + '.tar.gz'):
-            self.download(self.dataset + '.tar.gz')
+        if not os.path.isfile(self.path + self.dataset + '.tar.gz'):
+            self.download(self.path + self.dataset + '.tar.gz')
         if not os.path.isfile(self.bson_file + '.bson'):
             self.extract()
 
     def download(self, target):
-        stream = urllib2.urlopen(self.DOWNLOADS_URL + self.dataset + '.tar.gz')
+        message = 'Downloading "{}" dataset'.format(self.dataset)
+        self.download_file(self.DOWNLOADS_URL + self.dataset + '.tar.gz', target, message=message)
+
+    def download_file(self, url, target, message=None):
+        stream = urllib2.urlopen(url)
         file = open(target, 'wb')
         file_size = int(stream.info().getheaders('Content-Length')[0])
         downloaded_size = 0
         block_size = 8192
-        message = 'Downloading "{}" dataset'.format(self.dataset)
+
+        if message is None:
+            message = 'Downloading "{}"'.format(url)
+
         progress = Progress(message, file_size)
 
         while True:
@@ -104,10 +113,10 @@ class Preprocessor(object):
 
     def extract(self):
         message = 'Untarring "{}" dataset'.format(self.dataset)
-        file = ProgressFile(self.dataset + '.tar.gz', message=message)
+        file = ProgressFile(self.path + self.dataset + '.tar.gz', message=message)
         tar = tarfile.open(fileobj=file)
-        if self.process_id != None:
-            tar.extractall(self.process_id)
+        if self.path != "":
+            tar.extractall(self.path)
         else:
             tar.extractall()
         tar.close()
@@ -118,7 +127,7 @@ class Preprocessor(object):
 
 class Commit_Comments_Preprocessor(Preprocessor):
     def __init__(self, group):
-        super(Commit_Comments_Preprocessor, self).__init__(None)
+        super(Commit_Comments_Preprocessor, self).__init__()
         self.dataset = 'commit_comments-dump.2015-01-29'
         self.bson_file = self.BSON_FILE_DIR + 'commit_comments.bson'
         self.group = group
@@ -186,17 +195,26 @@ class Commit_Comments_Preprocessor(Preprocessor):
         os.removedirs(self.BSON_FILE_DIR)
 
 class Repos_Preprocessor(Preprocessor):
-    def __init__(self, process_id, date):
-        super(Repos_Preprocessor, self).__init__(process_id)
+    def __init__(self, process_id, date, path=""):
+        super(Repos_Preprocessor, self).__init__()
+        if path != "" and path[-1] != "/":
+            path = path + "/"
+
+        self.path = path + str(process_id) + '/'
+        if not os.path.exists(self.path):
+            os.makedirs(self.path, 0700)
+
         self.dataset = 'repos-dump.' + date
-        self.bson_file = self.process_id + '/' + self.BSON_FILE_DIR + 'repos.bson'
+        self.bson_file = self.path + self.BSON_FILE_DIR + 'repos.bson'
+        self.process_id = str(process_id)
 
     def convert_bson(self):
         message = 'Converting BSON and removing unused fields'
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
-        
+        shelf_name = self.path + 'languages-' + self.process_id + '.shelf'
+        languages = shelve.open(shelf_name, writeback=True)
+
         # Read every BSON object as an iterator to save memory.
-        languages = shelve.open('languages-' + self.process_id + '.shelf', writeback=True)
         for raw_json in bson.decode_file_iter(bson_file):
             repository = raw_json['full_name'].encode('utf-8')
             language = raw_json['language'].encode('utf-8') if raw_json['language'] is not None else ''
@@ -206,7 +224,10 @@ class Repos_Preprocessor(Preprocessor):
         languages.close()
         bson_file.close()
         os.remove(self.bson_file)
-        os.removedirs(self.process_id + '/' + self.BSON_FILE_DIR)
+        os.removedirs(self.path + self.BSON_FILE_DIR)
+        if self.path != "":
+            print('#{}. Moving shelf "{}" to shared directory...'.format(MPI.COMM_WORLD.rank, shelf_name))
+            shutil.move(shelf_name, '.')
 
 def get_downloads(prefix):
     dates = []
@@ -223,6 +244,7 @@ def get_downloads(prefix):
 def main(argv):
     task = argv[0] if len(argv) > 0 else "commit_comments"
     group = argv[1] if len(argv) > 1 else "id"
+    path = argv[2] if len(argv) > 2 else ""
 
     # Buffers of MPI
     date = ""
@@ -235,9 +257,12 @@ def main(argv):
 
             process_id = comm.rank
             if process_id == 0:
+                print('MASTER on node {}'.format(socket.gethostname()))
+
                 # Fetch the repo dumps from the GHTorrent website and
                 # process them in parallel if possible.
                 dates = get_downloads('repos-dump')
+                print('MASTER: Waiting to distribute {} jobs'.format(len(dates)))
 
                 if num_processes == 1:
                     # Perform sequentially
@@ -277,11 +302,14 @@ def main(argv):
 
                             tag = tag + 1
             else:
+                print('PROCESS {} on node {}'.format(process_id, socket.gethostname()))
+
                 # Process repo dumps as jobs that we receive from the master.
                 # Keep on running until the master lets us know we are done.
                 while True:
                     # Let the master know that this process is ready
-                    comm.Isend(array('c', '\1'), dest=0, tag=process_id)
+                    comm.Send(array('c', '\1'), dest=0, tag=process_id)
+                    print('PROCESS {}: Sent ready message'.format(process_id))
 
                     # Execute only the preprocessor for this particular job
                     # if it received the signal to run.
@@ -293,7 +321,7 @@ def main(argv):
                         break
 
                     print('PROCESS {}: Received job {} with date {} for preprocessing'.format(process_id, tag, date))
-                    preprocessor = Repos_Preprocessor(tag, date)
+                    preprocessor = Repos_Preprocessor(tag, date, path)
                     preprocessor.preprocess()
     elif task == "commit_comments":
         commit_comments = Commit_Comments_Preprocessor(group)
