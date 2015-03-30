@@ -161,7 +161,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
 
     def convert_bson(self):
         output = open(self.dataset + '.json', 'wb')
-        message = 'Converting BSON and removing unused fields'
+        message = 'Converting BSON "{}" and removing unused fields'.format(self.dataset)
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         
         if os.path.isfile('languages-1.shelf'):
@@ -209,7 +209,7 @@ class Repos_Preprocessor(Preprocessor):
         self.process_id = str(process_id)
 
     def convert_bson(self):
-        message = 'Converting BSON and removing unused fields'
+        message = 'Converting BSON "{}" to language shelf #{}'.format(self.dataset, self.process_id)
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         shelf_name = self.path + 'languages-' + self.process_id + '.shelf'
         languages = shelve.open(shelf_name, writeback=True)
@@ -218,8 +218,7 @@ class Repos_Preprocessor(Preprocessor):
         for raw_json in bson.decode_file_iter(bson_file):
             repository = raw_json['full_name'].encode('utf-8')
             language = raw_json['language'].encode('utf-8') if raw_json['language'] is not None else ''
-            if repository not in languages:
-                languages[repository] = language
+            languages[repository] = language
 
         languages.close()
         bson_file.close()
