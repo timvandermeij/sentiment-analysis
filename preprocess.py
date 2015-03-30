@@ -266,14 +266,14 @@ class Process(object):
         print('MASTER: Waiting to distribute {} jobs'.format(len(dates)))
         # Automatically balance the jobs across the processes by sending jobs 
         # to processes that tell us they are free.
-        for tag in xrange(len(dates))):
-            ready = self.wait_ready()
+        for tag in xrange(len(dates)):
+            (ready, status) = self.wait_ready()
             if ready == '\1':
                 pid = status.Get_source()
 
                 # A process is ready to receive, so send a job
                 print('MASTER: Process {} receives job {}'.format(pid, tag))
-                comm.send(dates[tag]['date'], dest=pid, tag=tag)
+                self.comm.send(dates[tag]['date'], dest=pid, tag=tag)
                 tag = tag + 1
 
         self.finish_master()
@@ -282,12 +282,12 @@ class Process(object):
         # We run another cycle through all the other processes to let them know 
         # they are done.
         for i in xrange(self.num_processes - 1):
-            ready = self.wait_ready()
+            (ready, status) = self.wait_ready()
             if ready == '\1':
                 # We are done sending jobs, so tell the process that it is done
                 pid = status.Get_source()
-                print('MASTER: Process {} is done'.format(pid))
-                comm.send("", dest=pid, tag=tag)
+                print('MASTER: Process {} is done ({} of {})'.format(pid, i+1, self.num_processes))
+                self.comm.send("", dest=pid, tag=tag)
 
     def run_process(self):
         print('PROCESS {} on node {}'.format(self.process_id, socket.gethostname()))
@@ -296,19 +296,19 @@ class Process(object):
         # Keep on running until the master lets us know we are done.
         while True:
             # Let the master know that this process is ready
-            comm.Send(array('c', '\1'), dest=0, tag=self.process_id)
+            self.comm.Send(array('c', '\1'), dest=0, tag=self.process_id)
             print('PROCESS {}: Sent ready message'.format(self.process_id))
 
             # Execute only the preprocessor for this particular job
             # if it received the signal to run.
             status = MPI.Status()
-            date = comm.recv(source=0, tag=MPI.ANY_TAG, status=status)
+            date = self.comm.recv(source=0, tag=MPI.ANY_TAG, status=status)
             tag = status.Get_tag()
             if date == "":
                 print('PROCESS {}: Done'.format(self.process_id))
                 break
 
-            print('PROCESS {}: Received job {} with date {} for preprocessing'.format(process_id, tag, date))
+            print('PROCESS {}: Received job {} with date {} for preprocessing'.format(self.process_id, tag, date))
             preprocessor = Repos_Preprocessor(tag, date, self.path)
             preprocessor.preprocess()
 
@@ -317,13 +317,13 @@ class Process(object):
         # any process. In order to reduce CPU usage of the idle master, we use 
         # our own sleep loop.
         status = MPI.Status()
-        req = comm.Irecv(self.ready, source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG)
+        req = self.comm.Irecv(self.ready, source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG)
         while not req.Test(status=status):
             time.sleep(1)
 
         # Finish the request
         req.Wait()
-        return self.ready.tostring()
+        return self.ready.tostring(), status
 
     def get_downloads(self, prefix):
         dates = []
