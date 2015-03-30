@@ -1,4 +1,6 @@
 #!/bin/bash
+# Exit on any errors
+set -e
 
 if [[ "x$1" = "x" ]]; then
 	if [ ! -f hosts ]; then
@@ -8,13 +10,16 @@ if [[ "x$1" = "x" ]]; then
 		echo "such as hostname aliases and other unrelated hosts."
 		return
 	fi
+
+	echo "Using existing hosts file."
+	echo "Make sure that the local host is the first node in this file!"
 else
 	cp "$1" hosts
-fi
 
-# Make root node the first node
-root=`hostname -s`
-sed -i "1s;^;$root\n;" hosts
+	# Make root node the first node
+	root=`hostname -s`
+	sed -i "1s;^;$root\n;" hosts
+fi
 
 echo "Updating ~/.ssh/config for agent forwarding..."
 if [ -f ~/.ssh/config ]; then

@@ -210,7 +210,6 @@ Once again, add the following to `~/.bashrc` to make running the SSH authenticat
             if [[ "x$procs" = "x" ]]; then
                     echo "Usage: pympi <procs> <program> <progargs> [...]"
                     echo "Program is a file in this directory."
-                    echo "For files on the scratch, use \\\$SCRATCH/path/to/file."
                     echo "Specify program arguments between quotes."
                     echo "Rest of the parameters are used for the mpi command."
                     echo "Example: pympi 8 test.py \"\" --hostfile hosts"
@@ -218,12 +217,15 @@ Once again, add the following to `~/.bashrc` to make running the SSH authenticat
             fi
             prog=$1;shift;
             args=$1;shift;
-            mpirun -np $procs $@ bash -c "source ~/.bashrc;source activate;python $prog $args"
+            # Automatically replace /scratch/scratch/{username} with $SCRATCH
+            # in working directory so that it works on other nodes
+            workdir=${PWD/$SCRATCH/\$SCRATCH};
+            mpirun -np $procs $@ bash -c "source ~/.bashrc;source activate;cd $workdir; python $prog $args"
     }
 
 Now `source ~/.bashrc` and then run `ssh-activate` in order to set up an SSH agent with your key by entering your passphrase. We can already use the `pympi` function to run a program locally without problem, however we are not yet done setting up which hosts we can connect to. Use `./ssh-setup.sh /scratch/spark/conf/slaves` to set up a hosts file as well as check if all connections are OK. Follow the instructions there and rerun it in case something goes wrong. Note that `ssh-activate` must be run every session before using `pympi`, while setup only needs to be done once.
 
-Once all is set up, run the preprocess script distributed as follows: `pympi 8 preprocess.py "repos language" --hostfile hosts`. Note that if your checkout is in `/scratch/scratch`, then instead use the filename `\$SCRATCH/SDDM/preprocess.py`, including the backslash.
+Once all is set up, run the preprocess script distributed as follows: `pympi 8 preprocess.py "repos language" --hostfile hosts`.
 
 Additional notes for installing Qt
 ----------------------------------
