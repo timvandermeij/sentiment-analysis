@@ -12,7 +12,7 @@ from analyze import Analyzer # TODO: Only used for output display, move elsewher
 from utils import Utilities
 
 class Classifier(object):
-    def __init__(self, group, n_estimators, model_file):
+    def __init__(self, group, n_estimators, model_file=""):
         self.dataset_name = "commit_comments-dump.2015-01-29"
         self.group = group
         self.model_file = model_file
@@ -24,21 +24,24 @@ class Classifier(object):
         trained = False
         if self.model_file != "" and os.path.isfile(self.model_file):
             with open(self.model_file, 'rb') as f:
-                model = pickle.load(f)
+                objects = pickle.load(f)
+                models = objects[0:-1]
+                self.train_ids = objects[-1][1]
                 trained = True
         else:
-            model = RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=-1)
+            models = [
+                ('tfidf', TfidfVectorizer(input='content')),
+                ('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=-1))
+            ]
 
-        self.regressor = Pipeline([
-            ('tfidf', TfidfVectorizer(input='content')),
-            ('clf', model)
-        ])
+        self.regressor = Pipeline(models)
 
         if not trained:
             self.train()
             if self.model_file != "":
+                models.append(('train_ids', self.train_ids))
                 with open(self.model_file, 'wb') as f:
-                    pickle.dump(model, f)
+                    pickle.dump(models, f)
 
     def train(self):
         # Collect the training data
