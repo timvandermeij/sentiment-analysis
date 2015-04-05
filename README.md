@@ -47,7 +47,7 @@ Groups
 
 The code by default uses the `id` of a record as its group. This means that only the analyzer and classifier will do something useful. The reducer and plot scripts do not work nicely when the data is grouped this way. In order to group the classified targets with something else, pass another group, such as `score` or `language`, to all relevant scripts.
 
-Note that for the `language` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py repos language` and then again use `python preprocess.py commit_comments`. The first command can also be parallelized using MPI. This can be done on one machine using `mpirun -n <num_processes> python preprocess.py repos language`. The instructions for running this distributed on the DAS are given in the installation instructions there, where the command is `pympi <num_processes> python preprocess.py "repos language" --hostfile hosts --map-by node`.
+Note that for the `language` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py repos language` and then again use `python preprocess.py commit_comments`. The first command can also be parallelized using MPI. This can be done on one machine using `mpirun -n <num_processes> python preprocess.py repos language`. The instructions for running this distributed on the DAS are given in the installation instructions there, where the command is `pympi <num_processes> preprocess.py "repos language" --hostfile hosts --map-by node`.
 
 Running the code in MapReduce
 -----------------------------
