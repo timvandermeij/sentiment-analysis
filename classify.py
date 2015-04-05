@@ -8,17 +8,16 @@ import linecache
 import json
 import os
 import pickle
-from analyze import Analyzer # TODO: Only used for output display, move elsewhere
 from utils import Utilities
 
 class Classifier(object):
     def __init__(self, group, n_estimators, model_file=""):
         self.dataset_name = "commit_comments-dump.2015-01-29"
         self.group = group
+        self.display = (self.group == "id")
         self.model_file = model_file
         self.n_estimators = n_estimators
         self.train_ids = set()
-        self.analyzer = Analyzer(group)
 
     def create_model(self):
         trained = False
@@ -80,20 +79,21 @@ class Classifier(object):
         self.test_group = []
 
         self.test_data = itertools.imap(self.split, itertools.ifilter(self.filter, Utilities.read_json(sys.stdin, 'id', self.group)))
-        if self.analyzer.display:
+        if self.display:
             self.test_data = list(self.test_data)
 
         return self.regressor.predict(self.test_data)
 
     def output(self, predictions):
         for i in xrange(len(predictions)):
+            group = self.test_group[i] if self.group != "score" else ""
             prediction = predictions[i]
             message = ""
-            group = self.test_group[i] if self.group != "score" else ""
-            if self.analyzer.display:
-                message = Utilities.get_colored_text(prediction, self.test_data[i])
-            
-            self.analyzer.output(group, message, prediction, "")
+            if self.display:
+                message = Utilities.get_colored_text(prediction, self.test_data[i]).replace('\n', ' ')
+    
+            g = "{}\t".format(group) if group != "" else ""
+            print("{}{:.2f}{}".format(g, prediction, message))
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
