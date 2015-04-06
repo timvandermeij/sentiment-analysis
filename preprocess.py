@@ -290,7 +290,7 @@ class Process(object):
             # We are done sending jobs, so tell the process that it is done
             pid = status.Get_source()
             print('MASTER: Process {} is done ({} of {})'.format(pid, i+1, self.num_processes))
-            self.comm.send("", dest=pid, tag=tag)
+            self.comm.send("", dest=pid, tag=i)
 
     def run_process(self):
         print('PROCESS {} on node {}'.format(self.process_id, socket.gethostname()))
