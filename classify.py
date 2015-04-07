@@ -30,7 +30,7 @@ class Classifier(object):
         else:
             models = [
                 ('tfidf', TfidfVectorizer(input='content')),
-                ('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=-1))
+                ('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=2, min_samples_split=5))
             ]
 
         self.regressor = Pipeline(models)
@@ -97,7 +97,7 @@ class Classifier(object):
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
-    n_estimators = int(argv[1]) if len(argv) > 1 else 1000
+    n_estimators = int(argv[1]) if len(argv) > 1 else 100
     model_file = argv[2] if len(argv) > 2 else ""
     
     classifier = Classifier(group, n_estimators, model_file)
