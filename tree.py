@@ -12,6 +12,5 @@ def main(argv):
         tree.export_graphviz(estimator, out_file=model_file + '.dot')
         check_call(['dot', '-Tsvg', model_file + '.dot', '-o', model_file + '.svg'])
 
-
 if __name__ == "__main__":
     main(sys.argv[1:])
