@@ -100,7 +100,7 @@ class Classifier(object):
             prediction = predictions[i]
             message = ""
             if self.display:
-                message = Utilities.get_colored_text(prediction, self.test_data[i]).replace('\n', ' ')
+                message = "\t" + Utilities.get_colored_text(prediction, self.test_data[i]).replace('\n', ' ')
     
             g = "{}\t".format(group) if group != "" else ""
             print("{}{:.2f}{}".format(g, prediction, message))
