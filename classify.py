@@ -1,6 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
+from sklearn import cross_validation
 import numpy as np
 import sys
 import itertools
@@ -19,7 +20,7 @@ class Classifier(object):
         self.n_estimators = n_estimators
         self.train_ids = set()
 
-    def create_model(self):
+    def create_model(self, train=True):
         trained = False
         if self.model_file != "" and os.path.isfile(self.model_file):
             with open(self.model_file, 'rb') as f:
@@ -30,19 +31,19 @@ class Classifier(object):
         else:
             models = [
                 ('tfidf', TfidfVectorizer(input='content')),
-                ('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=2, min_samples_split=5))
+                ('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=2, min_samples_split=10))
             ]
 
         self.regressor = Pipeline(models)
 
-        if not trained:
+        if not trained and train:
             self.train()
             if self.model_file != "":
                 models.append(('train_ids', self.train_ids))
                 with open(self.model_file, 'wb') as f:
                     pickle.dump(models, f)
 
-    def train(self):
+    def get_train_data(self):
         # Collect the training data
         train_data = []
         train_labels = []
@@ -63,9 +64,18 @@ class Classifier(object):
                 self.train_ids.add(data['id'])
                 train_data.append(message)
                 train_labels.append(score)
+        
+        return (train_data, train_labels)
 
+    def train(self):
+        (train_data, train_labels) = self.get_train_data()
         # Train the regressor
         self.regressor.fit(train_data, train_labels)
+
+    def cross_validate(self, folds=5):
+        (train_data, train_labels) = self.get_train_data()
+        # Crossvalidate the regressor on the labeled data
+        return cross_validation.cross_val_score(self.regressor, train_data, train_labels, cv=folds)
 
     def split(self, data):
         if self.group != "score":
@@ -99,10 +109,18 @@ def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     n_estimators = int(argv[1]) if len(argv) > 1 else 100
     model_file = argv[2] if len(argv) > 2 else ""
-    
+    cv_folds = 0
+    if model_file.isdigit():
+        cv_folds = int(model_file) if model_file != '0' else 5
+        model_file = ""
+
     classifier = Classifier(group, n_estimators, model_file)
-    classifier.create_model()
-    classifier.output(classifier.predict())
+    classifier.create_model(train=not cv_folds)
+    if cv_folds > 0:
+        print('Performing cross-validation on {} folds'.format(cv_folds))
+        print(classifier.cross_validate(cv_folds))
+    else:
+        classifier.output(classifier.predict())
 
 if __name__ == "__main__":
     main(sys.argv[1:])
