@@ -26,11 +26,12 @@ class Classifier(object):
             with open(self.model_file, 'rb') as f:
                 objects = pickle.load(f)
                 models = objects[0:-1]
+                models[0][1].tokenizer = Utilities.split
                 self.train_ids = objects[-1][1]
                 trained = True
         else:
             models = [
-                ('tfidf', TfidfVectorizer(input='content')),
+                ('tfidf', TfidfVectorizer(input='content', tokenizer=Utilities.split)),
                 ('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=2, min_samples_split=10))
             ]
 
@@ -39,8 +40,9 @@ class Classifier(object):
         if not trained and train:
             self.train()
             if self.model_file != "":
-                models.append(('train_ids', self.train_ids))
                 with open(self.model_file, 'wb') as f:
+                    models[0][1].tokenizer = None
+                    models.append(('train_ids', self.train_ids))
                     pickle.dump(models, f)
 
     def get_train_data(self):

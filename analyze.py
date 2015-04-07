@@ -16,18 +16,13 @@ class Analyzer(object):
             for line in file:
                 self.words[line.rstrip()] = -1
 
-    def split(self, message):
-        # Only keep alphanumeric and some punctuation characters
-        # Keep emoticons together but beware of edge cases that should be split
-        return filter(lambda x: x != '' and x is not None, re.split(r'"|(?:(?<=[a-z])[;\.])?\s+|(?:(?<=[a-z])[;\.])?$|(?!.[/(]\S)([^;\.\-\"\'+\w\s][^+\w\s]*(?:[-a-z]\b)?)|(?!.[/(]\S)((?:\b[a-z])?[^+\w\s]*[^;\.\-\"\'+\w\s])', message.lower()))
-
     def analyze(self, message):
         score = 0
         found = 0
         disp = ""
 
         i = 0
-        parts = self.split(message)
+        parts = Utilities.split(message)
         for w in parts:
             if w in self.words:
                 score += self.words[w]
