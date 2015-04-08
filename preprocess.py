@@ -211,8 +211,9 @@ class Repos_Preprocessor(Preprocessor):
     def convert_bson(self):
         message = 'Converting BSON "{}" to language shelf #{}'.format(self.dataset, self.process_id)
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
-        shelf_name = self.path + 'languages-' + self.process_id + '.shelf'
-        languages = shelve.open(shelf_name, writeback=True)
+        shelf_name = 'languages-' + self.process_id + '.shelf'
+        shelf_path = self.path + shelf_name # Local running path
+        languages = shelve.open(shelf_path, writeback=True)
 
         # Read every BSON object as an iterator to save memory.
         for raw_json in bson.decode_file_iter(bson_file):
@@ -226,6 +227,8 @@ class Repos_Preprocessor(Preprocessor):
         os.removedirs(self.path + self.BSON_FILE_DIR)
         if self.path != "":
             print('#{}. Moving shelf "{}" to shared directory...'.format(MPI.COMM_WORLD.rank, shelf_name))
+            if os.path.exists(shelf_name):
+                os.remove(shelf_name)
             shutil.move(shelf_name, '.')
 
 class Process(object):
@@ -276,7 +279,9 @@ class Process(object):
                 self.comm.send(dates[tag]['date'], dest=pid, tag=tag)
                 tag = tag + 1
 
+        print('MASTER: Done distributing jobs, starting finish run')
         self.finish_master()
+        print('MASTER: Done')
 
     def finish_master(self):
         # We run another cycle through all the other processes to let them know 
