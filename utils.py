@@ -1,7 +1,15 @@
 import json
+import re
 
 class Utilities(object):
     COLORS = {1: '\033[1;32m', -1: '\033[1;31m', 0: '\033[1m', 'head': '\033[1;36m', 'end': '\033[0m'}
+    WORD_SPLIT = r'"|(?:(?<=[a-z])[;\.])?\s+|(?:(?<=[a-z])[;\.])?$|(?!.[/(]\S)([^;\.\-\"\'+\w\s][^+\w\s]*(?:[-a-z]\b)?)|(?!.[/(]\S)((?:\b[a-z])?[^+\w\s]*[^;\.\-\"\'+\w\s])'
+
+    @classmethod
+    def split(cls, message):
+        # Only keep alphanumeric and some punctuation characters
+        # Keep emoticons together but beware of edge cases that should be split
+        return filter(lambda x: x != '' and x is not None, re.split(cls.WORD_SPLIT, message.lower()))
 
     @classmethod
     def get_colored_text(cls, c, text=None):

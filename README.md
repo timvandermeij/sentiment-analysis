@@ -47,7 +47,7 @@ Groups
 
 The code by default uses the `id` of a record as its group. This means that only the analyzer and classifier will do something useful. The reducer and plot scripts do not work nicely when the data is grouped this way. In order to group the classified targets with something else, pass another group, such as `score` or `language`, to all relevant scripts.
 
-Note that for the `language` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py repos language` and then again use `python preprocess.py commit_comments`. The first command can also be parallelized using MPI. This can be done on one machine using `mpirun -n <num_processes> python preprocess.py repos language`. The instructions for running this distributed on the DAS are given in the installation instructions there.
+Note that for the `language` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py repos language` and then again use `python preprocess.py commit_comments`. The first command can also be parallelized using MPI. This can be done on one machine using `mpirun -n <num_processes> python preprocess.py repos language`. The instructions for running this distributed on the DAS are given in the installation instructions there, where the command is `pympi <num_processes> preprocess.py "repos language" --hostfile hosts --map-by node`.
 
 Running the code in MapReduce
 -----------------------------
@@ -74,7 +74,7 @@ This ensures that MapReduce knows which parts of the outputs are keys and which 
 Installation notes for the DAS-3
 ================================
 
-This section describes how to set up all dependencies for running the code on the Distributed ASCI Supercomputer 3 at LIACS. Along others, this gives instructions for Python 2.7 that can be run in virtualenv, Hadoop configuration, MPI, and libraries we depend on.
+This section describes how to set up all dependencies for running the Python code on the Distributed ASCI Supercomputer 3 at LIACS. Along others, this gives instructions for Python 2.7 that can be run in virtualenv, Hadoop configuration, MPI, and libraries we depend on.
 
 Python 2.7.9
 ------------
@@ -225,7 +225,7 @@ Once again, add the following to `~/.bashrc` to make running the SSH authenticat
 
 Now `source ~/.bashrc` and then run `ssh-activate` in order to set up an SSH agent with your key by entering your passphrase. We can already use the `pympi` function to run a program locally without problem, however we are not yet done setting up which hosts we can connect to. Use `./ssh-setup.sh /scratch/spark/conf/slaves` to set up a hosts file as well as check if all connections are OK. Follow the instructions there and rerun it in case something goes wrong. Note that `ssh-activate` must be run every session before using `pympi`, while setup only needs to be done once.
 
-Once all is set up, run the preprocess script distributed as follows: `pympi 8 preprocess.py "repos language" --hostfile hosts`.
+Once all is set up, check whether the Python scripts are distributed as follows: `pympi 8 mpi-test.py "" --hostfile hosts --map-by node`.
 
 Additional notes for installing Qt
 ----------------------------------

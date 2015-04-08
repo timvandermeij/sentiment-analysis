@@ -270,14 +270,15 @@ class Process(object):
         # Automatically balance the jobs across the processes by sending jobs 
         # to processes that tell us they are free.
         for tag in xrange(len(dates)):
-            (ready, status) = self.wait_ready()
-            if ready == '\1':
-                pid = status.Get_source()
+            ready = '\0'
+            while ready != '\1':
+                (ready, status) = self.wait_ready()
 
-                # A process is ready to receive, so send a job
-                print('MASTER: Process {} receives job {}'.format(pid, tag))
-                self.comm.send(dates[tag]['date'], dest=pid, tag=tag)
-                tag = tag + 1
+            pid = status.Get_source()
+
+            # A process is ready to receive, so send a job
+            print('MASTER: Process {} receives job {}'.format(pid, tag))
+            self.comm.send(dates[tag]['date'], dest=pid, tag=tag)
 
         print('MASTER: Done distributing jobs, starting finish run')
         self.finish_master()
@@ -287,12 +288,14 @@ class Process(object):
         # We run another cycle through all the other processes to let them know 
         # they are done.
         for i in xrange(self.num_processes - 1):
-            (ready, status) = self.wait_ready()
-            if ready == '\1':
-                # We are done sending jobs, so tell the process that it is done
-                pid = status.Get_source()
-                print('MASTER: Process {} is done ({} of {})'.format(pid, i+1, self.num_processes))
-                self.comm.send("", dest=pid, tag=tag)
+            ready = '\0'
+            while ready != '\1':
+                (ready, status) = self.wait_ready()
+
+            # We are done sending jobs, so tell the process that it is done
+            pid = status.Get_source()
+            print('MASTER: Process {} is done ({} of {})'.format(pid, i+1, self.num_processes))
+            self.comm.send("", dest=pid, tag=i)
 
     def run_process(self):
         print('PROCESS {} on node {}'.format(self.process_id, socket.gethostname()))
