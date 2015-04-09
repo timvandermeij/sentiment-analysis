@@ -107,7 +107,7 @@ Note that this is optional. The steps are roughly `wget http://{url}/{file}`, `t
 
 * OpenMPI: http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
 * OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
-  with correct `PREFIX=...` and no `sudo` nor `ldconfig`.
+  with `PREFIX=/scratch/scratch/{username}/opt/OpenBLAS` and no `sudo` nor `ldconfig`.
 
 Update ~/.bashrc
 ----------------
@@ -115,12 +115,12 @@ Update ~/.bashrc
 The final line for BLAS is optional.
 
     export SCRATCH="/scratch/scratch/{username}"
-    PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:$SCRATCH/python/bin:$SCRATCH/opt/bin"
-    export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
-    export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
+    export PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:$SCRATCH/python/bin:$SCRATCH/opt/bin:$SCRATCH/opt/OpenBLAS/lib"
+    export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib:$SCRATCH/opt/OpenBLAS/lib"
+    export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib:$SCRATCH/opt/OpenBLAS/lib"
     export CPATH="$HOME/.local/include:$SCRATCH/opt/include"
     export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig:$SCRATCH/opt/lib/pkgconfig"
-    export BLAS="$HOME/.local/lib/libopenblas.a"
+    export BLAS="$SCRATCH/opt/OpenBLAS/lib/libopenblas.a"
 
 Then use `source ~/.bashrc` to reload the configuration. Note that you could do this earlier on, which might make some commands shorter and easier to use.
 
