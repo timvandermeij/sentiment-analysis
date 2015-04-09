@@ -1,0 +1,119 @@
+Random forest regressor
+=======================
+
+('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=2, min_samples_split=10))
+
+
+Folds: [ 0.44648579  0.50206852  0.36373527  0.24261977  0.37695656]
+Average: 0.386373183969
+Standard deviation: 0.0874815721035
+
+real	1m44.590s
+user	3m24.823s
+sys	0m0.213s
+
+Extra trees regressor
+=====================
+
+('clf', ExtraTreesRegressor(n_estimators=self.n_estimators, n_jobs=2, min_samples_split=10))
+
+Folds: [ 0.38931445  0.5130184   0.32280729  0.30249554  0.37787163]
+Average: 0.381101462429
+Standard deviation: 0.0735623058349
+
+real	4m2.759s
+user	7m59.503s
+sys	0m0.203s
+
+Bagging regressor with decision tree
+====================================
+
+('clf', BaggingRegressor(n_estimators=self.n_estimators, n_jobs=2))
+
+Folds: [ 0.44487839  0.50427402  0.35715125  0.28438409  0.35552645]
+Average: 0.389242841377
+Standard deviation: 0.0767977957452
+
+real	1m58.964s
+user	3m50.480s
+sys	0m0.353s
+
+Ada boost regressor
+===================
+
+('clf', AdaBoostRegressor(n_estimators=self.n_estimators))
+
+Folds: [ 0.06275001  0.13023212  0.13379678  0.13286389  0.06249093]
+Average: 0.104426744381
+Standard deviation: 0.0341547942624
+
+real	0m6.132s
+user	0m6.073s
+sys	0m0.053s
+
+Bagging regression with Bernoulli
+=================================
+
+('clf', BaggingRegressor(base_estimator=BernoulliNB(), n_estimators=self.n_estimators, n_jobs=2))
+
+Folds: [-0.16932092 -0.57256355 -0.35262491 -0.37231845 -0.50911793]
+Average: -0.395189153503
+Standard deviation: 0.139851838517
+
+real	0m5.831s
+user	0m7.077s
+sys	0m0.830s
+
+Passive aggressive regressor (GOOD!)
+====================================
+
+('clf', PassiveAggressiveRegressor())
+
+Folds: [ 0.34398948  0.52858257  0.39170137  0.38264923  0.26760918]
+Average: 0.382906366791
+Standard deviation: 0.0849787517728
+
+real	0m1.438s
+user	0m1.397s
+sys	0m0.040s
+
+KNeighbors regressor
+====================
+
+('clf', KNeighborsRegressor())
+
+Folds: [ 0.16651371  0.3694751   0.28958434  0.24977011  0.35989544]
+Average: 0.287047742884
+Standard deviation: 0.0748673017369
+
+real	0m1.441s
+user	0m1.373s
+sys	0m0.067s
+
+RANSAC regressor
+================
+
+('clf', RANSACRegressor(min_samples=0.5))
+
+Folds: [ 0.25089448  0.47612202  0.31293358  0.22046177  0.16801035]
+Average: 0.285684439458
+Standard deviation: 0.106132481835
+
+real	0m14.303s
+user	0m14.203s
+sys	0m0.093s
+
+SGD regressor
+=============
+
+learning_rate not interesting to adjust
+
+('clf', SGDRegressor(n_iter=10000, alpha=0.0005))
+
+Folds: [ 0.36817511  0.54155172  0.41556179  0.40476751  0.35189075]
+Average: 0.416389376635
+Standard deviation: 0.0667623433403
+
+real	0m8.039s
+user	0m7.967s
+sys	0m0.067s
