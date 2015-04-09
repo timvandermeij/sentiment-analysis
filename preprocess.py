@@ -229,7 +229,7 @@ class Repos_Preprocessor(Preprocessor):
             print('#{}. Moving shelf "{}" to shared directory...'.format(MPI.COMM_WORLD.rank, shelf_name))
             if os.path.exists(shelf_name):
                 os.remove(shelf_name)
-            shutil.move(shelf_name, '.')
+            shutil.move(shelf_path, '.')
 
 class Process(object):
     def __init__(self, path):
