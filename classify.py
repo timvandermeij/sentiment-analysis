@@ -120,7 +120,10 @@ def main(argv):
     classifier.create_model(train=not cv_folds)
     if cv_folds > 0:
         print('Performing cross-validation on {} folds'.format(cv_folds))
-        print(classifier.cross_validate(cv_folds))
+        results = classifier.cross_validate(cv_folds)
+        print('Folds: {}'.format(results))
+        print('Average: {}'.format(results.mean()))
+        print('Standard deviation: {}'.format(results.std()))
     else:
         classifier.output(classifier.predict())
 
