@@ -74,17 +74,21 @@ This ensures that MapReduce knows which parts of the outputs are keys and which 
 Installation notes for the DAS-3
 ================================
 
-This section describes how to set up all dependencies for running the Python code on the Distributed ASCI Supercomputer 3 at LIACS. Along others, this gives instructions for Python 2.7 that can be run in virtualenv, Hadoop configuration, MPI, and libraries we depend on.
+This section describes how to set up all dependencies for running the Python code on the Distributed ASCI Supercomputer 3 at LIACS. Among others, this gives instructions
+for installing Python 2.7 that can be run in a virtual environment, Hadoop configuration and MPI.
 
-Python 2.7.9
-------------
+Python
+------
 
-Compile `python` from source:
+Compile Python (version 2.7.9) from source:
 
+    $ mkdir /scratch/scratch/{username}
+    $ cd /scratch/scratch/{username}
+    $ mkdir opt
     $ wget https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz
     $ tar xzvf Python-2.7.9.tgz
     $ cd Python-2.7.9
-    $ ./configure --prefix=$HOME/.local
+    $ ./configure --prefix=/scratch/scratch/{username}/opt
     $ make
     $ make install
 
@@ -94,78 +98,101 @@ Virtualenv
 Install `virtualenv` using `pip`:
 
     $ pip install --user virtualenv
-    $ cd /scratch/scratch/{username} (we assume this directory from now on)
-    $ ~/.local/bin/virtualenv -p $HOME/.local/bin/python2.7 python
+    $ cd /scratch/scratch/{username}
+    $ ~/.local/bin/virtualenv -p /scratch/scratch/{username}/opt/bin/python2.7 python
     $ ~/.local/bin/virtualenv --relocatable python
 
 We have now created a virtual environment called `python`. The goal is to distribute this over all the nodes using HDFS.
 
-Shared libraries
-----------------
+OpenMPI
+-------
 
-Note that this is optional. The steps are roughly `wget http://{url}/{file}`, `tar xz {file}`, `cd {dir}/` `./configure --prefix=/scratch/scratch/{username}/opt`, `make` and `make install`.
+Compile OpenMPI from source:
 
-* OpenMPI: http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
-* OpenBLAS: instead do the first part of http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
-  with `PREFIX=/scratch/scratch/{username}/opt/OpenBLAS` and no `sudo` nor `ldconfig`.
+    $ wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
+    $ tar xzvf openmpi-1.8.4.tar.gz
+    $ cd openmpi-1.8.4/
+    $ ./configure --prefix=/scratch/scratch/{username}/opt
+    $ make
+    $ make install
+
+OpenBLAS
+--------
+
+Compile OpenBLAS from source:
+
+    $ cd /scratch/scratch/{username}
+    $ git clone git://github.com/xianyi/OpenBLAS
+    $ cd OpenBLAS && make FC=gfortran
+    $ make PREFIX=/scratch/scratch/{username}/opt install
 
 Update ~/.bashrc
 ----------------
 
-The final line for BLAS is optional.
+Append the following segment to `~/.bashrc`:
 
     export SCRATCH="/scratch/scratch/{username}"
-    export PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:$SCRATCH/python/bin:$SCRATCH/opt/bin:$SCRATCH/opt/OpenBLAS/lib"
-    export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib:$SCRATCH/opt/OpenBLAS/lib"
-    export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib:$SCRATCH/opt/OpenBLAS/lib"
+    export PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:$SCRATCH/python/bin:$SCRATCH/opt/bin:$SCRATCH/opt/lib"
+    export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
+    export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
     export CPATH="$HOME/.local/include:$SCRATCH/opt/include"
     export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig:$SCRATCH/opt/lib/pkgconfig"
-    export BLAS="$SCRATCH/opt/OpenBLAS/lib/libopenblas.a"
+    export BLAS="$SCRATCH/opt/lib/libopenblas.a"
 
 Then use `source ~/.bashrc` to reload the configuration. Note that you could do this earlier on, which might make some commands shorter and easier to use.
 
 Python libraries
 ----------------
 
+Activate the virtual environment:
+
     $ source python/bin/activate
 
-We now have a Python 2.7 virtual environment, but `pip` is still from Python 2.6. In order to fix this, run the following:
+We now have a Python 2.7 virtual environment running, but `pip` is still from Python 2.6. In order to fix this, run the following:
 
     (python)$ wget https://bootstrap.pypa.io/get-pip.py
     (python)$ python get-pip.py -U -I
 
 This installs `pip` for Python 2.7, which is less likely to give troubles with installing or upgrading dependencies.
 
-We use the following dependencies in this project:
+First install the following dependencies:
 
     (python)$ pip install cython
     (python)$ pip install readline
-    (python)$ pip install numpy
-    (python)$ pip install scipy
-    (python)$ pip install pandas
-    (python)$ pip install scikit-learn==0.16b1
-    (python)$ pip install numexpr
-    (python)$ pip install matplotlib
+
+Next we need to compile NumPy from source as we need it to work with OpenBLAS. It is not only better, but SciPy requires it because Lapack/BLAS are not installed on the
+DAS-3. Follow the instructions from step 2 onward from this link: http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693.
+Make sure to use `/scratch/scratch/{username}/opt` for the paths.
+
+If that is done (be sure to test that it is working) we continue installing the remaining dependencies:
+
+    (python)$ pip install --no-deps scipy
+    (python)$ pip install --no-deps pandas
+    (python)$ pip install python-dateutil
+    (python)$ pip install pytz
+    (python)$ pip install --no-deps scikit-learn==0.16b1
+    (python)$ pip install --no-deps numexpr
+    (python)$ pip install --no-deps matplotlib
+    (python)$ pip install pyparsing
     (python)$ pip install BeautifulSoup
     (python)$ pip install mpi4py
-
-This is the simplest way to get all the dependencies, but you might want to use OpenBLAS. Then we need to install `numpy` from source instead, according to the following link:
-http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693
-
-Note that installing `numpy` from source might mess up the latter `pip` installations since they depend on `numpy` and consider `numpy` installed this way to be incompatible, but that can be avoided by passing `--no-deps` to at least `scipy`, `pandas`, `scikit-learn` and `numexpr`.
 
 HDFS
 ----
 
-    $ tar xzvf python.tgz python/
-    $ tar xzvf local.tgz $HOME/.local/*
-    $ tar xzvf libs.tgz /usr/lib64/libg2c.so* /usr/lib/libgfortran.so*
+Now we can put the entire environment on HDFS:
+
+    $ tar czvf python.tgz python/
+    $ tar czvf local.tgz opt/
+    $ tar czvf libs.tgz /usr/lib64/libg2c.so* /usr/lib64/libgfortran.so*
     $ hdfs dfs -put python.tgz
     $ hdfs dfs -put local.tgz
     $ hdfs dfs -put libs.tgz
 
 Update ~/.bashrc again
 ----------------------
+
+Append the following segment to `~/.bashrc`:
 
     export HDFS_URL='hdfs://fs.das3.liacs.nl:8020/user/{username}'
     pyhadoop () {
@@ -223,7 +250,7 @@ Once again, add the following to `~/.bashrc` to make running the SSH authenticat
             mpirun -np $procs $@ bash -c "source ~/.bashrc;source activate;cd $workdir; python $prog $args"
     }
 
-Now `source ~/.bashrc` and then run `ssh-activate` in order to set up an SSH agent with your key by entering your passphrase. We can already use the `pympi` function to run a program locally without problem, however we are not yet done setting up which hosts we can connect to. Use `./ssh-setup.sh /scratch/spark/conf/slaves` to set up a hosts file as well as check if all connections are OK. Follow the instructions there and rerun it in case something goes wrong. Note that `ssh-activate` must be run every session before using `pympi`, while setup only needs to be done once.
+Now `source ~/.bashrc` and then run `ssh-activate` in order to set up an SSH agent with your key by entering your passphrase. We can already use the `pympi` function to run a program locally without problem, however we are not yet done setting up which hosts we can connect to. Use `./ssh-setup.sh /scratch/spark/conf/slaves` (after cloning the code from this repository) to set up a hosts file as well as check if all connections are OK. If the script complains about bad permissions, run `chown 600 $HOME/.ssh/config`. Follow any further instructions from the script and rerun it in case something goes wrong. Note that `ssh-activate` must be run every session before using `pympi`, while setup only needs to be done once.
 
 Once all is set up, check whether the Python scripts are distributed as follows: `pympi 8 mpi-test.py "" --hostfile hosts --map-by node`.
 
