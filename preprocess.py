@@ -294,7 +294,7 @@ class Process(object):
 
             # We are done sending jobs, so tell the process that it is done
             pid = status.Get_source()
-            print('MASTER: Process {} is done ({} of {})'.format(pid, i+1, self.num_processes))
+            print('MASTER: Process {} is done ({} of {})'.format(pid, i+1, self.num_processes - 1))
             self.comm.send("", dest=pid, tag=i)
 
     def run_process(self):
