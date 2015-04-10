@@ -161,7 +161,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
 
     def convert_bson(self):
         output = open(self.dataset + '.json', 'wb')
-        message = 'Converting BSON "{}" and removing unused fields'.format(self.dataset)
+        message = 'Converting BSON "{}" and filtering fields'.format(self.dataset)
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         
         if os.path.isfile('languages-1.shelf'):
