@@ -131,7 +131,11 @@ Update ~/.bashrc
 
 Append the following segment to `~/.bashrc`:
 
-    export SCRATCH="/scratch/scratch/{username}"
+    if [ `hostname` = "fs.das3" ]; then
+        export SCRATCH="/scratch/scratch/{username}"
+    else   
+        export SCRATCH="/scratch/{username}"
+    fi
     export PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:$SCRATCH/python/bin:$SCRATCH/opt/bin:$SCRATCH/opt/lib"
     export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
     export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
