@@ -82,49 +82,50 @@ Python
 
 Compile Python (version 2.7.9) from source:
 
-    $ mkdir /scratch/scratch/{username}
-    $ cd /scratch/scratch/{username}
-    $ mkdir opt
     $ wget https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz
     $ tar xzvf Python-2.7.9.tgz
     $ cd Python-2.7.9
-    $ ./configure --prefix=/scratch/scratch/{username}/opt
+    $ ./configure --prefix=$HOME/.local
     $ make
     $ make install
+    $ rm Python-2.7.9.tgz
 
 Virtualenv
 ----------
 
-Install `virtualenv` using `pip`:
+Install `virtualenv` using `pip` and create a virtual environment called `python` that we can distribute over the nodes using HDFS:
 
     $ pip install --user virtualenv
-    $ cd /scratch/scratch/{username}
-    $ ~/.local/bin/virtualenv -p /scratch/scratch/{username}/opt/bin/python2.7 python
+    $ mkdir /scratch/scratch/{username}
+    $ cd /scratch/scratch
+    $ chmod 700 {username}
+    $ cd {username}
+    $ ~/.local/bin/virtualenv -p ~/.local/bin/python2.7 python
     $ ~/.local/bin/virtualenv --relocatable python
-
-We have now created a virtual environment called `python`. The goal is to distribute this over all the nodes using HDFS.
 
 OpenMPI
 -------
 
 Compile OpenMPI from source:
 
+    $ cd ~
     $ wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
     $ tar xzvf openmpi-1.8.4.tar.gz
     $ cd openmpi-1.8.4/
-    $ ./configure --prefix=/scratch/scratch/{username}/opt
+    $ ./configure --prefix=$HOME/.local
     $ make
     $ make install
+    $ rm openmpi-1.8.4.tar.gz
 
 OpenBLAS
 --------
 
 Compile OpenBLAS from source:
 
-    $ cd /scratch/scratch/{username}
+    $ cd ~
     $ git clone git://github.com/xianyi/OpenBLAS
     $ cd OpenBLAS && make FC=gfortran
-    $ make PREFIX=/scratch/scratch/{username}/opt install
+    $ make PREFIX=$HOME/.local install
 
 Update ~/.bashrc
 ----------------
@@ -144,7 +145,7 @@ Append the following segment to `~/.bashrc`:
     export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig:$SCRATCH/opt/lib/pkgconfig"
     export BLAS="$SCRATCH/opt/lib/libopenblas.a"
 
-Then use `source ~/.bashrc` to reload the configuration. Note that you could do this earlier on, which might make some commands shorter and easier to use.
+Then use `source ~/.bashrc` to reload the configuration.
 
 Python libraries
 ----------------
@@ -155,6 +156,7 @@ Activate the virtual environment:
 
 We now have a Python 2.7 virtual environment running, but `pip` is still from Python 2.6. In order to fix this, run the following:
 
+    (python)$ cd $SCRATCH
     (python)$ wget https://bootstrap.pypa.io/get-pip.py
     (python)$ python get-pip.py -U -I
 
@@ -167,9 +169,9 @@ First install the following dependencies:
 
 Next we need to compile NumPy from source as we need it to work with OpenBLAS. It is not only better, but SciPy requires it because Lapack/BLAS are not installed on the
 DAS-3. Follow the instructions from step 2 onward from this link: http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693.
-Make sure to use `/scratch/scratch/{username}/opt` for the paths.
+Make sure to use `/home/{username}/.local` for the paths.
 
-If that is done (be sure to test that it is working) we continue installing the remaining dependencies:
+If that is done (make sure to test that it is working) we continue installing the remaining dependencies:
 
     (python)$ pip install --no-deps scipy
     (python)$ pip install --no-deps pandas
@@ -188,7 +190,7 @@ HDFS
 Now we can put the entire environment on HDFS:
 
     $ tar czvf python.tgz python/
-    $ tar czvf local.tgz opt/
+    $ tar czvf local.tgz ~/.local/
     $ tar czvf libs.tgz /usr/lib64/libg2c.so* /usr/lib64/libgfortran.so*
     $ hdfs dfs -put python.tgz
     $ hdfs dfs -put local.tgz
@@ -232,7 +234,7 @@ MPI
 
 To get the `preprocess.py` script running on distributed nodes, MPI must be able to connect to other nodes via SSH. Although SSH access is possible, one must ensure that there are no interactive authentication prompts when MPI tries to open an SSH connection. This is complicated further by the fact that MPI might open SSH connections on other nodes as well.
 
-Let us first start with setting up an SSH key. Run `ssh-keygen -t rsa`. For the first question, keep the default file of `~/.ssh/id_rsa`. For the next two questions, enter and confirm a strong passphrase. Not entering one would make it easier to share the key, but is extremely unsafe and should not be done. After this, `cd $HOME/.ssh` and make the key authorized: `cp id_rsa.pub authorized_keys`. Ensure that these two files are world-readable for SSH and that `id_rsa` is only read/writable by the user with `ls -la`.
+Let us first start with setting up an SSH key. Run `ssh-keygen -t rsa`. For the first question, keep the default file of `~/.ssh/id_rsa`. For the next two questions, enter and confirm a strong passphrase. Not entering one would make it easier to share the key, but is extremely unsafe and should not be done. After this, `cd ~/.ssh` and make the key authorized: `cp id_rsa.pub authorized_keys`. Ensure that these two files are world-readable for SSH and that `id_rsa` is only read/writable by the user with `ls -la`.
 
 Once again, add the following to `~/.bashrc` to make running the SSH authentication and MPI easier:
 
@@ -257,7 +259,23 @@ Once again, add the following to `~/.bashrc` to make running the SSH authenticat
 
 Now `source ~/.bashrc` and then run `ssh-activate` in order to set up an SSH agent with your key by entering your passphrase. We can already use the `pympi` function to run a program locally without problem, however we are not yet done setting up which hosts we can connect to. Use `./ssh-setup.sh /scratch/spark/conf/slaves` (after cloning the code from this repository) to set up a hosts file as well as check if all connections are OK. If the script complains about bad permissions, run `chown 600 $HOME/.ssh/config`. Follow any further instructions from the script and rerun it in case something goes wrong. Note that `ssh-activate` must be run every session before using `pympi`, while setup only needs to be done once.
 
-Once all is set up, check whether the Python scripts are distributed as follows: `pympi 8 mpi-test.py "" --hostfile hosts --map-by node`.
+The final stap is to edit `$SCRATCH/python/bin/activate`. Replace:
+
+    VIRTUAL_ENV="/scratch/scratch/{username}/python"
+    export VIRTUAL_ENV
+
+with:
+
+    SCRIPT="${BASH_SOURCE[0]}"
+    pushd `dirname $SCRIPT` > /dev/null
+    SCRIPTPATH=`pwd`
+    VIRTUAL_ENV=`dirname $SCRIPTPATH`
+    popd > /dev/null
+    export VIRTUAL_ENV
+
+This has to be done to make the virtual environment really relocatable, otherwise we would still have Python 2.6 on the nodes.
+
+Once everything is set up, check whether the Python scripts are distributed as follows: `pympi 8 mpi-test.py "" --hostfile hosts --map-by node`.
 
 Additional notes for installing Qt
 ----------------------------------
