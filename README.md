@@ -131,12 +131,12 @@ Update ~/.bashrc
 
 Append the following segment to `~/.bashrc`:
 
-    alias activate="source $SCRATCH/python/bin/activate"
     if [ "$HOSTNAME" = "fs.das3" ]; then
         export SCRATCH="/scratch/scratch/{username}"
     else   
         export SCRATCH="/scratch/{username}"
     fi
+    alias activate="source $SCRATCH/python/bin/activate"
     export PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin:$SCRATCH/python/bin:$SCRATCH/opt/bin:$SCRATCH/opt/lib"
     export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
     export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
