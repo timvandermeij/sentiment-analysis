@@ -131,7 +131,8 @@ Update ~/.bashrc
 
 Append the following segment to `~/.bashrc`:
 
-    if [ `hostname` = "fs.das3" ]; then
+    alias activate="source $SCRATCH/python/bin/activate"
+    if [ "$HOSTNAME" = "fs.das3" ]; then
         export SCRATCH="/scratch/scratch/{username}"
     else   
         export SCRATCH="/scratch/{username}"
@@ -150,7 +151,7 @@ Python libraries
 
 Activate the virtual environment:
 
-    $ source python/bin/activate
+    $ activate
 
 We now have a Python 2.7 virtual environment running, but `pip` is still from Python 2.6. In order to fix this, run the following:
 
