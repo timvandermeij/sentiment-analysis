@@ -1,4 +1,5 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn import cross_validation
@@ -12,15 +13,14 @@ import pickle
 from utils import Utilities
 
 class Classifier(object):
-    def __init__(self, group, n_estimators, model_file=""):
+    def __init__(self, group, model_file=""):
         self.dataset_name = "commit_comments-dump.2015-01-29"
         self.group = group
         self.display = (self.group == "id")
         self.model_file = model_file
-        self.n_estimators = n_estimators
         self.train_ids = set()
 
-    def create_model(self, train=True):
+    def create_model(self, train=True, class_name=DummyRegressor, parameters={}):
         trained = False
         if self.model_file != "" and os.path.isfile(self.model_file):
             with open(self.model_file, 'rb') as f:
@@ -32,7 +32,7 @@ class Classifier(object):
         else:
             models = [
                 ('tfidf', TfidfVectorizer(input='content', tokenizer=Utilities.split)),
-                ('clf', RandomForestRegressor(n_estimators=self.n_estimators, n_jobs=2, min_samples_split=10))
+                ('clf', class_name(**parameters))
             ]
 
         self.regressor = Pipeline(models)
@@ -109,15 +109,20 @@ class Classifier(object):
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
-    n_estimators = int(argv[1]) if len(argv) > 1 else 100
-    model_file = argv[2] if len(argv) > 2 else ""
+    model_file = argv[1] if len(argv) > 1 else ""
     cv_folds = 0
     if model_file.isdigit():
         cv_folds = int(model_file) if model_file != '0' else 5
         model_file = ""
 
-    classifier = Classifier(group, n_estimators, model_file)
-    classifier.create_model(train=not cv_folds)
+    algorithm_class = RandomForestRegressor
+    algorithm_parameters = {
+        'n_estimators': 100,
+        'n_jobs': 2,
+        'min_samples_split': 10
+    }
+    classifier = Classifier(group, model_file)
+    classifier.create_model(train=not cv_folds, class_name=algorithm_class, parameters=algorithm_parameters)
     if cv_folds > 0:
         print('Performing cross-validation on {} folds'.format(cv_folds))
         results = classifier.cross_validate(cv_folds)
