@@ -4,6 +4,7 @@ from sklearn.ensemble import *
 from sklearn.linear_model import *
 from sklearn.naive_bayes import *
 from sklearn.neighbors import *
+from sklearn.svm import *
 import sys
 import os
 from classify import Classifier
@@ -69,6 +70,22 @@ def main(argv):
             'name': 'K neighbors classifier',
             'class_name': KNeighborsClassifier,
             'parameters': {},
+            'enabled': True
+        },
+        {
+            'name': 'Linear SVC',
+            'class_name': LinearSVC,
+            'parameters': {
+                'C': 0.8
+            },
+            'enabled': True
+        },
+        {
+            'name': 'Nu SVC',
+            'class_name': NuSVC,
+            'parameters': {
+                'nu': 0.8
+            },
             'enabled': True
         }
     ]
