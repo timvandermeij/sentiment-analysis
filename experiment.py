@@ -9,18 +9,6 @@ import os
 from classify import Classifier
 from utils import Utilities
 
-class Experiment_Classifier(Classifier):
-    def __init__(self):
-        Classifier.__init__(self, 'id', 100)
-
-    def create_model(self, class_name, parameters):
-        models = [
-            ('tfidf', TfidfVectorizer(input='content', tokenizer=Utilities.split)),
-            ('clf', class_name(**parameters))
-        ]
-        self.regressor = Pipeline(models)
-        self.train()
-
 def main(argv):
     folds = int(argv[0]) if len(argv) > 0 else 5
     algorithms = [
@@ -89,8 +77,8 @@ def main(argv):
         if not algorithm['enabled']:
             continue
 
-        classifier = Experiment_Classifier()
-        classifier.create_model(algorithm['class_name'], algorithm['parameters'])
+        classifier = Classifier('id')
+        classifier.create_model(train=False, class_name=algorithm['class_name'], parameters=algorithm['parameters'])
 
         print(Utilities.get_colored_text(0, '::: {} :::'.format(algorithm['name'])))
         print('Performing cross-validation on {} folds'.format(folds))
