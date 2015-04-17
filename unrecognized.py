@@ -1,24 +1,33 @@
 import sys
-import re
-import json
 import linecache
 from analyze import Analyzer
 from classify import Classifier
 from utils import Utilities
+from sklearn.ensemble import RandomForestRegressor
 
 def main(argv):
+    # Constants for the analyzer and the classifier
     dataset = 'commit_comments-dump.2015-01-29.json'
-    group = "id"
+    group = 'id'
     model_file = 'model.pickle'
+    
+    # Create the analyzer
     analyzer = Analyzer(group)
-    classifier = Classifier(group, 10, model_file)
-    classifier.create_model()
 
-    # Perform the sentiment analysis
+    # Create the classifier
+    algorithm_class = RandomForestRegressor
+    algorithm_parameters = {
+        'n_estimators': 100,
+        'n_jobs': 2,
+        'min_samples_split': 10
+    }
+    classifier = Classifier(group, model_file)
+    classifier.create_model(train=True, class_name=algorithm_class, parameters=algorithm_parameters)
+
+    # Compare analyzer output with classifier output and identify differences
     unrecognized_negative = {}
     unrecognized_positive = {}
     predictions = classifier.predict()
-    print('Done predictions')
     line = 0 # Dataset line
     i = 0 # Prediction ID (+1)
     file = open(dataset, 'rb')
@@ -30,9 +39,8 @@ def main(argv):
             continue
         i = i + 1
 
-        message = data["message"]
+        message = data['message']
         score = analyzer.analyze(message)[0]
-
         if score == 0:
             continue
 
