@@ -59,6 +59,20 @@ def main(argv):
             'enabled': True
         },
         {
+            'name': 'Gaussian naive Bayes classifier',
+            'class_name': GaussianNB,
+            'parameters': {},
+            'enabled': True
+        },
+        {
+            'name': 'Multinomial naive Bayes classifier',
+            'class_name': MultinomialNB,
+            'parameters': {
+                'alpha': 0.8
+            },
+            'enabled': True
+        },
+        {
             'name': 'Bernoulli naive Bayes classifier',
             'class_name': BernoulliNB,
             'parameters': {

@@ -1,4 +1,5 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.base import TransformerMixin
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
@@ -11,6 +12,18 @@ import json
 import os
 import pickle
 from utils import Utilities
+
+# Source: http://zacstewart.com/2014/08/05/pipelines-of-featureunions-of-pipelines.html
+class DenseTransformer(TransformerMixin):
+    def transform(self, X, y=None, **fit_params):
+        return X.todense()
+
+    def fit_transform(self, X, y=None, **fit_params):
+        self.fit(X, y, **fit_params)
+        return self.transform(X)
+
+    def fit(self, X, y=None, **fit_params):
+        return self
 
 class Classifier(object):
     def __init__(self, group, model_file=""):
@@ -32,6 +45,7 @@ class Classifier(object):
         else:
             models = [
                 ('tfidf', TfidfVectorizer(input='content', tokenizer=Utilities.split)),
+                ('to_dense', DenseTransformer()), 
                 ('clf', class_name(**parameters))
             ]
 
