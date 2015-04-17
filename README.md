@@ -63,11 +63,11 @@ First of all, ensure that the data sets are on the HDFS:
 
 Now, one can start a MapReduce job which classifies each record in the data set and then counts the frequency of each score as follows:
 
-    $ pyhadoop commit_comments.json score classify.py reducer.py "score 100" score -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
+    $ pyhadoop commit_comments.json score classify.py reducer.py "score" score -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
 
 For the naive analyzer, use `analyze.py` instead of `classify.py`, and the last `-file` argument can be omitted. To count frequencies of scores within a specific group, use the following:
 
-    $ pyhadoop commit_comments.json score_lang classify.py reducer.py "lang 100" lang -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
+    $ pyhadoop commit_comments.json score_lang classify.py reducer.py "lang" lang -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
 
 This ensures that MapReduce knows which parts of the outputs are keys and which are values.
 
