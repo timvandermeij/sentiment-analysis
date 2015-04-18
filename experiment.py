@@ -114,11 +114,7 @@ def main(argv):
         classifier.create_model(train=False, class_name=algorithm['class_name'], parameters=algorithm['parameters'], dense=algorithm['dense'] if 'dense' in algorithm else False)
 
         print(Utilities.get_colored_text(0, '::: {} :::'.format(algorithm['name'])))
-        print('Performing cross-validation on {} folds'.format(folds))
-        results = classifier.cross_validate(folds)
-        print('Folds: {}'.format(results))
-        print('Average: {}'.format(results.mean()))
-        print('Standard deviation: {}'.format(results.std()))
+        classifier.output_cross_validate(folds)
         print('')
 
 if __name__ == "__main__":

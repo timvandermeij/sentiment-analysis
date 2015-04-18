@@ -93,6 +93,13 @@ class Classifier(object):
         # Crossvalidate the regressor on the labeled data
         return cross_validation.cross_val_score(self.regressor, train_data, train_labels, cv=folds)
 
+    def output_cross_validate(self, folds=5):
+        print('Performing cross-validation on {} folds'.format(folds))
+        results = self.cross_validate(folds)
+        print('Folds: {}'.format(results))
+        print('Average: {}'.format(results.mean()))
+        print('Standard deviation: {}'.format(results.std()))
+
     def split(self, data):
         if self.group != "score":
             self.test_group.append(data['group'])
@@ -138,11 +145,7 @@ def main(argv):
     classifier = Classifier(group, model_file)
     classifier.create_model(train=not cv_folds, class_name=algorithm_class, parameters=algorithm_parameters)
     if cv_folds > 0:
-        print('Performing cross-validation on {} folds'.format(cv_folds))
-        results = classifier.cross_validate(cv_folds)
-        print('Folds: {}'.format(results))
-        print('Average: {}'.format(results.mean()))
-        print('Standard deviation: {}'.format(results.std()))
+        classifier.output_cross_validate(cv_folds)
     else:
         classifier.output(classifier.predict())
 
