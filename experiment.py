@@ -12,6 +12,7 @@ from utils import Utilities
 
 def main(argv):
     folds = int(argv[0]) if len(argv) > 0 else 5
+    filter = argv[1].lower() if len(argv) > 1 else ""
     algorithms = [
         {
             'name': 'Ada Boost classifier',
@@ -108,6 +109,8 @@ def main(argv):
 
     for algorithm in algorithms:
         if not algorithm['enabled']:
+            continue
+        if filter and filter not in algorithm['name'].lower() and filter not in algorithm['class_name'].__name__.lower():
             continue
 
         classifier = Classifier('id')
