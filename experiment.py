@@ -62,7 +62,8 @@ def main(argv):
             'name': 'Gaussian naive Bayes classifier',
             'class_name': GaussianNB,
             'parameters': {},
-            'enabled': True
+            'enabled': True,
+            'dense': True
         },
         {
             'name': 'Multinomial naive Bayes classifier',
@@ -70,7 +71,8 @@ def main(argv):
             'parameters': {
                 'alpha': 0.8
             },
-            'enabled': True
+            'enabled': True,
+            'dense': True
         },
         {
             'name': 'Bernoulli naive Bayes classifier',
@@ -109,7 +111,7 @@ def main(argv):
             continue
 
         classifier = Classifier('id')
-        classifier.create_model(train=False, class_name=algorithm['class_name'], parameters=algorithm['parameters'])
+        classifier.create_model(train=False, class_name=algorithm['class_name'], parameters=algorithm['parameters'], dense=algorithm['dense'] if 'dense' in algorithm else False)
 
         print(Utilities.get_colored_text(0, '::: {} :::'.format(algorithm['name'])))
         print('Performing cross-validation on {} folds'.format(folds))

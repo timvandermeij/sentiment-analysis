@@ -33,7 +33,7 @@ class Classifier(object):
         self.model_file = model_file
         self.train_ids = set()
 
-    def create_model(self, train=True, class_name=DummyRegressor, parameters={}):
+    def create_model(self, train=True, class_name=DummyRegressor, parameters={}, dense=False):
         trained = False
         if self.model_file != "" and os.path.isfile(self.model_file):
             with open(self.model_file, 'rb') as f:
@@ -43,11 +43,11 @@ class Classifier(object):
                 self.train_ids = objects[-1][1]
                 trained = True
         else:
-            models = [
-                ('tfidf', TfidfVectorizer(input='content', tokenizer=Utilities.split)),
-                ('to_dense', DenseTransformer()), 
-                ('clf', class_name(**parameters))
-            ]
+            models = []
+            models.append(('tfidf', TfidfVectorizer(input='content', tokenizer=Utilities.split)))
+            if dense:
+                models.append(('to_dense', DenseTransformer()))
+            models.append(('clf', class_name(**parameters)))
 
         self.regressor = Pipeline(models)
 
