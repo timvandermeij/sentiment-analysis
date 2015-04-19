@@ -102,8 +102,9 @@ def main(argv):
         if filter and filter not in algorithm['name'].lower() and filter not in algorithm['class_name'].__name__.lower():
             continue
 
+        dense = algorithm['dense'] if 'dense' in algorithm else False
         classifier = Classifier('id')
-        classifier.create_model(train=False, class_name=algorithm['class_name'], parameters=algorithm['parameters'], dense=algorithm['dense'] if 'dense' in algorithm else False)
+        classifier.create_model(train=False, class_name=algorithm['class_name'], parameters=algorithm['parameters'], dense=dense)
 
         print(Utilities.get_colored_text(0, '::: {} :::'.format(algorithm['name'])))
         classifier.output_cross_validate(folds)
