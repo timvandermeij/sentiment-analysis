@@ -202,7 +202,7 @@ class Repos_Preprocessor(Preprocessor):
 
         self.path = path + str(process_id) + '/'
         if not os.path.exists(self.path):
-            os.makedirs(self.path, 0700)
+            os.makedirs(self.path, 700)
 
         self.dataset = 'repos-dump.' + date
         self.bson_file = self.path + self.BSON_FILE_DIR + 'repos.bson'
