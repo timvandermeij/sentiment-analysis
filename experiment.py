@@ -72,13 +72,16 @@ def main(argv):
             'name': 'Bernoulli naive Bayes classifier',
             'class_name': BernoulliNB,
             'parameters': {
-                'alpha': 0.001
+                'alpha': 0.01
             }
         },
         {
             'name': 'K neighbors classifier',
             'class_name': KNeighborsClassifier,
-            'parameters': {}
+            'parameters': {
+                'n_neighbors': 25,
+                'weights': 'distance'
+            }
         },
         {
             'name': 'Linear SVC',
