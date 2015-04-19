@@ -97,7 +97,7 @@ def main(argv):
     ]
 
     for algorithm in algorithms:
-        if algorithm['disabled']:
+        if 'disabled' in algorithm and algorithm['disabled']:
             continue
         if filter and filter not in algorithm['name'].lower() and filter not in algorithm['class_name'].__name__.lower():
             continue
