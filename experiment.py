@@ -20,8 +20,7 @@ def main(argv):
             'parameters': {
                 'n_estimators': 100,
                 'learning_rate': 0.5
-            },
-            'enabled': True
+            }
         },
         {
             'name': 'Extra trees classifier',
@@ -29,8 +28,7 @@ def main(argv):
             'parameters': {
                 'n_estimators': 100,
                 'n_jobs': 2
-            },
-            'enabled': True
+            }
         },
         {
             'name': 'Random forest classifier',
@@ -38,8 +36,7 @@ def main(argv):
             'parameters': {
                 'n_estimators': 100,
                 'n_jobs': 2
-            },
-            'enabled': True
+            }
         },
         {
             'name': 'Passsive aggressive classifier',
@@ -47,8 +44,7 @@ def main(argv):
             'parameters': {
                 'C': 0.2,
                 'n_jobs': 2
-            },
-            'enabled': True
+            }
         },
         {
             'name': 'SGD classifier',
@@ -56,14 +52,12 @@ def main(argv):
             'parameters': {
                 'alpha': 0.001,
                 'n_iter': 10
-            },
-            'enabled': True
+            }
         },
         {
             'name': 'Gaussian naive Bayes classifier',
             'class_name': GaussianNB,
             'parameters': {},
-            'enabled': True,
             'dense': True
         },
         {
@@ -72,7 +66,6 @@ def main(argv):
             'parameters': {
                 'alpha': 0.8
             },
-            'enabled': True,
             'dense': True
         },
         {
@@ -80,35 +73,31 @@ def main(argv):
             'class_name': BernoulliNB,
             'parameters': {
                 'alpha': 0.001
-            },
-            'enabled': True
+            }
         },
         {
             'name': 'K neighbors classifier',
             'class_name': KNeighborsClassifier,
-            'parameters': {},
-            'enabled': True
+            'parameters': {}
         },
         {
             'name': 'Linear SVC',
             'class_name': LinearSVC,
             'parameters': {
                 'C': 0.8
-            },
-            'enabled': True
+            }
         },
         {
             'name': 'Nu SVC',
             'class_name': NuSVC,
             'parameters': {
                 'nu': 0.8
-            },
-            'enabled': True
+            }
         }
     ]
 
     for algorithm in algorithms:
-        if not algorithm['enabled']:
+        if algorithm['disabled']:
             continue
         if filter and filter not in algorithm['name'].lower() and filter not in algorithm['class_name'].__name__.lower():
             continue
