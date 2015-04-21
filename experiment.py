@@ -114,7 +114,8 @@ def main(argv):
             parameters = dict(zip(algorithm['parameters'].keys(), combination))
             classifier.create_model(train=False, class_name=class_name, parameters=parameters, dense=dense)
 
-            print(Utilities.get_colored_text(0, '::: {} ({}) :::'.format(algorithm['name'], str(parameters))))
+            parameter_string = ', '.join("%s=%r" % (key,val) for (key,val) in parameters.iteritems())
+            print(Utilities.get_colored_text(0, '::: {} ({}) :::'.format(algorithm['name'], parameter_string)))
             classifier.output_cross_validate(folds)
             print('')
 
