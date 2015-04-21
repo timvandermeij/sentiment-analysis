@@ -166,6 +166,7 @@ First install the following dependencies:
 
     (python)$ pip install cython
     (python)$ pip install readline
+    (python)$ pip install pymongo
 
 Next we need to compile NumPy from source as we need it to work with OpenBLAS. It is not only better, but SciPy requires it because Lapack/BLAS are not installed on the
 DAS-3. Follow the instructions from step 2 onward from this link: http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693.
