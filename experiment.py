@@ -8,6 +8,7 @@ from sklearn.svm import *
 import sys
 import os
 import itertools
+import json
 from classify import Classifier
 from utils import Utilities
 
@@ -100,6 +101,7 @@ def main(argv):
         }
     ]
 
+    results = {}
     for algorithm in algorithms:
         if 'disabled' in algorithm and algorithm['disabled']:
             continue
@@ -115,9 +117,20 @@ def main(argv):
             classifier.create_model(train=False, class_name=class_name, parameters=parameters, dense=dense)
 
             parameter_string = ', '.join("%s=%r" % (key,val) for (key,val) in parameters.iteritems())
+            if parameter_string == "":
+                parameter_string = "none"
             print(Utilities.get_colored_text(0, '::: {} ({}) :::'.format(algorithm['name'], parameter_string)))
-            classifier.output_cross_validate(folds)
+            result = classifier.output_cross_validate(folds)
+            if algorithm['name'] not in results:
+                results[algorithm['name']] = {}
+            results[algorithm['name']][parameter_string] = {
+                'average': result.mean(),
+                'standard_deviation': result.std()
+            }
             print('')
+
+    with open('experiment_results.json', 'wb') as file:
+        json.dump(results, file, indent=4)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

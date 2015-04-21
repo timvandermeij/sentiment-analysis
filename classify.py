@@ -99,6 +99,7 @@ class Classifier(object):
         print('Folds: {}'.format(results))
         print('Average: {}'.format(results.mean()))
         print('Standard deviation: {}'.format(results.std()))
+        return results
 
     def split(self, data):
         if self.group != "score":
