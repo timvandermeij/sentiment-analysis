@@ -24,7 +24,13 @@ def main(argv):
     with open('algorithms.json', 'r') as manifest:
         algorithms = json.load(manifest)
 
-    results = {}
+    # Load previous results
+    try:
+        with open('experiment_results.json', 'r') as file:
+            results = json.load(file)
+    except:
+        results = {}
+
     for algorithm in algorithms:
         # Skip running the algorithm if it is disabled or the filter name does 
         # not appear in any of the fields.
@@ -67,9 +73,9 @@ def main(argv):
                 'standard_deviation': result.std()
             }
 
-    # Write the results into a pretty-printed JSON file
-    with open('experiment_results.json', 'wb') as file:
-        json.dump(results, file, indent=4, separators=(',', ': '))
+            # Write intermediate results (back) into a pretty-printed JSON file
+            with open('experiment_results.json', 'w') as file:
+                json.dump(results, file, indent=4, separators=(',', ': '))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
