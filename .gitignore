@@ -7,6 +7,7 @@
 # Dataset files
 *.json
 !commit_comments-dump.2015-01-29.labeled.json
+!algorithms.json
 *.bson
 *.tgz
 *.gz

@@ -1,0 +1,181 @@
+[
+    {
+        "class_name": "AdaBoostClassifier",
+        "module": "sklearn.ensemble.weight_boosting",
+        "name": "Ada Boost classifier",
+        "parameters": {
+            "n_estimators": [
+                10,
+                50,
+                100,
+                250,
+                500
+            ],
+            "learning_rate": [
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5
+            ]
+        }
+    },
+    {
+        "class_name": "ExtraTreesClassifier",
+        "module": "sklearn.ensemble.forest",
+        "name": "Extra trees classifier",
+        "parameters": {
+            "n_estimators": [
+                10,
+                50,
+                100,
+                250,
+                500
+            ],
+            "n_jobs": [
+                2
+            ]
+        }
+    },
+    {
+        "class_name": "RandomForestClassifier",
+        "module": "sklearn.ensemble.forest",
+        "name": "Random forest classifier",
+        "parameters": {
+            "n_estimators": [
+                10,
+                50,
+                100,
+                250,
+                500
+            ],
+            "n_jobs": [
+                2
+            ]
+        }
+    },
+    {
+        "class_name": "PassiveAggressiveClassifier",
+        "module": "sklearn.linear_model.passive_aggressive",
+        "name": "Passsive aggressive classifier",
+        "parameters": {
+            "C": [
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5
+            ],
+            "n_jobs": [
+                2
+            ]
+        }
+    },
+    {
+        "class_name": "SGDClassifier",
+        "module": "sklearn.linear_model.stochastic_gradient",
+        "name": "SGD classifier",
+        "parameters": {
+            "alpha": [
+                0.0001,
+                0.001,
+                0.005,
+                0.01,
+                0.2
+            ],
+            "n_iter": [
+                2,
+                4,
+                6,
+                8,
+                10,
+                15,
+                20
+            ]
+        }
+    },
+    {
+        "class_name": "GaussianNB",
+        "module": "sklearn.naive_bayes",
+        "dense": true,
+        "name": "Gaussian naive Bayes classifier",
+        "parameters": {}
+    },
+    {
+        "class_name": "MultinomialNB",
+        "module": "sklearn.naive_bayes",
+        "dense": true,
+        "name": "Multinomial naive Bayes classifier",
+        "parameters": {
+            "alpha": [
+                0.2,
+                0.4,
+                0.5,
+                0.7,
+                0.8
+            ]
+        }
+    },
+    {
+        "class_name": "BernoulliNB",
+        "module": "sklearn.naive_bayes",
+        "name": "Bernoulli naive Bayes classifier",
+        "parameters": {
+            "alpha": [
+                0.0001,
+                0.001,
+                0.005,
+                0.01,
+                0.2
+            ]
+        }
+    },
+    {
+        "class_name": "KNeighborsClassifier",
+        "module": "sklearn.neighbors.classification",
+        "name": "K neighbors classifier",
+        "parameters": {
+            "n_neighbors": [
+                5,
+                10,
+                15,
+                20,
+                25,
+                30,
+                50
+            ],
+            "weights": [
+                "uniform",
+                "distance"
+            ]
+        }
+    },
+    {
+        "class_name": "LinearSVC",
+        "module": "sklearn.svm.classes",
+        "name": "Linear SVC",
+        "parameters": {
+            "C": [
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5
+            ]
+        }
+    },
+    {
+        "class_name": "NuSVC",
+        "module": "sklearn.svm.classes",
+        "name": "Nu SVC",
+        "parameters": {
+            "nu": [
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5
+            ]
+        }
+    }
+]
