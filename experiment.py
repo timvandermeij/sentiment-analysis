@@ -69,10 +69,13 @@ def main(argv):
             # Write the result measurements into the results dictionary.
             if algorithm['name'] not in results:
                 results[algorithm['name']] = OrderedDict()
-            results[algorithm['name']].update({parameter_string: {
-                'average': result.mean(),
-                'standard_deviation': result.std()
-            }})
+            
+            results[algorithm['name']].update({
+                parameter_string: {
+                    'average': result.mean(),
+                    'standard_deviation': result.std()
+                }
+            })
 
             # Write intermediate results (back) into a pretty-printed JSON file
             with open('experiment_results.json', 'w') as file:
