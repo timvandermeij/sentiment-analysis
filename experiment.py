@@ -10,6 +10,7 @@ import os
 import itertools
 import importlib
 import json
+from collections import OrderedDict
 from classify import Classifier
 from utils import Utilities
 
@@ -67,11 +68,11 @@ def main(argv):
 
             # Write the result measurements into the results dictionary.
             if algorithm['name'] not in results:
-                results[algorithm['name']] = {}
-            results[algorithm['name']][parameter_string] = {
+                results[algorithm['name']] = OrderedDict()
+            results[algorithm['name']].update({parameter_string: {
                 'average': result.mean(),
                 'standard_deviation': result.std()
-            }
+            }})
 
             # Write intermediate results (back) into a pretty-printed JSON file
             with open('experiment_results.json', 'w') as file:
