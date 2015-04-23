@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 import numpy as np
 import pandas as pd
 from math import factorial
@@ -13,19 +14,19 @@ else:
 import matplotlib.pyplot as plt
 
 class Plot(object):
-    def __init__(self, group, data_file, plot_file):
+    def __init__(self, group, data_file):
         self.group = group
         self.data_file = data_file
-        self.plot_file = plot_file
+        self.plot_ext = 'eps'
 
     def read_data(self, cols):
         return pd.read_csv(self.data_file, delimiter="\t", names=cols)
 
-    def end_plot(self):
+    def end_plot(self, plot_file):
         # Finish plotting by saving or showing file.
         if NO_DISPLAY:
-            print('Saving plot to {}'.format(self.plot_file))
-            plt.savefig(self.plot_file)
+            print('Saving plot to {}'.format(plot_file + '.' + self.plot_ext))
+            plt.savefig(plot_file)
         else:
             print("Close the plot window to continue.")
             sys.stdout.flush()
@@ -76,7 +77,7 @@ class FreqPlot(Plot):
         plt.plot(x[0:zero], yNeg, 'r')
         plt.plot(x[zero:-1], yPos, 'g')
 
-        self.end_plot()
+        self.end_plot(os.path.splitext(self.data_file)[0])
 
     # Source: http://wiki.scipy.org/Cookbook/SavitzkyGolay
     def savitzky_golay(self, y, window_size, order, deriv=0, rate=1):
@@ -185,17 +186,50 @@ class GroupPlot(Plot):
         plt.bar(xi, yPos, width, color='g')
         plt.bar(xi, yNeg, width, color='r')
 
-        self.end_plot()
+        self.end_plot(os.path.splitext(self.data_file)[0])
+
+class AlgoPlot(Plot):
+    def __init__(self, *a):
+        super(AlgoPlot, self).__init__("algo", 'experiment_results.json', *a)
+        self.bar_width = 0.5
+
+    def make_plot(self):
+        # Read the data from the experiment results JSON file
+        data = {}
+        with open(self.data_file, 'r') as results:
+            data = json.load(results)
+
+        for algorithm, combinations in data.iteritems():
+            average = ()
+            std_dev = ()
+            for item in combinations.itervalues():
+                average = average + (item['average'],)
+                std_dev = std_dev + (item['standard_deviation'],)
+
+            # Compose the plot
+            x_groups = np.arange(len(combinations))
+            fig, ax = plt.subplots()
+            rects = ax.bar(x_groups, average, self.bar_width, color='b', ecolor='k', alpha=0.5, yerr=std_dev)
+
+            ax.set_xlabel('Parameters')
+            ax.set_ylabel('Accuracy')
+            ax.set_title(algorithm)
+            ax.set_xticks(x_groups + (self.bar_width / 2.0))
+            ax.set_xticklabels(combinations.keys())
+
+            plt.grid(True)
+            self.end_plot(os.path.splitext(self.data_file)[0] + '-' + algorithm)
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     data_file = argv[1] if len(argv) > 1 else "score.dat"
-    plot_file = argv[2] if len(argv) > 2 else "score.eps"
 
     if group == "score":
-        plot = FreqPlot(data_file, plot_file)
+        plot = FreqPlot(data_file)
+    elif group == "algo":
+        plot = AlgoPlot()
     else:
-        plot = GroupPlot(group, data_file, plot_file)
+        plot = GroupPlot(group, data_file)
 
     plot.make_plot()
 
