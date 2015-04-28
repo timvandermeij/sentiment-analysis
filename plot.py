@@ -166,7 +166,7 @@ class AlgoPlot(Plot):
             ax.set_xlabel('Parameters')
             ax.set_ylabel('Accuracy')
             ax.set_title(algorithm)
-            ax.set_xticks(x_groups + (self.bar_width / 2.0))
+            plt.xticks(x_groups + (self.bar_width / 2.0), rotation=40)
             ax.set_xticklabels(combinations.keys())
 
             plt.grid(True)
