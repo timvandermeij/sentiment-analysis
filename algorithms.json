@@ -72,6 +72,40 @@
         }
     },
     {
+        "class_name": "RidgeClassifier",
+        "module": "sklearn.linear_model",
+        "name": "Ridge classifier",
+        "parameters": {
+            "alpha": [
+                0.0001,
+                0.001,
+                0.005,
+                0.01,
+                0.2
+            ],
+            "solver": [
+                "svd",
+                "cholesky",
+                "lsqr",
+                "sparse_cg"
+            ]
+        }
+    },
+    {
+        "class_name": "RidgeClassifierCV",
+        "module": "sklearn.linear_model",
+        "name": "Ridge classifier with cross-validation",
+        "parameters": {
+            "alphas": [
+                [0.1, 1.0, 10.0],
+                [0.05, 0.1, 0.2],
+                [0.01, 0.1, 1.0],
+                [0.005, 0.01, 0.02],
+                [0.001, 0.01, 0.1]
+            ]
+        }
+    },
+    {
         "class_name": "SGDClassifier",
         "module": "sklearn.linear_model.stochastic_gradient",
         "name": "SGD classifier",
@@ -91,6 +125,20 @@
                 10,
                 15,
                 20
+            ],
+            "loss": [
+                "hinge",
+                "log",
+                "modified_huber",
+                "squared_hinge",
+                "perceptron",
+                "squared_loss",
+                "huber",
+                "epsilon_insensitive",
+                "squared_epsilon_insensitive"
+            ],
+            "n_jobs": [
+                2
             ]
         }
     },
@@ -147,6 +195,25 @@
             "weights": [
                 "uniform",
                 "distance"
+            ]
+        }
+    },
+    {
+        "class_name": "RadiusNeighborsClassifier",
+        "module": "sklearn.neighbors.classification",
+        "name": "Radius neighbors classifier",
+        "parameters": {
+            "radius": [
+                1.0,
+                2.0,
+                3.0,
+                4.0,
+                5.0,
+                6.0,
+                7.0,
+                8.0,
+                9.0,
+                10.0
             ]
         }
     },
