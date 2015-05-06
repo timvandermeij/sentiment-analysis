@@ -27,7 +27,7 @@ class Plot(object):
         # Finish plotting by saving or showing file.
         if NO_DISPLAY:
             print('Saving plot to {}'.format(plot_file + '.' + self.plot_ext))
-            plt.savefig(plot_file)
+            plt.savefig(plot_file + '.' + self.plot_ext)
         else:
             print("Close the plot window to continue.")
             sys.stdout.flush()
