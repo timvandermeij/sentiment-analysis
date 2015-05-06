@@ -3,6 +3,7 @@ import os
 import json
 import numpy as np
 import pandas as pd
+from collections import OrderedDict
 from math import factorial
 import matplotlib
 # Make it possible to run matplotlib in SSH
@@ -149,7 +150,7 @@ class AlgoPlot(Plot):
         # Read the data from the experiment results JSON file
         data = {}
         with open(self.data_file, 'r') as results:
-            data = json.load(results)
+            data = json.load(results, object_pairs_hook=OrderedDict)
 
         for algorithm, combinations in data.iteritems():
             average = ()

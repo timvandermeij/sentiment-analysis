@@ -57,7 +57,7 @@
     {
         "class_name": "PassiveAggressiveClassifier",
         "module": "sklearn.linear_model.passive_aggressive",
-        "name": "Passsive aggressive classifier",
+        "name": "Passive aggressive classifier",
         "parameters": {
             "C": [
                 0.1,
@@ -133,10 +133,8 @@
                 "modified_huber",
                 "squared_hinge",
                 "perceptron",
-                "squared_loss",
                 "huber",
-                "epsilon_insensitive",
-                "squared_epsilon_insensitive"
+                "epsilon_insensitive"
             ],
             "n_jobs": [
                 2
