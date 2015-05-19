@@ -25,9 +25,9 @@ class Plot(object):
 
     def end_plot(self, plot_file):
         # Finish plotting by saving or showing file.
+        plt.tight_layout()
         if NO_DISPLAY:
             print('Saving plot to {}'.format(plot_file + '.' + self.plot_ext))
-            plt.tight_layout()
             plt.savefig(plot_file + '.' + self.plot_ext)
         else:
             print("Close the plot window to continue.")
@@ -136,7 +136,7 @@ class GroupPlot(Plot):
         plt.grid(True)
         plt.axhline(0, color='black')
         xi = np.arange(len(x))
-        plt.xticks(xi + width / 2., x, rotation=40)
+        plt.xticks(xi + width / 2., x, rotation=40, ha='right')
         plt.bar(xi, yPos, width, color='g')
         plt.bar(xi, yNeg, width, color='r')
 
@@ -168,7 +168,7 @@ class AlgoPlot(Plot):
             ax.set_xlabel('Parameters')
             ax.set_ylabel('Accuracy')
             ax.set_title(algorithm)
-            plt.xticks(x_groups + (self.bar_width / 2.0), rotation=40)
+            plt.xticks(x_groups + (self.bar_width / 2.0), rotation=40, ha='right')
             ax.set_xticklabels(combinations.keys())
 
             plt.grid(True)
