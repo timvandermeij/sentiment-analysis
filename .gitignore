@@ -22,6 +22,7 @@ hosts
 # Output data and plot files
 *.dat
 *.eps
-!plots/*.eps
+*.pdf
+!plots/*.pdf
 *.dot
 *.svg

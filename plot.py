@@ -18,7 +18,7 @@ class Plot(object):
     def __init__(self, group, data_file):
         self.group = group
         self.data_file = data_file
-        self.plot_ext = 'eps'
+        self.plot_ext = 'pdf'
 
     def read_data(self, cols):
         return pd.read_csv(self.data_file, delimiter="\t", names=cols)
