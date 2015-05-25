@@ -13,7 +13,10 @@ import os
 import pickle
 from utils import Utilities
 
-# Source: http://zacstewart.com/2014/08/05/pipelines-of-featureunions-of-pipelines.html
+# Make it possible to use classifiers and regressors that want dense matrices 
+# as input with our TF.IDF vecotrizer transformer in the pipeline.
+# Source: 
+# http://zacstewart.com/2014/08/05/pipelines-of-featureunions-of-pipelines.html
 class DenseTransformer(TransformerMixin):
     def transform(self, X, y=None, **fit_params):
         return X.todense()
@@ -58,6 +61,7 @@ class Classifier(object):
                     models[0][1].tokenizer = None
                     models.append(('train_ids', self.train_ids))
                     pickle.dump(models, f)
+                    print("Wrote trained model to output file {}".format(self.model_file))
 
     def get_train_data(self):
         # Collect the training data
@@ -110,6 +114,10 @@ class Classifier(object):
         return data['id'] not in self.train_ids
 
     def predict(self):
+        if sys.stdin.isatty():
+            print("Not given an input stream on stdin, cannot predict.")
+            return []
+
         self.test_group = []
 
         self.test_data = itertools.imap(self.split, itertools.ifilter(self.filter, Utilities.read_json(sys.stdin, 'id', self.group)))
