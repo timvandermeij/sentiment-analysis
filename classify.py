@@ -11,6 +11,7 @@ import linecache
 import json
 import os
 import pickle
+from glob import glob
 from utils import Utilities
 
 # Make it possible to use classifiers and regressors that want dense matrices 
@@ -113,14 +114,10 @@ class Classifier(object):
     def filter(self, data):
         return data['id'] not in self.train_ids
 
-    def predict(self):
-        if sys.stdin.isatty():
-            print("Not given an input stream on stdin, cannot predict.")
-            return []
-
+    def predict(self, file):
         self.test_group = []
 
-        self.test_data = itertools.imap(self.split, itertools.ifilter(self.filter, Utilities.read_json(sys.stdin, 'id', self.group)))
+        self.test_data = itertools.imap(self.split, itertools.ifilter(self.filter, Utilities.read_json(file, 'id', self.group)))
         if self.display:
             self.test_data = list(self.test_data)
 
@@ -156,7 +153,17 @@ def main(argv):
     if cv_folds > 0:
         classifier.output_cross_validate(cv_folds)
     else:
-        classifier.output(classifier.predict())
+        if sys.stdin.isatty():
+            glob_pattern = 'commit_comments-dump.[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].json'
+            files = glob('[0-9]*/' + glob_pattern) + glob(glob_pattern)
+            if not files:
+                print("No commit comments JSON files found, cannot classify.")
+            else:
+                for name in files:
+                    with open(name, 'rb') as file:
+                        classifier.output(classifier.predict(file))
+        else:
+            classifier.output(classifier.predict(sys.stdin))
 
 if __name__ == "__main__":
     main(sys.argv[1:])
