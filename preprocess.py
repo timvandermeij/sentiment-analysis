@@ -67,11 +67,20 @@ class Preprocessor(object):
     DOWNLOADS_URL = "http://ghtorrent.org/downloads/"
     BSON_FILE_DIR = "dump/github/"
 
-    def __init__(self):
+    def __init__(self, process_id, path, *a):
         self.dataset = ''
         self.bson_file = ''
         self.path = ''
         self.keep_fields = []
+
+        if path != "" and path[-1] != "/":
+            path = path + "/"
+
+        self.path = path + str(process_id) + '/'
+        if not os.path.exists(self.path):
+            os.makedirs(self.path, 0700)
+
+        self.process_id = str(process_id)
 
     def preprocess(self):
         self.get_bson()
@@ -125,11 +134,21 @@ class Preprocessor(object):
     def convert_bson(self):
         raise NotImplementedError("Cannot call convert_bson on the base class: a subclass must implement this method instead")
 
+    def cleanup(self, output_name=""):
+        os.remove(self.bson_file)
+        os.removedirs(self.path + self.BSON_FILE_DIR)
+        if self.path != "" and output_name != "":
+            print('#{}. Moving output file "{}" to shared directory...'.format(MPI.COMM_WORLD.rank, output_file))
+            # Remove existing file in shared directory in order to overwrite
+            if os.path.exists(output_name):
+                os.remove(output_name)
+            shutil.move(self.path + output_name, '.')
+
 class Commit_Comments_Preprocessor(Preprocessor):
-    def __init__(self, group):
-        super(Commit_Comments_Preprocessor, self).__init__()
-        self.dataset = 'commit_comments-dump.2015-01-29'
-        self.bson_file = self.BSON_FILE_DIR + 'commit_comments.bson'
+    def __init__(self, process_id, path, date, group, *a):
+        super(Commit_Comments_Preprocessor, self).__init__(process_id, path)
+        self.dataset = 'commit_comments-dump.' + date
+        self.bson_file = self.path + self.BSON_FILE_DIR + 'commit_comments.bson'
         self.group = group
         self.keep_fields = ['id', 'body']
         if group not in self.keep_fields:
@@ -160,7 +179,7 @@ class Commit_Comments_Preprocessor(Preprocessor):
         progress.finish()
 
     def convert_bson(self):
-        output = open(self.dataset + '.json', 'wb')
+        output = open(self.path + self.dataset + '.json', 'wb')
         message = 'Converting BSON "{}" and filtering fields'.format(self.dataset)
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         
@@ -169,7 +188,10 @@ class Commit_Comments_Preprocessor(Preprocessor):
             self.merge_shelves()
         
         if os.path.isfile('languages.shelf'):
-            languages = shelve.open('languages.shelf', writeback=True)
+            if self.path != "" and not os.path.isfile(self.path + 'languages.shelf'):
+                print("#{}. Copying languages shelf to local directory...".format(MPI.COMM_WORLD.rank))
+                shutil.copy('languages.shelf', self.path)
+            languages = shelve.open(self.path + 'languages.shelf', writeback=True)
         else:
             languages = {}
         
@@ -191,29 +213,21 @@ class Commit_Comments_Preprocessor(Preprocessor):
 
         output.close()
         bson_file.close()
-        os.remove(self.bson_file)
-        os.removedirs(self.BSON_FILE_DIR)
+        # Don't move the file for now, since the commit comments only need to 
+        # be on the worker nodes if we're running under MPI
+        self.cleanup()
 
 class Repos_Preprocessor(Preprocessor):
-    def __init__(self, process_id, date, path=""):
-        super(Repos_Preprocessor, self).__init__()
-        if path != "" and path[-1] != "/":
-            path = path + "/"
-
-        self.path = path + str(process_id) + '/'
-        if not os.path.exists(self.path):
-            os.makedirs(self.path, 700)
-
+    def __init__(self, process_id, path, date, *a):
+        super(Repos_Preprocessor, self).__init__(process_id, path)
         self.dataset = 'repos-dump.' + date
         self.bson_file = self.path + self.BSON_FILE_DIR + 'repos.bson'
-        self.process_id = str(process_id)
 
     def convert_bson(self):
         message = 'Converting BSON "{}" to language shelf #{}'.format(self.dataset, self.process_id)
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         shelf_name = 'languages-' + self.process_id + '.shelf'
-        shelf_path = self.path + shelf_name # Local running path
-        languages = shelve.open(shelf_path, writeback=True)
+        languages = shelve.open(self.path + shelf_name, writeback=True)
 
         # Read every BSON object as an iterator to save memory.
         for raw_json in bson.decode_file_iter(bson_file):
@@ -223,17 +237,15 @@ class Repos_Preprocessor(Preprocessor):
 
         languages.close()
         bson_file.close()
-        os.remove(self.bson_file)
-        os.removedirs(self.path + self.BSON_FILE_DIR)
-        if self.path != "":
-            print('#{}. Moving shelf "{}" to shared directory...'.format(MPI.COMM_WORLD.rank, shelf_name))
-            if os.path.exists(shelf_name):
-                os.remove(shelf_name)
-            shutil.move(shelf_path, '.')
+        self.cleanup(shelf_name)
 
 class Process(object):
-    def __init__(self, path):
+    def __init__(self, path, task, preprocessor, group):
         self.path = path
+        self.task = task
+        self.preprocessor = preprocessor
+        self.group = group
+
         self.comm = MPI.COMM_WORLD
         self.process_id = self.comm.rank
         self.num_processes = self.comm.size
@@ -250,20 +262,23 @@ class Process(object):
             self.run_process()
     
     def run_sequential(self):
-        # Fetch the repo dumps from the GHTorrent website and
+        # Fetch the dumps from the GHTorrent website and
         # perform sequentially
-        dates = self.get_downloads('repos-dump')
+        dates = self.get_downloads(self.task + '-dump')
         for tag in xrange(len(dates)):
-            preprocessor = Repos_Preprocessor(tag, dates[tag]['date'], self.path)
+            preprocessor = self.preprocessor(tag, self.path, dates[tag]['date'], self.group)
             preprocessor.preprocess()
+            if self.task == "commit_comments":
+                # We only need the latest dump when not running MPI
+                break
 
     def run_master(self):
         print('MASTER on node {}'.format(socket.gethostname()))
 
-        # Fetch the repo dumps from the GHTorrent website and
+        # Fetch the dumps from the GHTorrent website and
         # process them in parallel on the other processes.
         # Start with the largest data sets so that we have better balancing
-        dates = self.get_downloads('repos-dump')
+        dates = self.get_downloads(self.task + '-dump')
         dates = sorted(dates, key=lambda v: v['size'], reverse=True)
 
         print('MASTER: Waiting to distribute {} jobs'.format(len(dates)))
@@ -300,7 +315,7 @@ class Process(object):
     def run_process(self):
         print('PROCESS {} on node {}'.format(self.process_id, socket.gethostname()))
 
-        # Process repo dumps as jobs that we receive from the master.
+        # Process dumps as jobs that we receive from the master.
         # Keep on running until the master lets us know we are done.
         while True:
             # Let the master know that this process is ready
@@ -317,7 +332,7 @@ class Process(object):
                 break
 
             print('PROCESS {}: Received job {} with date {} for preprocessing'.format(self.process_id, tag, date))
-            preprocessor = Repos_Preprocessor(tag, date, self.path)
+            preprocessor = self.preprocessor(tag, self.path, date, self.group)
             preprocessor.preprocess()
 
     def wait_ready(self):
@@ -355,18 +370,20 @@ def main(argv):
     date = ""
     ready = array('c', '\0')
 
-    if task == "repos":
-        if group == "language" and not os.path.isfile('languages.shelf'):
-            process = Process(path)
-            process.execute()
-        else:
+    preprocessors = {
+        "repos": Repos_Preprocessor,
+        "commit_comments": Commit_Comments_Preprocessor
+    }
+
+    if task in preprocessors:
+        if task == "repos" and group == "language" and os.path.isfile('languages.shelf'):
             print('Nothing to be done for task {}, group {}.'.format(task, group))
-    elif task == "commit_comments":
-        commit_comments = Commit_Comments_Preprocessor(group)
-        commit_comments.preprocess()
+        else:
+            process = Process(path, task, preprocessors[task], group)
+            process.execute()
     else:
         print("Unrecognized value for 'task': '{}'".format(task))
-        print("Must be either 'repos' or 'commit_comments'")
+        print("Must be one of {}".format(', '.join(preprocessors.keys())))
         print("Usage: [mpiexec -n <num_processes>] python preprocess.py <task> [group]")
 
 if __name__ == "__main__":
