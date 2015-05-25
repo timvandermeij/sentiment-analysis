@@ -137,6 +137,7 @@ class Classifier(object):
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
     model_file = argv[1] if len(argv) > 1 else ""
+    path = argv[2] if len(argv) > 2 else ""
     cv_folds = 0
     if model_file.isdigit():
         cv_folds = int(model_file) if model_file != '0' else 5
@@ -154,8 +155,11 @@ def main(argv):
         classifier.output_cross_validate(cv_folds)
     else:
         if sys.stdin.isatty():
+            if path != "" and path[-1] != "/":
+                path = path + "/"
+
             glob_pattern = 'commit_comments-dump.[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].json'
-            files = glob('[0-9]*/' + glob_pattern) + glob(glob_pattern)
+            files = glob(path + '[0-9]*/' + glob_pattern) + glob(path + glob_pattern)
             if not files:
                 print("No commit comments JSON files found, cannot classify.")
             else:
