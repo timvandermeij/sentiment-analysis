@@ -1,0 +1,296 @@
+\ProvidesPackage{beamerouterthemeleiden}
+
+%-------------------------------------------------------------------------------
+\RequirePackage{calc}
+\RequirePackage{tikz}
+\RequirePackage{graphicx}
+\RequirePackage{ifthen}
+\RequirePackage{beamerleidenshared}
+
+%-------------------------------------------------------------------------------
+\mode<presentation>
+
+%-------------------------------------------------------------------------------
+% Options
+% Option used to allow users to define the total page count.
+\def\beamer@leiden@totalpages{}
+\DeclareOptionBeamer{totalpages}{\def\beamer@leiden@totalpages{#1}}
+
+% Option used to allow users to set the language
+\def\beamer@leiden@lang{nl}
+\DeclareOptionBeamer{lang}{\def\beamer@leiden@lang{#1}}
+
+% Set default logo font to Latin Modern
+\def\beamer@leiden@logofont{lmr}
+\DeclareOptionBeamer{logofont}{\def\beamer@leiden@logofont{#1}}
+
+\ProcessOptionsBeamer
+
+
+%-------------------------------------------------------------------------------
+% Definable things
+\def\backgroundimageonslide#1{\def\beamer@leiden@bgimgslide{#1}}
+\def\beamer@leiden@bgimgslide{}
+% Usage: \backgroundimageonslide{chalkboard}
+
+\def\totalpages#1{\def\beamer@leiden@totalpages{#1}}
+
+
+%-------------------------------------------------------------------------------
+% Headline
+\setbeamertemplate{headline}{%
+\headlinenavigation%
+\headlinetitleblock%
+%\placepagenumberonslide%
+}
+
+\defbeamertemplate{headline}{title slide}{%
+\relax%
+}
+
+\def\headlinenavigation{%
+% Space after foottext in slides
+\vspace{0.00\paperheight}%
+\vtop to 0.030\paperheight{% Begin vbox
+\vfill%
+\hbox to 1.00\paperwidth{% Begin hbox
+\hfill%
+\ifx\usebeamertemplate***{navigation symbols}\@empty%
+\else%
+\usebeamertemplate***{navigation symbols}%
+\fi%
+}% End hbox
+}% End vbox
+}
+
+\def\headlinetitleblock{%
+\vbox to 0.090\paperheight{% Start vbox
+\vfill%
+{%
+\hspace*{\Gm@lmargin}%
+\parbox[top]{0.95\linewidth}{% Start parbox
+\begin{flushleft}%
+\vspace{-\baselineskip}% Cosmetic correction for space introduced by flushleft
+\headlinepresentationtitle%
+\par%
+\headlinesectiontitle%
+\par%
+\end{flushleft}%
+\vspace{-\baselineskip}% Cosmetic correction for space introduced by flushleft
+}% End parbox
+}%
+\vspace{-5pt}% Correction for vfill-bug
+}%  End vbox
+\vspace{5pt}% Correction for vfill-bug
+\vspace{0.25\baselineskip}%
+}
+
+\def\headlinepresentationtitle{%
+\usebeamerfont{title in head/foot}%
+\usebeamercolor[fg]{title in head/foot}%
+\inserttitle%
+}
+
+\def\headlinesectiontitle{%
+\usebeamerfont{section in head/foot}%
+\usebeamercolor[fg]{section in head/foot}%
+\insertsectionhead%
+\ifx\insertsubsectionhead\@empty%
+\else%
+{: \insertsubsectionhead}%
+\fi%
+}
+
+
+%-------------------------------------------------------------------------------
+% Page number in slide
+\def\placepagenumberonslide{%
+\usebeamercolor{page number in head/foot}%
+\begin{tikzpicture}[remember picture,overlay]%
+\path (current page.south west) ++ (1.000\paperwidth,0.785\paperheight) ++ (-\Gm@rmargin,0.000\paperheight) node [anchor=south east,color={page number in head/foot.fg},inner sep=0pt,outer sep=1pt] {%
+\usebeamerfont{page number in head/foot}%
+\usebeamercolor[fg]{page number in head/foot}%
+\insertframenumber{}{} %
+$|$ %
+\ifx\beamer@leiden@totalpages\@empty%
+\inserttotalframenumber%
+\else%
+\beamer@leiden@totalpages%
+\fi%
+};
+\end{tikzpicture}%
+}
+
+
+%-------------------------------------------------------------------------------
+% Footline
+\setbeamertemplate{footline}%
+{%
+\vspace{0.060\paperheight}%
+}
+
+\defbeamertemplate{footline}{title slide}%
+{%
+\relax%
+}
+
+
+
+
+%-------------------------------------------------------------------------------
+% Frametitle
+\setbeamertemplate{frametitle}{%
+\ifnum\thepage>1\relax% Not on title frame
+\vspace{0.010\paperheight}%
+\vbox to 0.060\paperheight{% Start vbox
+\parbox[top]{0.85\linewidth}{% Start parbox
+\begin{flushleft}%
+\vspace{-\baselineskip}% Cosmetic correction for space introduced by flushleft
+{%
+\usebeamerfont{frametitle}%
+\usebeamercolor[fg]{frametitle}%
+\insertframetitle%
+\par%
+\vspace{-\baselineskip}%
+}%
+{%
+\usebeamerfont{framesubtitle}%
+\usebeamercolor[fg]{framesubtitle}%
+\ifx\insertframesubtitle\@empty%
+\else%
+\vspace{\baselineskip}%
+\insertframesubtitle%
+\vspace{-\baselineskip}%
+\fi%
+}%
+\end{flushleft}%
+\vspace{-\baselineskip}% Cosmetic correction for space introduced by flushleft
+}% End parbox
+\vfill%
+}% End vbox
+\fi% End if - Not on title frame
+}
+
+
+
+%-------------------------------------------------------------------------------
+% Background canvas
+\setbeamertemplate{background canvas}{%
+\backgroundcanvasblock
+\backgroundcanvasimage
+}
+
+\def\backgroundcanvasblock{%
+\usebeamercolor{background canvas}%
+\begin{tikzpicture}[remember picture,overlay]%
+\useasboundingbox (current page.south west) rectangle ++ (\the\paperwidth, \the\paperheight);%
+\path [fill,fill={background canvas.bg},draw=none,inner sep=0pt]    (current page.south west) rectangle ++ (1.000\paperwidth,1.000\paperheight);%
+\end{tikzpicture}%
+}
+
+\def\backgroundcanvasimage{%
+\ifx\beamer@leiden@bgimgslide\@empty%
+\else%
+\usebeamercolor{background canvas}%
+\begin{tikzpicture}[remember picture,overlay]%
+\useasboundingbox (current page.south west) rectangle ++ (\the\paperwidth, \the\paperheight);%
+\path (current page.south west) ++ (0.000\paperwidth,0.050\paperheight) node [anchor=south west,inner sep=0.0pt,outer sep=0.0pt] {%
+\includegraphics[width=1.000\paperwidth]{\beamer@leiden@bgimgslide}%
+};
+\end{tikzpicture}%
+\begin{tikzpicture}[remember picture,overlay]%
+\path (current page.south west) [fill,fill={background canvas.bg},opacity=0.82,draw=none,inner sep=0pt] ++ (0.000\paperwidth,0.050\paperheight)  rectangle ++ (1.000\paperwidth,0.950\paperheight);%
+\end{tikzpicture}%
+\fi%
+}
+
+
+
+
+%-------------------------------------------------------------------------------
+% Background
+\setbeamertemplate{background}{%
+\ifnum\thepage=1\relax%
+\backgroundtitlepage%
+\fi%
+\footerbar%
+}
+
+\setbeamercolor{institute in titlegraphic}{fg=leidenMainColors@darkblue,bg=leidenMainColors@white}
+\setbeamerfont{institute in titlegraphic}{family*=\beamer@leiden@logofont,series*=m,size={\fontsize{12}{14}}} % fpi=Pippin, fontseries: l=light, m=normal, b=bold, eb = black
+\setbeamercolor{subinstitute in titlegraphic}{fg=leidenMainColors@darkblue,bg=leidenMainColors@white}
+\setbeamerfont{subinstitute in titlegraphic}{family*=\beamer@leiden@logofont,series*=m,size={\fontsize{9}{10}}} % fpi=Pippin, fontseries: l=light, m=normal, b=bold, eb = black
+
+\def\backgroundtitlepage{%
+\begin{tikzpicture}[remember picture,overlay]%
+\useasboundingbox (current page.south west) rectangle ++ (\the\paperwidth, \the\paperheight);%
+\path (current page.south west) [fill,fill=leidenMainColors@darkblue,draw=none,inner sep=0pt]  ++ (0.000\paperwidth,0.357\paperheight) rectangle ++ (1.000\paperwidth,0.643\paperheight);
+\path (current page.south west) [fill,fill=leidenSelectedColors@faculty,draw=none,inner sep=0pt]             ++ (0.000\paperwidth,0.255\paperheight) rectangle ++ (1.000\paperwidth,0.102\paperheight);
+\path (current page.south west) [fill,fill=leidenMainColors@white,draw=none,inner sep=0pt]          ++ (0.000\paperwidth,0.051\paperheight) rectangle ++ (1.000\paperwidth,0.204\paperheight);
+\path (current page.south west) [fill=none,draw=none,inner sep=0pt]                                          ++ (0.000\paperwidth,0.051\paperheight) rectangle ++ (1.000\paperwidth,0.204\paperheight);
+\path (current page.south west) ++ (0.175\paperwidth,0.060\paperheight) node [anchor=south east,inner sep=0.5em,outer sep=0pt] {\usebeamercolor{titlegraphic}\inserttitlegraphic};
+\path (current page.south west) ++ (0.175\paperwidth,0.060\paperheight) -- ++ (0.000\paperwidth,0.010\paperheight) node [anchor=south west,inner sep=0.5em,outer sep=0pt] {%
+\vbox{%
+\usebeamercolor[fg]{institute in titlegraphic}%
+\usebeamerfont{institute in titlegraphic}%
+\mbox{\institutetext}\\%
+\usebeamercolor[fg]{subinstitute in titlegraphic}%
+\usebeamerfont{subinstitute in titlegraphic}%
+\mbox{\subinstitutetext}}%
+};
+\end{tikzpicture}%
+}
+
+\def\institutetext{%
+\ifthenelse{\equal{\beamer@leiden@lang}{en}}%
+{%
+Leiden University%
+}%
+{%
+Universiteit Leiden%
+}%
+}
+
+\def\subinstitutetext{%
+\ifthenelse{\equal{\beamer@leiden@lang}{en}}%
+{%
+The Netherlands%
+}%
+{%
+%
+}%
+}
+
+\def\footerbar{%
+\usebeamercolor{footline}%
+\begin{tikzpicture}[remember picture,overlay]%
+\useasboundingbox (current page.south west) rectangle ++ (\the\paperwidth, \the\paperheight);%
+\path (current page.south west) [fill,fill=leidenFacultyColors@blue,draw=none,inner sep=0pt]   ++ (0.962\paperwidth,0.000\paperheight) rectangle ++ (0.038\paperwidth,0.051\paperheight); 
+\path (current page.south west) [fill,fill=leidenFacultyColors@red,draw=none,inner sep=0pt]    ++ (0.962\paperwidth,0.051\paperheight) rectangle ++ (0.038\paperwidth,0.051\paperheight); 
+\path (current page.south west) [fill,fill=leidenFacultyColors@purple,draw=none,inner sep=0pt] ++ (0.962\paperwidth,0.102\paperheight) rectangle ++ (0.038\paperwidth,0.051\paperheight); 
+\path (current page.south west) [fill,fill=leidenFacultyColors@yellow,draw=none,inner sep=0pt] ++ (0.962\paperwidth,0.153\paperheight) rectangle ++ (0.038\paperwidth,0.051\paperheight); 
+\path (current page.south west) [fill,fill=leidenFacultyColors@orange,draw=none,inner sep=0pt] ++ (0.962\paperwidth,0.204\paperheight) rectangle ++ (0.038\paperwidth,0.051\paperheight); 
+\path (current page.south west) [fill,fill=leidenFacultyColors@green,draw=none,inner sep=0pt]  ++ (0.962\paperwidth,0.255\paperheight) rectangle ++ (0.038\paperwidth,0.051\paperheight); 
+\path (current page.south west) [fill,fill={footline.bg},draw=none,inner sep=0pt]              ++ (0.000\paperwidth,0.000\paperheight) rectangle ++ (0.962\paperwidth,0.051\paperheight);
+\path (current page.south west) -- ++ (0.962\paperwidth,0.000\paperheight) -- ++ (-0.010\paperwidth,0.0225\paperheight) node [anchor=east,color={footline.fg},inner sep=0pt,outer sep=1pt] {\usebeamerfont{logo}\footerbartext};
+\end{tikzpicture}%
+}
+
+\def\footerbartext{%
+\ifthenelse{\equal{\beamer@leiden@lang}{en}}%
+{%
+Leiden University. The university to discover.%
+}%
+{%
+Universiteit Leiden. Universiteit om te ontdekken.%
+}%
+}
+
+
+
+%-------------------------------------------------------------------------------
+% Sidebars
+\setbeamertemplate{sidebar left}{}
+\setbeamertemplate{sidebar right}{}
+
+\mode<all>
