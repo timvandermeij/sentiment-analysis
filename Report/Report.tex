@@ -83,7 +83,47 @@ Section~\ref{sec:conclusion}.
 \ldots
 
 \section{Dataset}\label{sec:dataset}
-\ldots
+We use the GitHub commit comments dataset for our work. As described in the
+introduction in Section~\ref{sec:introduction}, the GitHub commit comments
+dataset contains comments that reviewers have attached to specific lines of
+a Git commit or to an entire Git commit.
+
+% TODO: Add reference for GHTorrent
+The dataset is provided by the GHTorrent project, which publishes incremental
+and categorized dumps of data from the publically available GitHub API\@. We
+only use the commit comment dumps and the repository dumps for our work, but,
+among others, issue comments, pull request comments and events are also
+available. Every two months a new incremental dump is published.
+
+% TODO: Add characteristics table for both dumps
+We now focus on the two types of dumps we use for our work, which are the
+commit comments and repository dumps. The former is used for the sentiment
+analysis, while the latter is used to assign to a commit the main programming
+language of the repository that it belongs to, which is useful for one of
+the experiments to be performed. Each dump consists of one BSON file, which
+is a binary-encoded JSON file that is used for storing and exchanging data
+in a structed manner. The BSON file is converted to JSON and preprocessed,
+after which we obtain a file containing objects of the following form:
+
+\begin{verbatim}
+{
+    "id": 8771097,
+    "body": "It seems e.offsetX is not the way to get the relative cursor position
+             in Firefox. I'm getting `undefined' in my experiments there.",
+    "url": "https://api.github.com/repos/fedwiki/wiki-plugin-method/comments/8771097"
+}
+\end{verbatim}
+
+We use the {\tt id} field as a unique identifier for cross-reference and
+the {\tt body} field which contains the actual commit message. For the
+experiments we also use the {\tt url} field to extract the name of the
+repository that the commit belongs to in order to assign the main
+programming language of that repository to the commit message.
+
+The repositories dump is very similar, however, from that dump we only
+extract the {\tt full\_name} field which contains the repository name and
+the {\tt language} field which contains the main programming language used
+in the repository.
 
 \section{Implementation}\label{sec:implementation}
 \ldots
