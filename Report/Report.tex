@@ -39,7 +39,45 @@
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
-\ldots
+Sentiment analysis is a technique that aims to extract subjective information
+from text, audio or other multimedia. This information contains, but is not
+limited to, judgements or emotions on a certain topic. Sentiment analysis is
+often troubled by the limitations of natural language processing and by the
+large amounts of data available. Furthermore, the huge amounts of data require
+that performing sentiment analysis on a single text needs to be fast, otherwise
+the time required for processing all texts becomes infeasible.
+
+In this report we focus only on sentiment analysis on textual content. We use the
+GitHub commit comments dataset for our work. GitHub is an online platform that
+provides source code hosting and collaboration for both open-source and
+closed-source projects that use the Git version control system. When working on
+source code in a version-controlled environment, it is common practice to divide the
+implementation of functionality into \emph{commits}, which are small packages of
+code. Once the developer is ready to have the code reviewed, then reviewers can
+look at these commits and comment on them. For instance, a reviewer could add a
+comment to a specific line of code and suggest an improvement. The GitHub commit
+comments dataset that we use consists of exactly those comments. These comments
+are particularly interesting as developers and reviewers tend to put a lot of
+emotions in them, ranging from happiness when a commit is of high quality to
+sadness or angriness when a commit is of low quality.
+
+We will work in a distributed manner. Since the GitHub commit comments dataset
+is very large and speed and efficiency are a concern, we aim to distribute most
+of the work, including downloading and preprocessing data, over several worker
+nodes. We first implement a naive algorithm to get insights into the dataset and
+then apply those insights to the final implementation that uses a classifier
+to quickly classify commit comments as being positive, negative or neutral. Later
+on we link the commit comments to the main programming language used in the code
+repository to be able to get insights into the sentiments of the developers per
+language.
+
+In Section~\ref{sec:problem}, we describe the research question in more detail 
+and we give definitions of the techniques that we evaluate. The used dataset and
+the implementation of the distributed sentiment analysis are discussed in 
+Section~\ref{sec:dataset} and Section~\ref{sec:implementation}, respectively. 
+We present our experiments in Section~\ref{sec:experiments} and discuss the
+results of the experiments in Section~\ref{sec:results}. We conclude our work in
+Section~\ref{sec:conclusion}.
 
 \section{Problem statement}\label{sec:problem}
 \ldots
