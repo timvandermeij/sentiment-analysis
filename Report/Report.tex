@@ -17,13 +17,25 @@
 % Document contents
 \begin{document}
 
-\title{Sentiment analysis on GitHub commit comments}
+\title{Distributed sentiment analysis on GitHub commit comments}
 \author{Leon Helwerda (s1034375) and Tim van der Meij (s1115731)}
 \date{\today}
 \maketitle
 
 \begin{abstract}
-    \ldots
+    In this report we discuss performing sentiment analysis on GitHub
+    commit comments. We describe the problems and solutions related to
+    downloading and preprocessing the dataset and gaining insights
+    into the data using a naive implementation that uses lists with
+    positive and negative words. After manually labeling 2000 training
+    examples, we benchmark several classification algorithms and we use
+    the most promising classifier in our final implementation where we
+    apply the trained classifier on the entire dataset. We visualize
+    the overall sentiment per programming language to show the potential
+    of our approach. Distributing work is key when working with such a
+    large dataset, hence getting the data, preprocessing it and
+    performing the sentiment analysis is all done in a distributed
+    manner with help of OpenMPI and MapReduce.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
