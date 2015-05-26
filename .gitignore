@@ -26,3 +26,15 @@ hosts
 !plots/*.pdf
 *.dot
 *.svg
+
+# LaTeX compiled files
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.ps
+*.toc
+*.nav
+*.snm
+*.vrb
+*.out

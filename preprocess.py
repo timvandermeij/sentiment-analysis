@@ -138,7 +138,7 @@ class Preprocessor(object):
         os.remove(self.bson_file)
         os.removedirs(self.path + self.BSON_FILE_DIR)
         if self.path != "" and output_name != "":
-            print('#{}. Moving output file "{}" to shared directory...'.format(MPI.COMM_WORLD.rank, output_file))
+            print('#{}. Moving output file "{}" to shared directory...'.format(MPI.COMM_WORLD.rank, output_name))
             # Remove existing file in shared directory in order to overwrite
             if os.path.exists(output_name):
                 os.remove(output_name)
