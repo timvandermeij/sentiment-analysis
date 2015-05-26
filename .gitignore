@@ -40,3 +40,4 @@ hosts
 *.snm
 *.vrb
 *.out
+*.log
