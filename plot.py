@@ -15,7 +15,7 @@ else:
 import matplotlib.pyplot as plt
 
 class Plot(object):
-    def __init__(self, group, data_file):
+    def __init__(self, group, data_file, *a):
         self.group = group
         self.data_file = data_file
         self.plot_ext = 'pdf'
@@ -106,30 +106,37 @@ class FreqPlot(Plot):
         return np.convolve( m[::-1], y, mode='valid')
 
 class GroupPlot(Plot):
-    def __init__(self, *a):
-        super(GroupPlot, self).__init__(*a)
+    def __init__(self, group, data_file, sort=True, *a):
+        super(GroupPlot, self).__init__(group, data_file)
         self.title = "Histogram"
-        self.sort = True # True = positives, False = negatives
+        self.sort = bool(sort) # False = negatives, True = positives
 
     def make_plot(self):
         D = self.read_data([self.group, 'x', 'y'])
-        x = []
-        yNeg = []
-        yPos = []
+        P = pd.DataFrame(columns=['x','yNeg','yPos','gs','size'])
+        i = 1
         for name, group in D.groupby(self.group):
-            if name != '' and group.size > 100:
-                x.append(name)
-                gs = float((group['x'] != 0.0).size)
-                yPos.append((group['x'] > 0.0).sum() / gs)
-                yNeg.append(-(group['x'] < 0.0).sum() / gs)
+            if name != '':
+                P.loc[i,'x'] = name
+                # Use a relative weighting scheme so that scores around zero 
+                # and few nonzero scores within the group decrease the 
+                # importance of the relative score sum.
+                w = group['x'] * group['y']
+                gs = abs(w).sum()
+                P.loc[i,'gs'] = gs
+                P.loc[i,'size'] = group.size
+                P.loc[i,'yPos'] = (((group['x'] > 0.0) * w).sum() / gs) * group.size
+                P.loc[i,'yNeg'] = (((group['x'] < 0.0) * w).sum() / gs) * group.size
+                i = i + 1
 
+        ms = max(P['size'])
+        P['yPos'] = P['yPos'] / ms
+        P['yNeg'] = P['yNeg'] / ms
+
+        # If sort = False, then sort on negative and take lowest values
         # If sort = True, then sort on positive and take only largest groups
-        # If sort = False, then sort on negative and take groups with lowest 
-        # values.
-        z = zip(x, yPos, yNeg)
-        z.sort(key=lambda v: v[1 if self.sort else 2], reverse=self.sort)
-        z = z[0:20]
-        (x, yPos, yNeg) = zip(*z)
+        P = P.sort('yPos' if self.sort else 'yNeg', ascending=not self.sort)
+        P = P[0:20]
 
         width = 0.8
         plt.title(self.title)
@@ -138,10 +145,10 @@ class GroupPlot(Plot):
         plt.grid(True)
         plt.axhline(0, color='black')
         plt.ylim(-1.0,1.0)
-        xi = np.arange(len(x))
-        plt.xticks(xi + width / 2., x, rotation=40, ha='right')
-        plt.bar(xi, yPos, width, color='g')
-        plt.bar(xi, yNeg, width, color='r')
+        xi = np.arange(len(P))
+        plt.xticks(xi + width / 2., P['x'].tolist(), rotation=40, ha='right')
+        plt.bar(xi, P['yPos'].tolist(), width, color='g')
+        plt.bar(xi, P['yNeg'].tolist(), width, color='r')
 
         self.end_plot(os.path.splitext(self.data_file)[0])
 
@@ -182,11 +189,11 @@ def main(argv):
     data_file = argv[1] if len(argv) > 1 else "score.dat"
 
     if group == "score":
-        plot = FreqPlot(data_file)
+        plot = FreqPlot(data_file, *argv[2:])
     elif group == "algo":
-        plot = AlgoPlot()
+        plot = AlgoPlot(*argv[2:])
     else:
-        plot = GroupPlot(group, data_file)
+        plot = GroupPlot(group, data_file, *argv[2:])
 
     plot.make_plot()
 
