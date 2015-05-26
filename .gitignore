@@ -24,6 +24,8 @@ hosts
 *.eps
 *.pdf
 !plots/*.pdf
+!Presentation/img/*.pdf
+!Presentation/img/*.eps
 *.dot
 *.svg
 

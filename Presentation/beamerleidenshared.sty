@@ -1,0 +1,104 @@
+\ProvidesPackage{beamerleidenshared}
+\RequirePackage{ifthen}
+
+%-------------------------------------------------------------------------------
+% Images:
+\pgfdeclareimage[width=0.100\paperwidth]{leidenuniv-logo}{img/uni-leiden}
+
+%-------------------------------------------------------------------------------
+% Main Colors:
+\definecolor{leidenMainColors@darkblue}{RGB}{13,54,138}
+\definecolor{leidenMainColors@white}{RGB}{254,254,254}
+
+
+%-------------------------------------------------------------------------------
+% Faculty Colors:
+\definecolor{leidenFacultyColors@blue}{RGB}{103,164,211}%Faculteit der Geneeskunde
+\definecolor{leidenFacultyColors@red}{RGB}{229,36,59}%Faculteit der Sociale Wetenschappen
+\definecolor{leidenFacultyColors@purple}{RGB}{196,36,126}%Faculteit der Rechtsgeleerdheid
+\definecolor{leidenFacultyColors@yellow}{RGB}{228,225,73}
+\definecolor{leidenFacultyColors@orange}{RGB}{241,145,16}%Faculteit der Natuurwetenschappen
+\definecolor{leidenFacultyColors@green}{RGB}{0,138,87}%Faculteit der Geesteswetenschappen
+\definecolor{leidenFacultyColors@steel}{RGB}{151,164,200}%Universiteitsbreed
+
+
+%-------------------------------------------------------------------------------
+% Select Faculty Colors:
+\definecolor{leidenSelectedColors@faculty}{named}{leidenFacultyColors@steel}
+\ifthenelse{\equal{\beamer@leiden@faculty}{medicine}}{%
+\definecolor{leidenSelectedColors@faculty}{named}{leidenFacultyColors@blue}}{}%
+\ifthenelse{\equal{\beamer@leiden@faculty}{socialsciences}}{%
+\definecolor{leidenSelectedColors@faculty}{named}{leidenFacultyColors@red}}{}%
+\ifthenelse{\equal{\beamer@leiden@faculty}{law}}{%
+\definecolor{leidenSelectedColors@faculty}{named}{leidenFacultyColors@purple}}{}%
+\ifthenelse{\equal{\beamer@leiden@faculty}{sciences}}{%
+\definecolor{leidenSelectedColors@faculty}{named}{leidenFacultyColors@orange}}{}%
+\ifthenelse{\equal{\beamer@leiden@faculty}{humanities}}{%
+\definecolor{leidenSelectedColors@faculty}{named}{leidenFacultyColors@green}}{}%
+
+%-------------------------------------------------------------------------------
+% Selected Colors:
+\def\normalslidecolors{%
+\def\beamer@leiden@invertedcolors{false}%
+\setslidecolors%
+\usebeamercolor[fg]{normal text}%
+}
+
+\def\invertedslidecolors{%
+\def\beamer@leiden@invertedcolors{true}%
+\setslidecolors%
+\usebeamercolor[fg]{normal text}%
+}
+
+\def\toggleslidecolors{%
+\ifthenelse{\equal{\beamer@leiden@invertedcolors}{true}}{%
+\def\beamer@leiden@invertedcolors{false}%
+}%
+{%
+\def\beamer@leiden@invertedcolors{true}%
+}%
+\setslidecolors%
+\usebeamercolor[fg]{normal text}%
+}
+
+
+\def\setslidecolors{%
+\definecolor{leidenSelectedColors@plaintext}{named}{leidenMainColors@darkblue}%
+\definecolor{leidenSelectedColors@alerttext}{named}{leidenSelectedColors@faculty}%
+\definecolor{leidenSelectedColors@exampletext}{named}{leidenFacultyColors@green}%
+\definecolor{leidenSelectedColors@headertext}{named}{leidenMainColors@darkblue}%
+\definecolor{leidenSelectedColors@background}{named}{leidenMainColors@white}%
+\definecolor{leidenSelectedColors@plaintextinverted}{named}{leidenMainColors@white}%
+\definecolor{leidenSelectedColors@alerttextinverted}{named}{leidenSelectedColors@faculty}%
+\definecolor{leidenSelectedColors@exampletextinverted}{named}{leidenFacultyColors@green}%
+\definecolor{leidenSelectedColors@headertextinverted}{named}{leidenMainColors@white}%
+\definecolor{leidenSelectedColors@backgroundinverted}{named}{leidenMainColors@darkblue}%
+%
+\ifthenelse{\equal{\beamer@leiden@invertedcolors}{true}}{%
+\definecolor{leidenSelectedColors@plaintextinverted}{named}{leidenMainColors@darkblue}%
+\definecolor{leidenSelectedColors@alerttextinverted}{named}{leidenSelectedColors@faculty}%
+\definecolor{leidenSelectedColors@exampletextinverted}{named}{leidenFacultyColors@green}%
+\definecolor{leidenSelectedColors@headertextinverted}{named}{leidenMainColors@darkblue}%
+\definecolor{leidenSelectedColors@backgroundinverted}{named}{leidenMainColors@white}%
+\definecolor{leidenSelectedColors@plaintext}{named}{leidenMainColors@white}%
+\definecolor{leidenSelectedColors@alerttext}{named}{leidenSelectedColors@faculty}%
+\definecolor{leidenSelectedColors@exampletext}{named}{leidenFacultyColors@green}%
+\definecolor{leidenSelectedColors@headertext}{named}{leidenMainColors@white}%
+\definecolor{leidenSelectedColors@background}{named}{leidenMainColors@darkblue}%
+\usebeamercolor[fg]{normal text}%
+}{}%
+}
+\setslidecolors
+
+
+
+
+%-------------------------------------------------------------------------------
+% Logo and titlegraphic
+\logo{\pgfuseimage{leidenuniv-logo}}
+\newdimen\logoheight%
+\logoheight=0.189\paperheight%
+
+\titlegraphic{\pgfuseimage{leidenuniv-logo}}
+\newdimen\titlegraphicheight%
+\titlegraphicheight=0.189\paperheight%

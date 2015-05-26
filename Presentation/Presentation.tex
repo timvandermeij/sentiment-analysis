@@ -1,0 +1,97 @@
+\documentclass[t,11pt]{beamer}
+
+\usetheme[faculty=sciences,lang=en,rmfont=pmn,logofont=fpi]{leiden}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fancyvrb}
+\usepackage{alltt}
+\usepackage{listings}
+\usepackage{epstopdf}
+\usepackage{tabularx}
+\usepackage[compatibility=false]{caption}
+\usepackage{subcaption}
+\usepackage{mdframed}
+\usepackage{tikz}
+\usepackage{calc}
+\usetikzlibrary{arrows,automata}
+\usetikzlibrary{shapes.geometric,shapes.multipart}
+\usetikzlibrary{calc,positioning,decorations,decorations.pathmorphing}
+
+\makeatletter
+\@addtoreset{subfigure}{framenumber}% subfigure counter resets every frame
+\makeatother
+
+\DeclareGraphicsExtensions{.pdf,.eps,.png,.jpg}
+
+\mathversion{normal}
+\usefonttheme{professionalfonts}
+
+\setbeamerfont{title}{size=\Huge,series=}
+\setbeamerfont{subtitle}{size=\small}
+\setbeamerfont{frametitle}{series=}
+\setbeamerfont{title in head/foot}{size=\scriptsize}
+\setbeamerfont{author in head/foot}{size=\scriptsize}
+\setbeamerfont{subtitle}{size=\footnotesize}
+
+\setbeameroption{hide notes}
+\setbeamertemplate{footline}{\fontsize{12}{25}\selectfont~~\insertframenumber/\inserttotalframenumber}
+\def\headlinepresentationtitle{%
+\usebeamerfont{title in head/foot}%
+\usebeamercolor[fg]{title in head/foot}%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.50\linewidth,ht=2.25ex,dp=1ex,left]{title in
+      head/foot}%
+      \insertlecture%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.50\linewidth,ht=2.25ex,dp=1ex,right]{title in
+      head/foot}%
+      \insertauthor
+    \end{beamercolorbox}%
+  }
+  \vskip0pt%
+}
+\nonstopmode
+
+\lstset{basicstyle=\ttfamily\scriptsize}
+
+\lecture[Leiden Template]{}{ldn-bmr}
+\title{}
+\subtitle{}
+\date{\now}
+\author{Leon Helwerda, Tim van der Meij}
+\subject{}
+
+\begin{document}
+
+% Opening slide.
+{\setbeamertemplate{navigation symbols}{}
+\begin{frame}[plain]
+  \maketitle
+\end{frame}
+\addtocounter{framenumber}{-1}}
+
+\toggleslidecolors
+
+% Slide 1.
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Contents}
+\begin{itemize}
+  \item Introduction
+  \item Problem statement
+  \item Implementation
+  \item Results
+  \item Conclusion
+\end{itemize}
+\end{frame}
+
+% Slide 2.
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Introduction}
+\begin{itemize}
+  \item
+\end{itemize}
+\end{frame}
+
+\end{document}

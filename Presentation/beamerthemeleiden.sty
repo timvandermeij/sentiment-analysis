@@ -1,0 +1,40 @@
+\def\beamer@leiden@version{0.3.0}
+\ProvidesPackage{beamerthemeleiden}
+
+% ====================================================================
+% Set options
+\DeclareOptionBeamer{rmfont}{\PassOptionsToPackage{rmfont=#1}{beamerfontthemeleiden}}
+\DeclareOptionBeamer{sffont}{\PassOptionsToPackage{sffont=#1}{beamerfontthemeleiden}}
+\DeclareOptionBeamer{ttfont}{\PassOptionsToPackage{ttfont=#1}{beamerfontthemeleiden}}
+\DeclareOptionBeamer{logofont}{\PassOptionsToPackage{logofont=#1}{beamerouterthemeleiden}}
+\DeclareOptionBeamer{lang}{\PassOptionsToPackage{lang=#1}{beamerouterthemeleiden}}
+\DeclareOptionBeamer{totalpages}{\PassOptionsToPackage{totalpages=#1}{beamerouterthemeleiden}}
+\def\beamer@leiden@faculty{}
+\DeclareOptionBeamer{faculty}{\def\beamer@leiden@faculty{#1}}
+\def\beamer@leiden@invertedcolors{false}
+\DeclareOptionBeamer{invertcolors}{\def\beamer@leiden@invertedcolors{true}}
+\ProcessOptionsBeamer
+
+
+% ====================================================================
+\RequirePackage{beamerbasethemes}
+
+% ====================================================================
+% Base theme
+\usetheme{default}
+
+% ====================================================================
+% Set Fonts
+\usefonttheme{leiden}	% normal text in Minion
+
+% =========================================================
+% Set Colors
+\usecolortheme{leiden}
+
+% =========================================================
+% Set inner theme
+\useinnertheme{leiden}
+
+% =========================================================
+% Set outer theme
+\useoutertheme{leiden}

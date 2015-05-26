@@ -109,7 +109,7 @@ class GroupPlot(Plot):
     def __init__(self, *a):
         super(GroupPlot, self).__init__(*a)
         self.title = "Histogram"
-        self.sort = True # Positives
+        self.sort = True # True = positives, False = negatives
 
     def make_plot(self):
         D = self.read_data([self.group, 'x', 'y'])
@@ -123,7 +123,9 @@ class GroupPlot(Plot):
                 yPos.append((group['x'] > 0.0).sum() / gs)
                 yNeg.append(-(group['x'] < 0.0).sum() / gs)
 
-        # Sort on positive, take only largest groups
+        # If sort = True, then sort on positive and take only largest groups
+        # If sort = False, then sort on negative and take groups with lowest 
+        # values.
         z = zip(x, yPos, yNeg)
         z.sort(key=lambda v: v[1 if self.sort else 2], reverse=self.sort)
         z = z[0:20]
@@ -135,6 +137,7 @@ class GroupPlot(Plot):
         plt.ylabel('relative score')
         plt.grid(True)
         plt.axhline(0, color='black')
+        plt.ylim(-1.0,1.0)
         xi = np.arange(len(x))
         plt.xticks(xi + width / 2., x, rotation=40, ha='right')
         plt.bar(xi, yPos, width, color='g')

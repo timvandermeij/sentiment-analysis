@@ -79,7 +79,12 @@ class Utilities(object):
 
         i = 0
         for jsonObject in file:
-            data = json.loads(jsonObject)
+            try:
+                # Allow control characters which are sometimes in the strings.
+                data = json.loads(jsonObject, strict=False)
+            except ValueError as e:
+                raise(ValueError("Incorrect JSON string: '{}' with error '{}'".format(jsonObject, e)))
+
             # Normalize newlines
             if "body" in data:
                 data["body"] = data["body"].replace('\r\n', '\n')

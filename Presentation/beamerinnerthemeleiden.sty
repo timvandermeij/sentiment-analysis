@@ -1,0 +1,86 @@
+\ProvidesPackage{beamerinnerthemeleiden}
+\RequirePackage{pgf}
+\RequirePackage{geometry}
+\RequirePackage{beamerleidenshared}
+
+\mode<presentation>
+
+%-------------------------------------------------------------------------------
+% Title page
+\setbeamertemplate{title page}{%
+\titlepagetitleandsubtitle%
+\titlepageauthorandinstitute%
+}
+
+\def\titlepagetitleandsubtitle{%
+\begin{tikzpicture}[remember picture,overlay]%
+\path (current page.south west) ++ (0.500\paperwidth,0.650\paperheight) node [anchor=base,inner sep=0pt,outer sep=0pt] {%
+\parbox{0.850\paperwidth}{
+\begin{center}
+{%
+\usebeamerfont{title}%
+\usebeamercolor[fg]{title}%
+\inserttitle%
+}%
+\ifx\insertsubtitle\@empty%
+\else%
+{%
+\usebeamerfont{subtitle}
+\usebeamercolor[fg]{subtitle}
+\vspace{1em}%
+\\%
+\insertsubtitle%
+}%
+\fi%
+\end{center}
+}%
+};
+\end{tikzpicture}%
+}
+
+\def\titlepageauthorandinstitute{%
+\begin{tikzpicture}[remember picture,overlay]%
+\path (current page.south west) ++ (0.063\paperwidth,0.303\paperheight) node [anchor=west,inner sep=0pt,outer sep=0pt] {%
+\parbox{0.800\paperwidth}{
+\ifx\insertauthor\@empty%
+\else%
+{%
+\usebeamerfont{author}
+\usebeamercolor[fg]{author}
+\insertauthor%
+\ifx\insertinstitute\@empty%
+%
+\else%
+,
+\fi%
+}%
+\fi%
+\ifx\insertinstitute\@empty%
+\else%
+\usebeamerfont{institute}
+\usebeamercolor[fg]{institute}
+\insertinstitute%
+.%
+\fi%
+}%
+};
+\end{tikzpicture}%
+}
+
+
+%-------------------------------------------------------------------------------
+% Enumerations and itemizations
+\setbeamertemplate{itemize item}[circle]
+\setbeamertemplate{itemize subitem}[circle]
+\setlength\leftmargini{3ex}
+\setlength\leftmarginii{3ex}
+\setlength\leftmarginiii{3ex}
+\setlength\labelsep{1ex}
+\setlength\labelwidth{2ex}
+
+%-------------------------------------------------------------------------------
+% Setup of blocks
+\setbeamertemplate{blocks}[rounded][shadow=true] 
+
+\mode
+<all>

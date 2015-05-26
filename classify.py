@@ -125,13 +125,12 @@ class Classifier(object):
 
     def output(self, predictions):
         for i in xrange(len(predictions)):
-            group = self.test_group[i] if self.group != "score" else ""
             prediction = predictions[i]
             message = ""
             if self.display:
                 message = "\t" + Utilities.get_colored_text(prediction, self.test_data[i]).replace('\n', ' ')
     
-            g = "{}\t".format(group) if group != "" else ""
+            g = "{}\t".format(self.test_group[i]) if self.group != "score" else ""
             print("{}{:.2f}{}".format(g, prediction, message))
 
 def main(argv):
@@ -154,18 +153,18 @@ def main(argv):
     if cv_folds > 0:
         classifier.output_cross_validate(cv_folds)
     else:
-        if sys.stdin.isatty():
+        if path != "" or sys.stdin.isatty():
             if path != "" and path[-1] != "/":
                 path = path + "/"
 
             glob_pattern = 'commit_comments-dump.[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].json'
             files = glob(path + '[0-9]*/' + glob_pattern) + glob(path + glob_pattern)
-            if not files:
-                print("No commit comments JSON files found, cannot classify.")
-            else:
-                for name in files:
-                    with open(name, 'rb') as file:
+            for name in files:
+                with open(name, 'rb') as file:
+                    try:
                         classifier.output(classifier.predict(file))
+                    except ValueError as e:
+                        raise(ValueError("File '{}' is incorrect: {}".format(name, e)))
         else:
             classifier.output(classifier.predict(sys.stdin))
 
