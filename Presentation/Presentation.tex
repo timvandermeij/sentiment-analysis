@@ -1,29 +1,25 @@
 \documentclass[t,11pt]{beamer}
 
+% Theme
 \usetheme[faculty=sciences,lang=en,rmfont=pmn,logofont=fpi]{leiden}
 
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{fancyvrb}
-\usepackage{alltt}
-\usepackage{listings}
+% Packages
 \usepackage{epstopdf}
 \usepackage{tabularx}
 \usepackage[compatibility=false]{caption}
 \usepackage{subcaption}
 \usepackage{mdframed}
-\usepackage{tikz}
-\usepackage{calc}
-\usetikzlibrary{arrows,automata}
-\usetikzlibrary{shapes.geometric,shapes.multipart}
-\usetikzlibrary{calc,positioning,decorations,decorations.pathmorphing}
 
+% Timeline
+\newcommand{\timeline}{\color{white}\makebox[0pt]{\textbullet}\hskip-0.5pt\vrule width 1pt\hspace{\labelsep}}
+
+% Package configuration
 \makeatletter
 \@addtoreset{subfigure}{framenumber}% subfigure counter resets every frame
 \makeatother
-
 \DeclareGraphicsExtensions{.pdf,.eps,.png,.jpg}
 
+% Template overrides
 \mathversion{normal}
 \usefonttheme{professionalfonts}
 
@@ -35,7 +31,7 @@
 \setbeamerfont{subtitle}{size=\footnotesize}
 
 \setbeameroption{hide notes}
-\setbeamertemplate{footline}{\fontsize{12}{25}\selectfont~~\insertframenumber/\inserttotalframenumber}
+\setbeamertemplate{footline}{\fontsize{12}{25}\selectfont~\insertframenumber/\inserttotalframenumber}
 \def\headlinepresentationtitle{%
 \usebeamerfont{title in head/foot}%
 \usebeamercolor[fg]{title in head/foot}%
@@ -54,18 +50,15 @@
 }
 \nonstopmode
 
-\lstset{basicstyle=\ttfamily\scriptsize}
-
-\lecture[Leiden Template]{}{ldn-bmr}
-\title{}
-\subtitle{}
+% Template configuration
+\lecture[Leiden Template]{Distributed sentiment analysis on GitHub commit comments}{ldn-bmr}
+\title{Distributed sentiment analysis on GitHub commit comments}
 \date{\now}
 \author{Leon Helwerda, Tim van der Meij}
-\subject{}
 
 \begin{document}
 
-% Opening slide.
+% Opening slide
 {\setbeamertemplate{navigation symbols}{}
 \begin{frame}[plain]
   \maketitle
@@ -74,23 +67,120 @@
 
 \toggleslidecolors
 
-% Slide 1.
+% Regular slide
 \setbeamertemplate{navigation symbols}{}
 \begin{frame}[fragile]{Contents}
 \begin{itemize}
   \item Introduction
   \item Problem statement
+  \item Dataset
   \item Implementation
-  \item Results
+  \item Experiments and results
   \item Conclusion
 \end{itemize}
 \end{frame}
 
-% Slide 2.
+% Regular slide
 \setbeamertemplate{navigation symbols}{}
 \begin{frame}[fragile]{Introduction}
 \begin{itemize}
-  \item
+  \item Sentiment analysis: extract subjective information (emotions)
+  \item GitHub commit comments: review comments on code
+  \item Not an easy task: natural language processing, large amounts of data
+  \item Processing needs to be fast to be feasible
+  \item Distribute most tasks onto worker nodes
+\end{itemize}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Problem statement}
+\begin{itemize}
+  \item Commit comment: (mostly) positive, negative or neutral?
+  \item Initial idea: use positive and negative word lists
+  \item Final idea: use a classifier with a training and test set
+\end{itemize}
+\begin{itemize}
+  \item How do we obtain the dataset and preprocess it?
+  \item How do we obtain labeled training data?
+  \item What is the best classifier to use?
+  \item How can we distribute the work onto worker nodes?
+\end{itemize}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Dataset}
+\begin{itemize}
+  \item GHTorrent project: bimonthly dumps from GitHub API
+  \item Commit comments, issue comments, events, repositories\ldots
+  \item Last commit comments dump (1 of 17): 182.282 comments
+  \item BSON $\to$ JSON $\to$ preprocessor:
+\end{itemize}
+\scriptsize\begin{verbatim}
+{
+    "id": 8771097,
+    "body": "It seems e.offsetX is not the way to get the relative
+             cursor position in Firefox. I'm getting `undefined' in
+             my experiments there.",
+    "url": "https://api.github.com/repos/fedwiki/wiki-plugin-method/
+            comments/8771097"
+}
+\end{verbatim}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Implementation}
+{%
+  \vspace{0.5cm}
+  \setlength\extrarowheight{6pt}
+  \small
+  \begin{tabular}{@{\,}r <{\hskip 2pt}!{\timeline} >{\raggedright\arraybackslash}p{9.5cm}}
+    & Setting up enviroment on DAS-3 with extensive README \\
+    & Implementation of positive/negative word lists approach \\
+    & Implementation of automatic dataset download/extraction \\
+    & Addition of new words and smileys after data inspection \\
+    & Implementation of labeler \\
+    & First implementation of classifier \\
+    & Code refactoring to create a framework of components \\
+    & Labeling 2000 training examples by hand \\
+  \end{tabular}
+}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Implementation (continued)}
+{%
+  \vspace{0.5cm}
+  \setlength\extrarowheight{6pt}
+  \begin{tabular}{@{\,}r <{\hskip 2pt}!{\timeline} >{\raggedright\arraybackslash}p{9.5cm}}
+    & Implemention of generic preprocessor: download, extract, BSON to JSON and filter fields \\
+    & Optimizations: more cores, shelves and extraction search time \\
+    & Implementation of repositories proprocessing \\
+    & Multiprocessing using MPI for all repository dumps \\
+    & Research on classifiers/regressors and parameters \\
+    & Implemention of an experiment runner with plotting \\
+    & Multiprocessing using MPI for all commit comments dumps \\
+  \end{tabular}
+}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Experiments and results}
+% TODO: fix plots (C++/Haskell both positive and negative)
+\begin{itemize}
+  \item \ldots
+\end{itemize}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Conclusion}
+\begin{itemize}
+  \item \ldots
 \end{itemize}
 \end{frame}
 
