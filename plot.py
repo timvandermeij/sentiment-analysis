@@ -109,29 +109,27 @@ class GroupPlot(Plot):
     def __init__(self, group, data_file, sort=True, *a):
         super(GroupPlot, self).__init__(group, data_file)
         self.title = "Histogram"
-        self.sort = bool(sort) # False = negatives, True = positives
+        self.sort = bool(int(sort)) # False = negatives, True = positives
 
     def make_plot(self):
         D = self.read_data([self.group, 'x', 'y'])
-        P = pd.DataFrame(columns=['x','yNeg','yPos','gs','size'])
+        P = pd.DataFrame(columns=['x','yNeg','yPos','gs'])
         i = 1
         for name, group in D.groupby(self.group):
             if name != '':
                 P.loc[i,'x'] = name
                 # Use a relative weighting scheme so that scores around zero 
-                # and few nonzero scores within the group decrease the 
-                # importance of the relative score sum.
+                # decrease the importance of the relative score sum.
                 w = group['x'] * group['y']
                 gs = abs(w).sum()
                 P.loc[i,'gs'] = gs
-                P.loc[i,'size'] = group.size
-                P.loc[i,'yPos'] = (((group['x'] > 0.0) * w).sum() / gs) * group.size
-                P.loc[i,'yNeg'] = (((group['x'] < 0.0) * w).sum() / gs) * group.size
+                P.loc[i,'yPos'] = (((group['x'] > 0.0) * w).sum() / gs)
+                P.loc[i,'yNeg'] = (((group['x'] < 0.0) * w).sum() / gs)
                 i = i + 1
 
-        ms = max(P['size'])
-        P['yPos'] = P['yPos'] / ms
-        P['yNeg'] = P['yNeg'] / ms
+        # Filter groups that are have very few comments.
+        ms = max(P['gs'])
+        P = P.loc[P['gs'] > 0.0005 * ms]
 
         # If sort = False, then sort on negative and take lowest values
         # If sort = True, then sort on positive and take only largest groups
