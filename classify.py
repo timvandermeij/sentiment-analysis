@@ -221,7 +221,7 @@ def main(argv):
     # Parse the arguments now that all arguments are known
     args = parser.parse_args(argv)
 
-    # Convert chosen algorithm to classifier class and parameters
+    # Convert chosen algorithm to class and parameters
     algorithm = algorithms[args.algorithm]
     algorithm_class = Utilities.get_class(algorithm['module'], args.algorithm)
 
