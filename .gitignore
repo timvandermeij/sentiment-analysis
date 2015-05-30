@@ -41,3 +41,5 @@ hosts
 *.vrb
 *.out
 *.log
+*-blx.bib
+*.run.xml
