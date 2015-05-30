@@ -24,9 +24,9 @@ Running the code
 All code is written in Python. To run the simple sentiment analysis program, execute:
 
     $ python preprocess.py
-    $ echo "Yay, sentiment analysis is working perfectly!" | python analyze.py
+    $ echo '{"body":"Yay, sentiment analysis is working perfectly!"}' | python analyze.py score
 
-For the default group, running `preprocess.py` only needs to be done once. If all required data is available, `preprocess.py` will do nothing.
+For the default group of `id` and the group `score`, running `preprocess.py` only needs to be done once. If all required data is available, `preprocess.py` will do nothing.
 
 The output of the analysis program are lines containing scores between -1 and 1, where -1 indicates that the message is negative, 1 indicates that the
 message is positive and 0 indicates that the message is neutral. The output can also contain grouping data or some visualization of the message.
@@ -36,10 +36,10 @@ Instead of using a single line as input, one can give a file to read as standard
     $ python analyze.py < commit_comments.json
     $ python classify.py score < commit_comments.json
 
-The latter `classify.py` script uses a (naive) classifier to predict the scores using a labeled dataset. Both programs work in a similar manner.
+The latter `classify.py` script uses a classifier to predict the scores using a labeled dataset. Both programs work in a similar manner. This script requires the `2015-01-29` commit comments dump in order to cross-reference the labels with the messages. The classification itself can be run on any dump, and the script will filter any already labeled messages before prediction.
 
 The output can be given to the `reducer.py` script, but only if it has been sorted on the first column of the output (the group or the score of the line).
-This can be done using MapReduce as described later on. This generates a histogram of frequencies of the scores which can be passed to `plot.py` to
+This can be done using MapReduce as described later on, or by passing the output through `sort`. The `reducer.py` script generates a histogram of frequencies of the scores which can be passed to `plot.py` to
 make a graph of the frequencies.
 
 Groups
@@ -47,7 +47,8 @@ Groups
 
 The code by default uses the `id` of a record as its group. This means that only the analyzer and classifier will do something useful. The reducer and plot scripts do not work nicely when the data is grouped this way. In order to group the classified targets with something else, pass another group, such as `score` or `language`, to all relevant scripts.
 
-Note that for the `language` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py repos language` and then again use `python preprocess.py commit_comments`. The first command can also be parallelized using MPI. This can be done on one machine using `mpirun -n <num_processes> python preprocess.py repos language`. The instructions for running this distributed on the DAS are given in the installation instructions there, where the command is `pympi <num_processes> preprocess.py "repos language" --hostfile hosts --map-by node`.
+Note that for the `language` group, the preprocessor needs to retrieve more data, which can be done with `python preprocess.py repos language` and then again use `python preprocess.py commit_comments language`. These commands can also be distributed using MPI, in order to retrieve and process multiple dump files in parallel processes. Note that it is only necessary to paralellize the second command if one wants to receive all the commit comments dumps, whereas working with the `2015-01-29` dataset is usually enough.
+The MPI parallelization can be done on one machine using `mpirun -n <num_processes> python preprocess.py repos language`. The instructions for running the preprocessor on distributed worker nodes are given in the installation instructions for the DAS-3, where the command is `pympi <num_processes> preprocess.py "repos language" --hostfile hosts --map-by node`.
 
 Running the code in MapReduce
 -----------------------------
@@ -274,9 +275,19 @@ with:
     popd > /dev/null
     export VIRTUAL_ENV
 
-This has to be done to make the virtual environment really relocatable, otherwise we would still have Python 2.6 on the nodes.
+This has to be done to make the virtual environment actually relocatable, otherwise it would be nonfunctional on the nodes, where we would still have Python 2.6.
 
 Once everything is set up, check whether the Python scripts are distributed as follows: `pympi 8 mpi-test.py "" --hostfile hosts --map-by node`.
+
+MPI also allows running parts of the preprocessing and classification steps on the worker nodes. As explained in the Groups section, we can preprocess the repos dumps in order to extract the languages. We can also download all the commit comments dumps in this way, keep them on local hard drives, and use a pretrained model to classify all the comments. This can be done for the `language` group as an example, as follows:
+
+    $ python classify.py --model model.pickle --only-train [algorithm parameters]
+    $ pympi 8 preprocess.py "commit_comments language /local/SDDM" --hostfile hosts --map-by node
+    $ pympi 8 classify.py "language model.pickle /local/SDDM > \$HOSTNAME.dat" --hostfile hosts --map-by node
+    $ cat node*.dat | sort | python reducer.py language > all-group.dat
+    $ python plot.py language all-group.dat
+
+The training of the model only needs to be done once to create the `model.pickle` file for one algorithm. The preprocess script automatically creates the given local path on the worker nodes when necessary. The classifications also happen on the workers, and are collected in a shared location. This allows us to pass it to the reducer to group the data for the plot script. This means that MapReduce is not necessary to perform the classification in this way.
 
 Additional notes for installing Qt
 ----------------------------------
