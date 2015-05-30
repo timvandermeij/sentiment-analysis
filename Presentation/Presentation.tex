@@ -115,9 +115,9 @@
   \item GHTorrent project: bimonthly dumps from GitHub API
   \item Commit comments, issue comments, events, repositories\ldots
   \item 2015-01-29 commit comments dump: 182.282 comments, 165.427 Latin-only
-  \item All commit comments (17 dumps): 1.731.251, 434~MB compressed
+  \item Commit comments (17x): 1.731.251, 434~MB compressed
   \item Repository languages: 12.802.797 (1.3~GB), 10.8~GB unprocessed
-  \item BSON $\to$ JSON $\to$ preprocessor
+  \item BSON $\to$ JSON $\to$ preprocessor, example entry:
 \end{itemize}
 {\tiny\begin{verbatim}
 {
@@ -139,14 +139,14 @@
   \setlength\extrarowheight{6pt}
   \small
   \begin{tabular}{@{\,}r <{\hskip 2pt}!{\timeline} >{\raggedright\arraybackslash}p{9.5cm}}
-    & Setting up environment on DAS-3 with extensive README \\
+    & Setting up environment on DAS-3, extensive README \\
     & Implementation of positive/negative word lists approach \\
     & Implementation of automatic dataset download/extraction \\
     & Addition of new words and smileys after data inspection \\
     & Implementation of labeler \\
     & First implementation of classifier \\
-    & Code refactoring to create a framework of components \\
-    & Labeling 2000 training examples by hand \\
+    & Code refactoring: framework of components \\
+    & Manually labeling 2000 training examples \\
   \end{tabular}
 }
 \end{frame}
@@ -161,10 +161,10 @@
     & Implemention of generic preprocessor: download, extract, BSON to JSON and filter fields \\
     & Optimizations: more cores, shelves and extraction search time \\
     & Implementation of repositories preprocessing \\
-    & Multiprocessing using MPI for all repository dumps \\
+    & Multiprocessing (MPI) for repository dumps \\
     & Research on classifiers/regressors and parameters \\
-    & Implementation of an experiment runner with plotting \\
-    & Multiprocessing using MPI for all commit comments dumps \\
+    & Implementation of experiment runner with plotter \\
+    & Multiprocessing (MPI) for commit comments dumps \\
   \end{tabular}
 }
 \end{frame}
