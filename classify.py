@@ -192,6 +192,7 @@ def main(argv):
     parser.add_argument('-g','--group', default='id', help="Group name to group on. May be one of the groups in the data set, such as 'id' or 'score'.")
     parser.add_argument('-m','--model', dest='model_file', default='', help='Model file to read a trained model from or save the model to after training.')
     parser.add_argument('-f','--cv-folds', dest='cv_folds', type=int, nargs='?', default=0, const=5, metavar='FOLDS', help='Perform cross-validation with number of folds to use.')
+    parser.add_argument('-t','--only-train', dest='only_train', action='store_true', default=False, help='Stop after training the model. Ignored by --cv-folds.')
     parser.add_argument('-p','--path', default='', help='Path to read input files from.')
 
     # Additional algorithm parameters
@@ -234,7 +235,7 @@ def main(argv):
     classifier.create_model(train=not args.cv_folds, class_name=algorithm_class, parameters=algorithm_parameters, dense=algorithm['dense'])
     if args.cv_folds > 0:
         classifier.output_cross_validate(args.cv_folds)
-    else:
+    elif not args.only_train:
         if args.path != "" or sys.stdin.isatty():
             path = args.path
             if path != "" and path[-1] != "/":
