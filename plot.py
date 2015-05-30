@@ -180,7 +180,7 @@ class AlgoPlot(Plot):
             ax.set_xticklabels(combinations.keys())
 
             plt.grid(True)
-            self.end_plot(os.path.splitext(self.data_file)[0] + '-' + algorithm)
+            self.end_plot(os.path.splitext(self.data_file)[0] + '-' + algorithm.replace(' ','_'))
 
 def main(argv):
     group = argv[0] if len(argv) > 0 else "id"
