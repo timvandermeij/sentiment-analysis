@@ -108,3 +108,11 @@ class Utilities(object):
     def get_class(cls, module, class_name):
         module = importlib.import_module(module)
         return module.__dict__[class_name]
+
+    @classmethod
+    def print_algorithm(cls, algorithm_name, parameters):
+        # Print the classifier and its parameters nicely
+        parameter_string = ', '.join("%s=%r" % (key,val) for (key,val) in parameters.iteritems())
+        if parameter_string == "":
+            parameter_string = "none"
+        print(cls.get_colored_text(0, '::: {} ({}) :::'.format(algorithm_name, parameter_string)))

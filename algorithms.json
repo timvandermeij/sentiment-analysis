@@ -58,6 +58,16 @@
         }
     },
     {
+        "class_name": "PassiveAggressiveRegressor",
+        "module": "sklearn.linear_model.passive_aggressive",
+        "name": "Passive aggressive regressor",
+        "parameters": {
+            "C": [
+                0.3
+            ]
+        }
+    },
+    {
         "class_name": "PassiveAggressiveClassifier",
         "module": "sklearn.linear_model.passive_aggressive",
         "name": "Passive aggressive classifier",

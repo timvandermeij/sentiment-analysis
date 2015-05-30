@@ -54,11 +54,7 @@ def main(argv):
             # Create the model according to the parameters
             classifier.create_model(train=False, class_name=class_name, parameters=parameters, dense=dense)
 
-            # Print the classifier and its parameters nicely
-            parameter_string = ', '.join("%s=%r" % (key,val) for (key,val) in parameters.iteritems())
-            if parameter_string == "":
-                parameter_string = "none"
-            print(Utilities.get_colored_text(0, '::: {} ({}) :::'.format(algorithm['name'], parameter_string)))
+            Utilities.print_algorithm(algorithm['name'], parameters)
 
             # Run cross-validation and print results
             result = classifier.output_cross_validate(folds)

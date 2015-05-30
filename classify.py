@@ -149,20 +149,16 @@ class Algorithms(object):
 
         for parameter, values in algorithm['parameters'].iteritems():
             if parameter in self.parameters:
-                self.parameters[parameter]["classes"].append(algorithm['class_name'])
-                self.parameters[parameter]["values"].extend(values)
+                self.parameters[parameter][algorithm['class_name']] = values
             else:
-                self.parameters[parameter] = {
-                    "classes": [algorithm['class_name']],
-                    "values": values,
-                }
+                self.parameters[parameter] = OrderedDict({algorithm['class_name']: values})
 
     def read_manifest(self):
         # Read the manifest containing algorithm descriptions for extra 
         # options. Store some algorithm data (module, dense, parameter names) 
         # as well as parameter data (classes they belong to, example values).
         with open('algorithms.json', 'r') as manifest:
-            algorithms = json.load(manifest)
+            algorithms = json.load(manifest, object_pairs_hook=OrderedDict)
             for algorithm in algorithms:
                 if 'disabled' in algorithm and algorithm['disabled']:
                     continue
@@ -175,7 +171,8 @@ class Algorithms(object):
                 if 'Classifier' in algorithm['class_name']:
                     algorithm['class_name'] = algorithm['class_name'].replace('Classifier','' if 'Ridge' in algorithm['class_name'] else 'Regressor')
                     algorithm['module'] = algorithm['module'].replace('classification','regression')
-                    self.add_algorithm(algorithm)
+                    if algorithm['class_name'] not in self.algorithms:
+                        self.add_algorithm(algorithm)
 
         return self.parameters, self.algorithms
 
@@ -200,23 +197,24 @@ def main(argv):
     parameters, algorithms = algos.read_manifest()
 
     parser.add_argument('--algorithm', default='RandomForestClassifier', choices=algorithms.keys(), help='Model algorithm to use for training and predictions')
-    for parameter, options in parameters.iteritems():
+    for parameter, versions in parameters.iteritems():
         kw = {
             "dest": parameter,
-            "help": 'Only for {} {}'.format(', '.join(options["classes"]), 'algorithm' if len(options["classes"]) == 1 else 'algorithms')
+            "help": 'Only for {} {}'.format(', '.join(versions.keys()), 'algorithm' if len(versions) == 1 else 'algorithms')
         }
 
-        if len(options["values"]) > 0:
-            kw["default"] = options["values"][0]
-
-            if isinstance(options["values"][0],(int,float)):
-                kw["type"] = type(options["values"][0])
-            elif isinstance(options["values"][0],(str,unicode)):
+        values = list(itertools.chain(*versions.values()))
+        if len(values) > 0:
+            # Can't set a default here since it might depend per algorithm.
+            if isinstance(values[0],(int,float)):
+                kw["type"] = type(values[0])
+            elif isinstance(values[0],(str,unicode)):
                 # Remove duplicates
-                kw["choices"] = [k for k,v in itertools.groupby(options["values"])]
-            elif isinstance(options["values"][0],list):
-                kw["nargs"] = len(options["values"][0])
-                kw["type"] = type(options["values"][0][0])
+                values.sort()
+                kw["choices"] = [k for k,v in itertools.groupby(values)]
+            elif isinstance(values[0],list):
+                kw["nargs"] = len(values[0])
+                kw["type"] = type(values[0][0])
 
         parser.add_argument('--{}'.format(parameter.replace('_','-')), **kw)
 
@@ -229,8 +227,12 @@ def main(argv):
 
     algorithm_parameters = {}
     for parameter in algorithm['parameters']:
-        algorithm_parameters[parameter] = args.__dict__[parameter]
+        if args.__dict__[parameter] is None:
+            algorithm_parameters[parameter] = parameters[parameter][args.algorithm][0]
+        else:
+            algorithm_parameters[parameter] = args.__dict__[parameter]
 
+    Utilities.print_algorithm(args.algorithm, algorithm_parameters)
     classifier = Classifier(args.group, args.model_file)
     classifier.create_model(train=not args.cv_folds, class_name=algorithm_class, parameters=algorithm_parameters, dense=algorithm['dense'])
     if args.cv_folds > 0:
