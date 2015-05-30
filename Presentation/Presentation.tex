@@ -154,9 +154,10 @@
     & Implementation of positive/negative word lists approach \\
     & Implementation of automatic dataset download/extraction \\
     & Addition of new words and smileys after data inspection \\
-    & Implementation of labeler \\
-    & First implementation of classifier \\
-    & Code refactoring: framework of components \\
+    & Better word splitting and non-Latin message filter \\
+    & Implementation of labeler and colored output \\
+    & First implementation of classifier with MapReduce support \\
+    & Code refactoring: component framework, memory reduction \\
     & Manually labeling 2000 training examples \\
   \end{tabular}
 }
@@ -169,13 +170,17 @@
   \vspace{0.5cm}
   \setlength\extrarowheight{6pt}
   \begin{tabular}{@{\,}r <{\hskip 2pt}!{\timeline} >{\raggedright\arraybackslash}p{9.5cm}}
-    & Implemention of generic preprocessor: download, extract, BSON to JSON and filter fields \\
-    & Optimizations: more cores, shelves and extraction search time \\
+    & Generic preprocessor: download, extract, convert and filter fields \\
+    % I assume "extraction search time" referred to the problem of how the tar 
+    % files were extracted, but that was a bit too specific since we made other 
+    % optimizations/clarifications in the preprocessor as well.
+    & Optimizations: more cores, shelves and extraction, model output \\
+    & Plot script for various results and output/display formats \\
     & Implementation of repositories preprocessing \\
-    & Multiprocessing (MPI) for repository dumps \\
-    & Research on classifiers/regressors and parameters \\
+    & Distributed processing (MPI) for repository dumps \\
+    & Research on classifiers/regressors and parameters, cross-validation \\
     & Implementation of experiment runner with plotter \\
-    & Multiprocessing (MPI) for commit comments dumps \\
+    & Distributed processing (MPI) for commit comments dumps \\
   \end{tabular}
 }
 \end{frame}
