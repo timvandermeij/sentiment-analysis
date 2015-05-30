@@ -127,7 +127,7 @@ class GroupPlot(Plot):
                 P.loc[i,'yNeg'] = (((group['x'] < 0.0) * w).sum() / gs)
                 i = i + 1
 
-        # Filter groups that are have very few comments.
+        # Filter groups that have very few comments.
         ms = max(P['gs'])
         P = P.loc[P['gs'] > 0.0005 * ms]
 
