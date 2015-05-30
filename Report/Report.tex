@@ -10,8 +10,12 @@
 \usepackage[english]{babel}
 \usepackage{parskip}
 \usepackage{hyperref}
+\usepackage[backend=bibtex, sorting=none]{biblatex}
 
-% Configuration
+% Bibliography file
+\bibliography{Report.bib}
+
+% Hyperlink configuration
 \hypersetup{colorlinks,linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
 
 % Document contents
@@ -88,12 +92,12 @@ introduction in Section~\ref{sec:introduction}, the GitHub commit comments
 dataset contains comments that reviewers have attached to specific lines of
 a Git commit or to an entire Git commit.
 
-% TODO: Add reference for GHTorrent
-The dataset is provided by the GHTorrent project, which publishes incremental
-and categorized dumps of data from the publicly available GitHub API\@. We
-only use the commit comment dumps and the repository dumps for our work, but,
-among others, issue comments, pull request comments and events are also
-available. Every two months a new incremental dump is published.
+The dataset is provided by the GHTorrent project~\cite{ghtorrent}, which
+publishes incremental and categorized dumps of data from the publicly
+available GitHub API\@. We only use the commit comment dumps and the
+repository dumps for our work, but, among others, issue comments, pull
+request comments and events are also available. Every two months a new
+incremental dump is published.
 
 % TODO: Add characteristics table for both dumps
 We now focus on the two types of dumps we use for our work, which are the
@@ -136,5 +140,8 @@ in the repository.
 
 \section{Conclusion}\label{sec:conclusion}
 \ldots
+
+\section{References}\label{sec:references}
+\printbibliography[heading=none]
 
 \end{document}

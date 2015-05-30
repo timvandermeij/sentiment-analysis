@@ -4,6 +4,7 @@ pdf: $(NAME).pdf
 
 $(NAME).pdf: $(NAME).tex
 	pdflatex $(NAME)
+	bibtex $(NAME)
 	pdflatex $(NAME)
 
 clean:
