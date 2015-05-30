@@ -111,15 +111,26 @@
 % Regular slide
 \setbeamertemplate{navigation symbols}{}
 \begin{frame}[fragile]{Dataset}
+\vspace*{-26pt}
+\begin{table}[h]
+  \centering
+  {\setlength{\tabcolsep}{3pt}\footnotesize
+  \begin{tabular}{|l|r|l|} \hline
+    Dump                       &   \# items & Size \\ \hline
+    2015-01-29 commit comments &    182.282 & 43~MB compressed, 267~MB BSON
+    \\ \hline
+    2015-01-29 Latin-only      &    165.427 & 42~MB processed JSON \\ \hline
+    Commit comments (17 dumps) &  1.731.251 & 434~MB compressed \\ \hline
+    Repositories (languages)   & 12.802.797 & 10.8~GB compressed, 1.3~GB shelf 
+    \\ \hline
+  \end{tabular}}
+\end{table}
 \begin{itemize}
   \item GHTorrent project: bimonthly dumps from GitHub API
   \item Commit comments, issue comments, events, repositories\ldots
-  \item 2015-01-29 commit comments dump: 182.282 comments, 165.427 Latin-only
-  \item Commit comments (17x): 1.731.251, 434~MB compressed
-  \item Repository languages: 12.802.797 (1.3~GB), 10.8~GB unprocessed
   \item BSON $\to$ JSON $\to$ preprocessor, example entry:
 \end{itemize}
-{\tiny\begin{verbatim}
+{\scriptsize\begin{verbatim}
 {
     "id": 8771097,
     "body": "It seems e.offsetX is not the way to get the relative
@@ -143,9 +154,10 @@
     & Implementation of positive/negative word lists approach \\
     & Implementation of automatic dataset download/extraction \\
     & Addition of new words and smileys after data inspection \\
-    & Implementation of labeler \\
-    & First implementation of classifier \\
-    & Code refactoring: framework of components \\
+    & Better word splitting and non-Latin message filter \\
+    & Implementation of labeler and colored output \\
+    & First implementation of classifier with MapReduce support \\
+    & Code refactoring: component framework, memory reduction \\
     & Manually labeling 2000 training examples \\
   \end{tabular}
 }
@@ -158,13 +170,17 @@
   \vspace{0.5cm}
   \setlength\extrarowheight{6pt}
   \begin{tabular}{@{\,}r <{\hskip 2pt}!{\timeline} >{\raggedright\arraybackslash}p{9.5cm}}
-    & Implemention of generic preprocessor: download, extract, BSON to JSON and filter fields \\
-    & Optimizations: more cores, shelves and extraction search time \\
+    & Generic preprocessor: download, extract, convert and filter fields \\
+    % I assume "extraction search time" referred to the problem of how the tar 
+    % files were extracted, but that was a bit too specific since we made other 
+    % optimizations/clarifications in the preprocessor as well.
+    & Optimizations: more cores, shelves and extraction, model output \\
+    & Plot script for various results and output/display formats \\
     & Implementation of repositories preprocessing \\
-    & Multiprocessing (MPI) for repository dumps \\
-    & Research on classifiers/regressors and parameters \\
+    & Distributed processing (MPI) for repository dumps \\
+    & Research on classifiers/regressors and parameters, cross-validation \\
     & Implementation of experiment runner with plotter \\
-    & Multiprocessing (MPI) for commit comments dumps \\
+    & Distributed processing (MPI) for commit comments dumps \\
   \end{tabular}
 }
 \end{frame}
