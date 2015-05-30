@@ -68,6 +68,7 @@ class Preprocessor(object):
     BSON_FILE_DIR = "dump/github/"
 
     def __init__(self, process_id, path, *a):
+        self.process_id = str(process_id)
         self.dataset = ''
         self.bson_file = ''
         self.path = ''
@@ -76,11 +77,12 @@ class Preprocessor(object):
         if path != "" and path[-1] != "/":
             path = path + "/"
 
-        self.path = path + str(process_id) + '/'
-        if not os.path.exists(self.path):
+        if self.process_id != '':
+            self.path = path + self.process_id + '/'
+
+        if path != '' and not os.path.exists(self.path):
             os.makedirs(self.path, 0700)
 
-        self.process_id = str(process_id)
 
     def preprocess(self):
         self.get_bson()
@@ -266,11 +268,15 @@ class Process(object):
         # perform sequentially
         dates = self.get_downloads(self.task + '-dump')
         for tag in xrange(len(dates)):
-            if self.task == "commit_comments" and dates[tag]['date'] == '2015-01-29':
-                # We only need the labeled dump when not running MPI
+            if self.task == "commit_comments":
+                if dates[tag]['date'] == '2015-01-29':
+                    # We only need the labeled dump when not running MPI
+                    preprocessor = self.preprocessor('', self.path, dates[tag]['date'], self.group)
+                    preprocessor.preprocess()
+                    break
+            else:
                 preprocessor = self.preprocessor(tag, self.path, dates[tag]['date'], self.group)
                 preprocessor.preprocess()
-                break
 
     def run_master(self):
         print('MASTER on node {}'.format(socket.gethostname()))
