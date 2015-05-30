@@ -26,6 +26,7 @@ hosts
 !plots/*.pdf
 !Presentation/img/*.pdf
 !Presentation/img/*.eps
+!Presentation/random-forest-plot.pdf
 *.dot
 *.svg
 

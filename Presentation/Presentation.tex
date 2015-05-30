@@ -170,18 +170,70 @@
 \end{frame}
 
 % Regular slide
+% TODO: add why we do not want a regressor here?
+% TODO: passive aggressive is better than random forest, so why are the language plots
+%       made with a random forest regressor?
 \setbeamertemplate{navigation symbols}{}
 \begin{frame}[fragile]{Experiments and results}
 \begin{itemize}
-  \item \ldots
+  \item First: determining best classifier to use
+  \item Manifest with 15 different classifiers
+  \item Using experiment runner to test various configurations
+  \item Best scores on training set: linear SVC, passive aggressive and random forest
 \end{itemize}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Experiments and results (continued)}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{random-forest-plot.pdf}
+  \end{figure}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Experiments and results (continued)}
+\begin{itemize}
+  \item Now: combine all developments to show potential of approach
+  \item Sentiment analysis on all commit comments
+  \item Goal: visualize languages by negative/positive comments
+  \item Bot outputs taken into account
+  \item Passing tests can be seen as positive, failing tests as negative
+\end{itemize}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Experiments and results (continued)}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{../plots/all-group-neg.pdf}
+  \end{figure}
+\end{frame}
+
+% Regular slide
+\setbeamertemplate{navigation symbols}{}
+\begin{frame}[fragile]{Experiments and results (continued)}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{../plots/all-group-pos.pdf}
+  \end{figure}
 \end{frame}
 
 % Regular slide
 \setbeamertemplate{navigation symbols}{}
 \begin{frame}[fragile]{Conclusion}
 \begin{itemize}
-  \item \ldots
+  \item Implemented a framework for distributed sentiment analysis on
+        GitHub commit comments
+  \item Applied obtained knowledge to visualize most positive and
+        negative languages based on commit comments
+  \item Bigger potential: can be extended to users, repositories,
+        communities, \ldots
+  \item Interesting field of research, especially in combination with
+        distributed data mining
 \end{itemize}
 \end{frame}
 
