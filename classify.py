@@ -11,6 +11,8 @@ import linecache
 import json
 import os
 import pickle
+import argparse
+from collections import OrderedDict
 from glob import glob
 from utils import Utilities
 
@@ -133,27 +135,108 @@ class Classifier(object):
             g = "{}\t".format(self.test_group[i]) if self.group != "score" else ""
             print("{}{:.2f}{}".format(g, prediction, message))
 
-def main(argv):
-    group = argv[0] if len(argv) > 0 else "id"
-    model_file = argv[1] if len(argv) > 1 else ""
-    path = argv[2] if len(argv) > 2 else ""
-    cv_folds = 0
-    if model_file.isdigit():
-        cv_folds = int(model_file) if model_file != '0' else 5
-        model_file = ""
+class Algorithms(object):
+    def __init__(self):
+        self.parameters = OrderedDict()
+        self.algorithms = OrderedDict()
 
-    algorithm_class = RandomForestRegressor
-    algorithm_parameters = {
-        'n_estimators': 100,
-        'n_jobs': 2,
-        'min_samples_split': 10
-    }
-    classifier = Classifier(group, model_file)
-    classifier.create_model(train=not cv_folds, class_name=algorithm_class, parameters=algorithm_parameters)
-    if cv_folds > 0:
-        classifier.output_cross_validate(cv_folds)
+    def add_algorithm(self, algorithm):
+        self.algorithms[algorithm['class_name']] = {
+            "module": algorithm['module'],
+            "dense": algorithm['dense'] if 'dense' in algorithm else False,
+            "parameters": algorithm['parameters'].keys()
+        }
+
+        for parameter, values in algorithm['parameters'].iteritems():
+            if parameter in self.parameters:
+                self.parameters[parameter]["classes"].append(algorithm['class_name'])
+                self.parameters[parameter]["values"].extend(values)
+            else:
+                self.parameters[parameter] = {
+                    "classes": [algorithm['class_name']],
+                    "values": values,
+                }
+
+    def read_manifest(self):
+        # Read the manifest containing algorithm descriptions for extra 
+        # options. Store some algorithm data (module, dense, parameter names) 
+        # as well as parameter data (classes they belong to, example values).
+        with open('algorithms.json', 'r') as manifest:
+            algorithms = json.load(manifest)
+            for algorithm in algorithms:
+                if 'disabled' in algorithm and algorithm['disabled']:
+                    continue
+                
+                self.add_algorithm(algorithm)
+
+                # There actually aren't any regressors in the algorithms.json, 
+                # but we allow them by searching for a regressor with a similar 
+                # name and assume all parameters are the same.
+                if 'Classifier' in algorithm['class_name']:
+                    algorithm['class_name'] = algorithm['class_name'].replace('Classifier','' if 'Ridge' in algorithm['class_name'] else 'Regressor')
+                    algorithm['module'] = algorithm['module'].replace('classification','regression')
+                    self.add_algorithm(algorithm)
+
+        return self.parameters, self.algorithms
+
+def main(argv):
+    if len(argv) > 0 and not argv[0].startswith('-'):
+        # Backward compatible arguments
+        argv.insert(0,'--group')
+        if len(argv) > 2:
+            argv.insert(2,'--cv-folds' if argv[2].isdigit() else '--model')
+        if len(argv) > 4:
+            argv.insert(4,'--path')
+
+    parser = argparse.ArgumentParser(description='Train a model, cross-validate or predict commit message scores')
+    parser.add_argument('-g','--group', default='id', help="Group name to group on. May be one of the groups in the data set, such as 'id' or 'score'.")
+    parser.add_argument('-m','--model', dest='model_file', default='', help='Model file to read a trained model from or save the model to after training.')
+    parser.add_argument('-f','--cv-folds', dest='cv_folds', type=int, nargs='?', default=0, const=5, metavar='FOLDS', help='Perform cross-validation with number of folds to use.')
+    parser.add_argument('-p','--path', default='', help='Path to read input files from.')
+
+    # Additional algorithm parameters
+    algos = Algorithms()
+    parameters, algorithms = algos.read_manifest()
+
+    parser.add_argument('--algorithm', default='RandomForestClassifier', choices=algorithms.keys(), help='Model algorithm to use for training and predictions')
+    for parameter, options in parameters.iteritems():
+        kw = {
+            "dest": parameter,
+            "help": 'Only for {} {}'.format(', '.join(options["classes"]), 'algorithm' if len(options["classes"]) == 1 else 'algorithms')
+        }
+
+        if len(options["values"]) > 0:
+            kw["default"] = options["values"][0]
+
+            if isinstance(options["values"][0],(int,float)):
+                kw["type"] = type(options["values"][0])
+            elif isinstance(options["values"][0],(str,unicode)):
+                # Remove duplicates
+                kw["choices"] = [k for k,v in itertools.groupby(options["values"])]
+            elif isinstance(options["values"][0],list):
+                kw["nargs"] = len(options["values"][0])
+                kw["type"] = type(options["values"][0][0])
+
+        parser.add_argument('--{}'.format(parameter.replace('_','-')), **kw)
+
+    # Parse the arguments now that all arguments are known
+    args = parser.parse_args(argv)
+
+    # Convert chosen algorithm to classifier class and parameters
+    algorithm = algorithms[args.algorithm]
+    algorithm_class = Utilities.get_class(algorithm['module'], args.algorithm)
+
+    algorithm_parameters = {}
+    for parameter in algorithm['parameters']:
+        algorithm_parameters[parameter] = args.__dict__[parameter]
+
+    classifier = Classifier(args.group, args.model_file)
+    classifier.create_model(train=not args.cv_folds, class_name=algorithm_class, parameters=algorithm_parameters, dense=algorithm['dense'])
+    if args.cv_folds > 0:
+        classifier.output_cross_validate(args.cv_folds)
     else:
-        if path != "" or sys.stdin.isatty():
+        if args.path != "" or sys.stdin.isatty():
+            path = args.path
             if path != "" and path[-1] != "/":
                 path = path + "/"
 

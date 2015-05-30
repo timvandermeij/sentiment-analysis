@@ -1,5 +1,6 @@
 import json
 import re
+import importlib
 
 class Utilities(object):
     COLORS = {1: '\033[1;32m', -1: '\033[1;31m', 0: '\033[1m', 'head': '\033[1;36m', 'end': '\033[0m'}
@@ -102,3 +103,8 @@ class Utilities(object):
         output = open(filename, 'a')
         output.write(json.dumps(json_object) + '\n')
         output.close()
+
+    @classmethod
+    def get_class(cls, module, class_name):
+        module = importlib.import_module(module)
+        return module.__dict__[class_name]

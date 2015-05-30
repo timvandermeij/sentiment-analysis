@@ -8,7 +8,6 @@ from sklearn.svm import *
 import sys
 import os
 import itertools
-import importlib
 import json
 from collections import OrderedDict
 from classify import Classifier
@@ -41,8 +40,7 @@ def main(argv):
             continue
 
         # Convert manifest entries to classifier class and parameters
-        module = importlib.import_module(algorithm['module'])
-        class_name = module.__dict__[algorithm['class_name']]
+        class_name = Utilities.get_class(algorithm['module'], algorithm['class_name'])
         dense = algorithm['dense'] if 'dense' in algorithm else False
 
         # Create all possible combinations of parameters.
