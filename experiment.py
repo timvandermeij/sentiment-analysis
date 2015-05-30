@@ -45,6 +45,9 @@ def main(argv):
 
         # Create all possible combinations of parameters.
         parameter_combinations = itertools.product(*algorithm['parameters'].values())
+
+        single_parameters = [param for param,values in algorithm['parameters'].iteritems() if len(values) == 1]
+        string_parameters = [param for param,values in algorithm['parameters'].iteritems() if isinstance(values[0],(str,unicode))]
         for combination in parameter_combinations:
             classifier = Classifier('id')
 
@@ -55,16 +58,21 @@ def main(argv):
             classifier.create_model(train=False, class_name=class_name, parameters=parameters, dense=dense)
 
             Utilities.print_algorithm(algorithm['name'], parameters)
+            parameter_string = Utilities.get_parameter_string(parameters, single_parameters + string_parameters)
 
             # Run cross-validation and print results
             result = classifier.output_cross_validate(folds)
             print('')
 
+            name = algorithm['name']
+            for param in string_parameters:
+                name += ", %s=%s" % (param,parameters[param])
+
             # Write the result measurements into the results dictionary.
-            if algorithm['name'] not in results:
-                results[algorithm['name']] = OrderedDict()
+            if name not in results:
+                results[name] = OrderedDict()
             
-            results[algorithm['name']].update({
+            results[name].update({
                 parameter_string: {
                     'average': result.mean(),
                     'standard_deviation': result.std()

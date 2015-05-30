@@ -110,9 +110,13 @@ class Utilities(object):
         return module.__dict__[class_name]
 
     @classmethod
+    def get_parameter_string(cls, parameters, filter=[]):
+        return ', '.join("%s=%r" % (key,val) for (key,val) in parameters.iteritems() if key not in filter)
+
+    @classmethod
     def print_algorithm(cls, algorithm_name, parameters):
         # Print the classifier and its parameters nicely
-        parameter_string = ', '.join("%s=%r" % (key,val) for (key,val) in parameters.iteritems())
+        parameter_string = cls.get_parameter_string(parameters)
         if parameter_string == "":
             parameter_string = "none"
         print(cls.get_colored_text(0, '::: {} ({}) :::'.format(algorithm_name, parameter_string)))

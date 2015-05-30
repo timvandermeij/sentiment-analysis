@@ -232,7 +232,9 @@ def main(argv):
         else:
             algorithm_parameters[parameter] = args.__dict__[parameter]
 
-    Utilities.print_algorithm(args.algorithm, algorithm_parameters)
+    if args.only_train or args.cv_folds > 0:
+        Utilities.print_algorithm(args.algorithm, algorithm_parameters)
+
     classifier = Classifier(args.group, args.model_file)
     classifier.create_model(train=not args.cv_folds, class_name=algorithm_class, parameters=algorithm_parameters, dense=algorithm['dense'])
     if args.cv_folds > 0:
