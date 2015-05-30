@@ -266,10 +266,10 @@ class Process(object):
         # perform sequentially
         dates = self.get_downloads(self.task + '-dump')
         for tag in xrange(len(dates)):
-            preprocessor = self.preprocessor(tag, self.path, dates[tag]['date'], self.group)
-            preprocessor.preprocess()
-            if self.task == "commit_comments":
-                # We only need the latest dump when not running MPI
+            if self.task == "commit_comments" and dates[tag]['date'] == '2015-01-29':
+                # We only need the labeled dump when not running MPI
+                preprocessor = self.preprocessor(tag, self.path, dates[tag]['date'], self.group)
+                preprocessor.preprocess()
                 break
 
     def run_master(self):
