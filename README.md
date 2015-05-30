@@ -344,3 +344,34 @@ References
 ==========
 
 * https://github.com/jeffreybreen/twitter-sentiment-analysis-tutorial-201107/tree/master/data/opinion-lexicon-English (positive and negative word lists)
+* http://streamhacker.com/2010/05/10/text-classification-sentiment-analysis-naive-bayes-classifier/ (NLTK Naive Bayes classification, not used)
+* http://www.cs.duke.edu/courses/spring14/compsci290/assignments/lab02.html#tf-idf-in-scikit-learn (TF.IDF in NLTK with stemming, not used)
+* http://stackoverflow.com/questions/3667865/python-tarfile-progress-output (preprocess progress)
+
+Related research:
+* http://geeksta.net/geeklog/exploring-expressions-emotions-github-commit-messages/ (word lists approach)
+* http://www.win.tue.nl/~aserebre/msr14daniel.pdf (Security and Emotion: Sentiment Analysis of Security Discussions on GitHub)
+
+Scikit Learn:
+* http://scikit-learn.org/stable/modules/classes.html
+* http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html (transformers and pipeline)
+
+Hadoop:
+* http://hadoop.apache.org/docs/r1.2.1/streaming.html
+* http://henning.kropponline.de/2014/07/18/virtualenv-hadoop-streaming/
+* https://altiscale.zendesk.com/hc/en-us/articles/200681097-Using-Python-Virtual-Environments-In-Hadoop
+* http://www.michael-noll.com/tutorials/writing-an-hadoop-mapreduce-program-in-python/
+* http://stackoverflow.com/questions/14291170/how-does-hadoop-process-records-records-split-across-block-boundaries
+
+MPI and SSH:
+* API Documentation:
+  * http://mpi4py.scipy.org/docs/usrman/index.html
+  * http://mpi4py.scipy.org/docs/apiref/mpi4py.MPI.Comm-class.html
+* Idle jobs:
+  * https://groups.google.com/forum/#!topic/mpi4py/nArVuMXyyZI
+  * https://groups.google.com/forum/#!topic/mpi4py/Y0HrQkaPeNs
+  * https://groups.google.com/forum/#!topic/mpi4py/LDHbzApI55c
+* http://www.open-mpi.org/faq/?category=running
+* http://www.open-mpi.org/faq/?category=rsh#ssh-keys (MPI setup)
+* http://arc.liv.ac.uk/SGE/howto/hostbased-ssh.html (unsafe and nonfunctional authentication)
+* https://developer.github.com/guides/using-ssh-agent-forwarding/ (agent forwarding)
