@@ -126,9 +126,45 @@ framework as it provides a great speed-up when working with the large
 datasets that we use, of which more details are given in
 Section~\ref{sec:dataset}.
 
-% TODO: discuss word list approach
-% TODO: discuss classifier approach
-\ldots
+We implement two different approaches for performing sentiment analysis. The
+first approach is the word list approach. Given a text, we split the text into
+individual words and for each word we test if the word appears in fixed lists
+of positive and negative words. We count the number of positive and negative
+words in the text and perform a majority vote for the final classification
+of positive, negative or neutral. This is a basic approach that is expected to
+work reasonably well, but at the same time we forsee issues with this approach.
+For instance, if the algorithm encounters the word `good', it will treat that
+word as positive, but if that word is preceded by the word `not', then the
+meaning is actually negative. The algorithm, because of its simplicity, will
+not be able to distinguish these cases. This shows the main problem of this
+approach: because we only look at individual words, we omit the context in
+which these words appear.
+
+To overcome these issues and to actually take context into account, we implement
+a second approach that uses a classifier to do the classification. With this
+approach we do not need any fixed word lists. The classifier will learn what
+positive, negative and neutral texts are from training examples. There are two
+main difficulties for this approach, namely that there is no labeled training
+set available for the dataset we are working with and it is not clear which
+classifier would be the best fit for the data. We therefore start by manually
+labeling 2000 commit comments as positive, negative or neutral. Once we have a
+training set, we can train many different classifiers, such as a random forest
+classifier or a Gaussian naive Bayes classifier, and perform five-fold
+cross-validation to get an idea of which classifier is the best fit for the
+data. After having trained the best classifier with the training set, we treat
+the data that has not been used for the training set as the test set. We
+provide the test set to the classifier and let the classifier put positive,
+negative or neutral labels on the commit comments based on learned information
+from the training phase.
+
+To show the potential of the latter approach, we supplement each commit
+comment with the main programming language of the repository it belongs to.
+We perform sentiment analysis on the test data and with the resulting labels
+for each commit comment we visualize the distribution of positive and negative
+commit comments per programming language. This is done in order to obtain
+insight into the sentiment of developers that work with different programming
+languages. It is not hard to imagine that the results of sentiment analysis on
+this dataset can be used to obtain many more interesting insights.
 
 \section{Dataset}\label{sec:dataset}
 We use the GitHub commit comments dataset for our work. As described in the
