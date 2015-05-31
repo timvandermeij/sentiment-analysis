@@ -89,7 +89,33 @@ develop a complete sentiment analysis framework in Python that contains all
 techniques discussed in this report. The implementation is further outlined in 
 Section~\ref{sec:implementation}.
 
-% TODO: discuss sentiment analysis and goal (classification pos/neg/neutral)
+Sentiment analysis is used to extract subjective information from text, audio
+or other multimedia. Examples of this subjective information are opinions,
+judgements or emotions on a certain topic. Multiple types of sentiment analysis
+exist, but the most used ones are classification of content into an emotion
+category (such as `happy', `angry' or `disappointed') or classification of
+content as being positive, negative or neutral. Since sentiment analysis
+yields a probability score for all categories, we are also able to numerically
+compare the sentiment in different content, making it possible to determine if
+one text is more positive than another, for example. Our work focusses on
+performing sentiment analysis on textual content and classifying the textual
+content as being positive, negative or neutral.
+
+Being able to automatically classify content into fixed categories can yield
+previously unknown insights. Because of this, sentiment analysis is becoming
+increasingly important for companies all over the world that want to know how
+users review their products or services. For instance, web shops like Amazon
+are interested in determining which products reviewers are positive about.
+With this information Amazon might decide to recommend those products over
+products with less positive reviews, thereby increasing customer satisfaction
+and revenues.
+
+Sentiment analysis is troubled by the limitations of natural language processing
+as well as by the large amounts of available data. Natural language processing
+limitations include, but are not limited to, making proper use of context and
+detecting sarcasm. On top of that, sentiment analysis on a single text should be
+fast in order to make working with a large dataset feasible.
+
 % TODO: discuss distributed approach and refer to dataset section for numbers
 % TODO: discuss word list approach
 % TODO: discuss classifier approach
