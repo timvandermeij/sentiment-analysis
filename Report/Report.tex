@@ -99,7 +99,6 @@ repository dumps for our work, but, among others, issue comments, pull
 request comments and events are also available. Every two months a new
 incremental dump is published.
 
-% TODO: Add characteristics table for both dumps
 We now focus on the two types of dumps we use for our work, which are the
 commit comments and repository dumps. The former is used for the sentiment
 analysis, while the latter is used to assign to a commit the main programming
@@ -128,6 +127,33 @@ The repositories dump is very similar, however, from that dump we only
 extract the {\tt full\_name} field which contains the repository name and
 the {\tt language} field which contains the main programming language used
 in the repository.
+
+The characteristics of both datasets (commit comments and repositories) are
+listed in Table~\ref{tab:dataset}. We list details of the 2015--01--29
+commit comments dump as that dump has been used for manually labeling commit
+comments to create a training set, which we discuss in
+Section~\ref{sec:implementation}. Furthermore we list details of the
+2015--01--29 commit comments dump when all comments with non-Latin characters
+(Chinese, Russian, et cetera) have been removed. Those comments are not
+relevant for our research as we only focus on English commit comments. Finally
+we list the details for all commit comment dumps and all repository dumps. In
+the table, `preprocessed' indicates that we have applied our preprocessor to
+remove unneeded fields for our research.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{|l|r|l|}
+    \hline
+    \textbf{Dump}                           & \textbf{\# items} & \textbf{Size}                           \\ \hline
+    2015--01--29 commit comments            & 182.282           & 43~MB compressed, 267~MB uncompressed   \\ \hline
+    2015--01--29 Latin-only commit comments & 165.427           & 42~MB preprocessed                      \\ \hline
+    Commit comments (17 dumps)              & 1.731.251         & 434~MB compressed                       \\ \hline
+    Repositories (17 dumps)                 & 12.802.797        & 10.8~GB compressed, 1.3~GB preprocessed \\
+    \hline
+  \end{tabular}
+  \caption{Characteristics of the GitHub commit comment and repository datasets.}
+  \label{tab:dataset}
+\end{table}
 
 \section{Implementation}\label{sec:implementation}
 \ldots
