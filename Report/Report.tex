@@ -27,19 +27,18 @@
 \maketitle
 
 \begin{abstract}
-    In this report we discuss performing sentiment analysis on GitHub
-    commit comments. We describe the problems and solutions related to
-    downloading and preprocessing the dataset and gaining insights
-    into the data using a naive implementation that uses lists with
-    positive and negative words. After manually labeling 2000 training
-    examples, we benchmark several classification algorithms and we use
-    the most promising classifier in our final implementation where we
-    apply the trained classifier on the entire dataset. We visualize
-    the overall sentiment per programming language to show the potential
-    of our approach. Distributing work is key when working with such a
-    large dataset, hence getting the data, preprocessing it and
-    performing the sentiment analysis is all done in a distributed
-    manner with help of OpenMPI and MapReduce.
+  In this report we discuss performing sentiment analysis on GitHub commit
+  comments. We describe the problems and solutions related to downloading and
+  preprocessing the dataset and gaining insights into the data using a naive
+  implementation that uses lists with positive and negative words. After
+  manually labeling 2000 training examples, we benchmark several classification
+  algorithms and we use the most promising classifier in our final
+  implementation where we apply the trained classifier on the entire dataset.
+  We visualize the overall sentiment per programming language to show the
+  potential of our approach. Distributing work is key when working with such a
+  large dataset, hence getting the data, preprocessing it and performing the
+  sentiment analysis is all done in a distributed manner with help of OpenMPI
+  and MapReduce.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
@@ -84,6 +83,16 @@ results of the experiments in Section~\ref{sec:results}. We conclude our work in
 Section~\ref{sec:conclusion}.
 
 \section{Problem statement}\label{sec:problem}
+The goal of this research is to determine how we can perform sentiment analysis
+on a large dataset in a distributed manner. In order to investigate this, we
+develop a complete sentiment analysis framework in Python that contains all
+techniques discussed in this report. The implementation is further outlined in 
+Section~\ref{sec:implementation}.
+
+% TODO: discuss sentiment analysis and goal (classification pos/neg/neutral)
+% TODO: discuss distributed approach and refer to dataset section for numbers
+% TODO: discuss word list approach
+% TODO: discuss classifier approach
 \ldots
 
 \section{Dataset}\label{sec:dataset}
@@ -110,10 +119,10 @@ after which we obtain a file containing objects of the following form:
 
 \begin{verbatim}
 {
-    "id": 8771097,
-    "body": "It seems e.offsetX is not the way to get the relative cursor position
-             in Firefox. I'm getting `undefined' in my experiments there.",
-    "url": "https://api.github.com/repos/fedwiki/wiki-plugin-method/comments/8771097"
+  "id": 8771097,
+  "body": "It seems e.offsetX is not the way to get the relative cursor position
+           in Firefox. I'm getting `undefined' in my experiments there.",
+  "url": "https://api.github.com/repos/fedwiki/wiki-plugin-method/comments/8771097"
 }
 \end{verbatim}
 
@@ -168,6 +177,7 @@ remove unneeded fields for our research.
 \ldots
 
 \section{References}\label{sec:references}
+% TODO: add link to GitHub and open-source repository
 \printbibliography[heading=none]
 
 \end{document}
