@@ -116,7 +116,16 @@ limitations include, but are not limited to, making proper use of context and
 detecting sarcasm. On top of that, sentiment analysis on a single text should be
 fast in order to make working with a large dataset feasible.
 
-% TODO: discuss distributed approach and refer to dataset section for numbers
+We propose a framework that performs sentiment analysis on large datasets in a
+distributed manner. We aim to distribute most operations performed by the 
+framework, such as downloading and preprocessing individual data dumps and
+classification. We work on the Distributed ASCI Supercomputer 3 (DAS-3) at
+LIACS, which has 32 worker nodes. Distributing work over multiple worker nodes
+or even over multiple processes on a single node is a key feature of the
+framework as it provides a great speed-up when working with the large
+datasets that we use, of which more details are given in
+Section~\ref{sec:dataset}.
+
 % TODO: discuss word list approach
 % TODO: discuss classifier approach
 \ldots
