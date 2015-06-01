@@ -33,8 +33,8 @@ message is positive and 0 indicates that the message is neutral. The output can 
 
 Instead of using a single line as input, one can give a file to read as standard input as follows:
 
-    $ python analyze.py < commit_comments.json
-    $ python classify.py score < commit_comments.json
+    $ python analyze.py < commit_comments-dump.2015-01-29.json
+    $ python classify.py score < commit_comments-dump.2015-01-29.json
 
 The latter `classify.py` script uses a classifier to predict the scores using a labeled dataset. Both programs work in a similar manner. This script requires the `2015-01-29` commit comments dump in order to cross-reference the labels with the messages. The classification itself can be run on any dump, and the script will filter any already labeled messages before prediction.
 
@@ -57,18 +57,18 @@ This section assumes that the installation notes below have already been followe
 
 First of all, ensure that the data sets are on the HDFS:
 
-    $ hdfs dfs -put commit_comments.json
-    $ hdfs dfs -put commit_comments.labeled.json
+    $ hdfs dfs -put commit_comments-dump.2015-01-29.json
+    $ hdfs dfs -put commit_comments-dump.2015-01-29.labeled.json
     $ hdfs dfs -put words/positive.txt words/positive.txt
     $ hdfs dfs -put words/negative.txt words/negative.txt
 
 Now, one can start a MapReduce job which classifies each record in the data set and then counts the frequency of each score as follows:
 
-    $ pyhadoop commit_comments.json score classify.py reducer.py "score" score -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
+    $ pyhadoop commit_comments-dump.2015-01-29.json score classify.py reducer.py score score -file commit_comments-dump.2015-01-29.labeled.json -file commit_comments-dump.2015-01-29.json
 
-For the naive analyzer, use `analyze.py` instead of `classify.py`, and the last `-file` argument can be omitted. To count frequencies of scores within a specific group, use the following:
+For the naive analyzer, use `analyze.py` instead of `classify.py`, and add `-files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\"` to the command. To count frequencies of scores within a specific group, use the following:
 
-    $ pyhadoop commit_comments.json score_lang classify.py reducer.py "lang" lang -D stream.num.map.output.key.fields=2 -files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\" -file commit_comments.labeled.json -file commit_comments.json -file analyze.py
+    $ pyhadoop commit_comments-dump.2015-01-29.json score_lang classify.py reducer.py language language -D stream.num.map.output.key.fields=2 -file commit_comments-dump.2015-01-29.labeled.json -file commit_comments-dump.2015-01-29.json
 
 This ensures that MapReduce knows which parts of the outputs are keys and which are values.
 
