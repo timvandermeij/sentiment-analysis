@@ -79,7 +79,7 @@ Overview of commands
   GitHub data from the GHTorrent archives. Automatically performs the chosen
   task with interactive progress output on each step. This script can extract
   data for a specific group from the `repos` dumps and create a shelf of the
-  languages of all repositories. The `commit_comments` tasks filters the dumps
+  languages of all repositories. The `commit_comments` task filters the dumps
   in order to contain the necessary fields, including the group. Can be run
   using MPI in order to parallelize the phases for different dumps, or to
   distribute the work across nodes, with a master that schedules new work for
@@ -105,7 +105,7 @@ Overview of commands
 * `plot.py`: Convert data to visual plots. Given data from the analyzer or
   reducer which has been combined/sorted and then reduced (grouped), one can
   make a frequency plot in case the data is grouped on score only, or a group
-  plot showing the relative scores for each groups. Additionally, results from
+  plot showing the relative scores for each group. Additionally, results from
   `experiment.py` can be given with the `algo` group, which creates plots for
   each algorithm name with various parameters for comparisons.
 * `experiment.py`: Perform cross-validation experiments with all classifiers
