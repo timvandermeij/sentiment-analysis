@@ -72,6 +72,65 @@ For the naive analyzer, use `analyze.py` instead of `classify.py`, and add `-fil
 
 This ensures that MapReduce knows which parts of the outputs are keys and which are values.
 
+Overview of commands
+--------------------
+
+* `preprocess.py`: Download, extract, convert, process and filter dumps of
+  GitHub data from the GHTorrent archives. Automatically performs the chosen
+  task with interactive progress output on each step. This script can extract
+  data for a specific group from the `repos` dumps and create a shelf of the
+  languages of all repositories. The `commit_comments` tasks filters the dumps
+  in order to contain the necessary fields, including the group. Can be run
+  using MPI in order to parallelize the phases for different dumps, or to
+  distribute the work across nodes, with a master that schedules new work for
+  processes that are done with one dump, achieving automatic load balancing.
+* `analyze.py`: Analyzes a given commit comments JSON dump from standard input
+  using a naive approach with lists of positive and negative words and
+  emoticons, and returns scores for each line using the chosen group as key.
+  The `id` group gives colored output, while other groups are suitable for use
+  with the `reducer.py` and `plot.py` scripts for further analysis. Can be run
+  using MapReduce.
+* `classify.py`: Analyses a given commit comments JSON dump from standard input
+  using a classifier listed in `algorithms.json` or a regressor variant thereof.
+  Using `python classify.py --help` gives a list of known algorithms and other
+  parameters. Gives a similar output as `analyze.py` suitable for further
+  analysis. Supports saving the trained model, optionally skipping the
+  prediction phase, and can also perform cross-validation of the algorithm.
+  Can be run using MapReduce or with MPI (using distributed commit comments
+  dumps in local paths).
+* `reducer.py`: Group sorted data from `analyze.py` or `classify.py`, after it
+  has been run through the MapReduce combiner or the `sort` command, so that
+  each score is counted by score and group. The resulting output can be given
+  to `plot.py` for group or frequency plotting. Can be run with MapReduce.
+* `plot.py`: Convert data to visual plots. Given data from the analyzer or
+  reducer which has been combined/sorted and then reduced (grouped), one can
+  make a frequency plot in case the data is grouped on score only, or a group
+  plot showing the relative scores for each groups. Additionally, results from
+  `experiment.py` can be given with the `algo` group, which creates plots for
+  each algorithm name with various parameters for comparisons.
+* `experiment.py`: Perform cross-validation experiments with all classifiers
+  given in `algorithms.json`. Creates combinations of parameters in order to
+  try all different combinations of values. Stores results of the experiments
+  in `experiment_results.json`, which can be interpreted by `plot.py`. Allows
+  filtering in order to only run experiments for specific algorithms specified
+  by their name, module or description.
+* `label.py`: Interactively label the `commit_comments-dump.2015-01-29.json`
+  dump by starting at the first unlabeled comment from that dump and displaying
+  it in an organized way, including a prediction by the naive analyzer. The
+  user can then specify whether the prediction is correct, or use options to
+  give their own rating (positive, negative, neutral, or unknown). These are
+  stored in the `commit_comments-dump.2015-01-29.labeled.json` file.
+* `tree.py`: Extract the actual tree object from a model file that was created
+  using the `classify.py` training and visualize the tree by exporting it to a
+  DOT file and converting it to an SVG.
+* `unrecognized.py`: Compare results from the analyzer and classifier.
+* `ssh-setup.sh` and `mpi-test.py`: Set up MPI to use SSH connections to worker
+  nodes in a cluster in order to be able to distribute work over them. Performs
+  checks whether a given template hosts file is correct and that the nodes are
+  reachable, automatically writes SSH configuration for agent forwarding and
+  checks whether MPI works correctly. More details about these scripts are
+  given in the MPI section.
+
 Installation notes for the DAS-3
 ================================
 
