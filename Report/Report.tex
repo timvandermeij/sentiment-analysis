@@ -237,8 +237,31 @@ remove unneeded fields for our research.
 \end{table}
 
 \section{Implementation}\label{sec:implementation}
-\ldots
-% TODO: Group
+
+Our implementation consists of a number of components that can interact with 
+each other. Amongst others, we have implemented a preprocessor component for 
+extracting the datasets described in Section~\ref{sec:dataset}, an analyzer and 
+classifier that can generate predictions for sentiment scores, a plotting 
+framework, an experiment runner and an interactive dataset labeler.
+
+We implemented these tools using the Python programming language, with 
+distributed processing in mind. The components for making predictions and 
+counting frequencies can be automatically distributed using MapReduce, and the 
+preprocessor and some parts of the toolchain can be parallelized using MPI, as 
+described in more detail in Section~\ref{sec:mpi}.
+
+Many parts of the toolchain use the notion of \emph{groups} in order to make 
+analysis possible for different goals. For example, one can group the commit 
+comments on their {\tt id}, which allows for visual output of the predictions 
+and cross-referencing the results. The use of the {\tt score} group allows the 
+reducer in Section~\ref{sec:reducer} to count the frequencies of each score, 
+which can then be visualized with a frequency plot. Other groups function more 
+like creating partitions of the dataset, and the reducer then counts 
+frequencies of each score that are within one group. The groups play an 
+important role in the filtering phase of the preprocessor from 
+Section~\ref{sec:preprocessor}, and the plotter can also create different plots 
+for groups, such as the {\tt algo} group for the results of the experiment 
+runner in Section~\ref{sec:experiment_runner}.
 
 \subsection{Preprocessor}\label{sec:preprocessor}
 
