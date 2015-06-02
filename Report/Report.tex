@@ -32,7 +32,7 @@
   comments. We describe the problems and solutions related to downloading and
   preprocessing the dataset and gaining insights into the data using a naive
   implementation that uses lists with positive and negative words. After
-  manually labeling 2000 training examples, we benchmark several classification
+  manually labeling 2000~training examples, we benchmark several classification
   algorithms and we use the most promising classifier in our final
   implementation where we apply the trained classifier on the entire dataset.
   We visualize the overall sentiment per programming language to show the
@@ -120,8 +120,8 @@ fast in order to make working with a large dataset feasible.
 We propose a framework that performs sentiment analysis on large datasets in a
 distributed manner. We aim to distribute most operations performed by the 
 framework, such as downloading and preprocessing individual data dumps and
-classification. We work on the Distributed ASCI Supercomputer 3 (DAS-3) at
-LIACS, which has 32 worker nodes. Distributing work over multiple worker nodes
+classification. We work on the Distributed ASCI Supercomputer~3 (DAS-3) at
+LIACS, which has 32~worker nodes. Distributing work over multiple worker nodes
 or even over multiple processes on a single node is a key feature of the
 framework as it provides a great speed-up when working with the large
 datasets that we use, of which more details are given in
@@ -133,7 +133,9 @@ individual words and for each word we test if the word appears in fixed lists
 of positive and negative words. We count the number of positive and negative
 words in the text and perform a majority vote for the final classification
 of positive, negative or neutral. This is a basic approach that is expected to
-work reasonably well, but at the same time we forsee issues with this approach.
+work reasonably well, but at the same time we foresee issues with this 
+approach.
+
 For instance, if the algorithm encounters the word `good', it will treat that
 word as positive, but if that word is preceded by the word `not', then the
 meaning is actually negative. The algorithm, because of its simplicity, will
@@ -148,13 +150,14 @@ positive, negative and neutral texts are from training examples. There are two
 main difficulties for this approach, namely that there is no labeled training
 set available for the dataset we are working with and it is not clear which
 classifier would be the best fit for the data. We therefore start by manually
-labeling 2000 commit comments as positive, negative or neutral. Once we have a
-training set, we can train many different classifiers, such as a random forest
-classifier or a Gaussian naive Bayes classifier, and perform five-fold
-cross-validation to get an idea of which classifier is the best fit for the
-data. After having trained the best classifier with the training set, we treat
-the data that has not been used for the training set as the test set. We
-provide the test set to the classifier and let the classifier put positive,
+labeling 2000~commit comments as positive, negative or neutral.
+
+Once we have a training set, we can train many different classifiers, such as 
+a random forest classifier or a Gaussian naive Bayes classifier, and perform 
+five-fold cross-validation to get an idea of which classifier is the best fit 
+for the data. After having trained the best classifier with the training set, 
+we treat the data that has not been used for the training set as the test set. 
+We provide the test set to the classifier and let the classifier put positive,
 negative or neutral labels on the commit comments based on learned information
 from the training phase.
 
@@ -166,6 +169,11 @@ commit comments per programming language. This is done in order to obtain
 insight into the sentiment of developers that work with different programming
 languages. It is not hard to imagine that the results of sentiment analysis on
 this dataset can be used to obtain many more interesting insights.
+
+\subsection{Related work}\label{sec:relatedwork}
+% TODO: Citations to various papers with some sentences in how they are 
+% comparable and some differences.
+\ldots
 
 \section{Dataset}\label{sec:dataset}
 We use the GitHub commit comments dataset for our work. As described in the
@@ -366,11 +374,12 @@ the comments in the dumps on the worker nodes.
 % TODO: Example output ../Presentation/Classifier-Output.png
 
 \subsection{MapReduce and reducer}\label{sec:reducer}
+% TODO: Cite MapReduce/Hadoop
 MapReduce is a component of Hadoop which allows to create two kinds of jobs: 
 mappers and reducers. The mappers receive input on which they perform 
-calculations and their output is sorted and split up to the reducer jobs, 
-which can, for example, make counts or perform other aggregation tasks. This 
-allows for distributed computation in phases.
+calculations and their output is sorted and split up to the reducer jobs, which 
+can, for example, make counts or perform other aggregation tasks. This allows 
+for distributed computation in phases.
 
 We make use of MapReduce for our prediction and analysis tools. The naive 
 analyzer from Section~\ref{sec:analyzer} and the classifier described in 
@@ -419,19 +428,33 @@ version control system such that any user can work with it and continue where
 others left off.
 
 \subsection{MPI}\label{sec:mpi}
+% TODO: Explain preprocessor master/worker job dispatching and some about 
+% classifier support
 \ldots
 
 \section{Experiments}\label{sec:experiments}
+% TODO: Explain experiments: timing, memory?, analyzer/classifier frequency 
+% plots?, algorithm comparisons, language sentiments
 \ldots
 
 \subsection{Results}\label{sec:results}
+% TODO: Split up in sections?
 \ldots
 
 \section{Conclusion}\label{sec:conclusion}
 \ldots
 
+\subsection{Further research}\label{sec:furtherresearch}
+% TODO: Other approaches: PCA and sentiments in more dimensions (categories), 
+% extension to specific users/repos/communities/discussion (online live data 
+% stream), comparison with other classifiers (neural networks, NLTK) and 
+% specific interpretations of classifiers (RandomForest out of bag error).
+\ldots
+
 \section{References}\label{sec:references}
 % TODO: Add link to GitHub and open-source the repository?
 \printbibliography[heading=none]
+
+% TODO: Appendix (README, link to repository or code listings?)
 
 \end{document}
