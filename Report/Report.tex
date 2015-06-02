@@ -47,41 +47,45 @@ Sentiment analysis is a technique that aims to extract subjective information
 from text, audio or other multimedia. This information contains, but is not
 limited to, judgements or emotions on a certain topic. Sentiment analysis is
 often troubled by the limitations of natural language processing and by the
-large amounts of data available. Furthermore, the huge amounts of data require
-that performing sentiment analysis on a single text needs to be fast, otherwise
-the time required for processing all texts becomes infeasible.
+large amounts of data available. Furthermore, in order to process all samples 
+from a given dataset, we require that the sentiment analysis on one sample must 
+perform fast. Otherwise, the process quickly becomes infeasible and unsuitable 
+for a huge dataset.
 
-In this report we focus only on sentiment analysis on textual content. We use the
-GitHub commit comments dataset for our work. GitHub is an online platform that
-provides source code hosting and collaboration for both open-source and
-closed-source projects that use the Git version control system. When working on
-source code in a version-controlled environment, it is common practice to divide the
-implementation of functionality into \emph{commits}, which are small packages of
-code. Once the developer is ready to have the code reviewed, then reviewers can
-look at these commits and comment on them. For instance, a reviewer could add a
-comment to a specific line of code and suggest an improvement. The GitHub commit
-comments dataset that we use consists of exactly those comments. These comments
-are particularly interesting as developers and reviewers tend to put a lot of
-emotions in them, ranging from happiness when a commit is of high quality to
-sadness or angriness when a commit is of low quality.
+In this report we focus only on sentiment analysis of textual content. We 
+specifically use the GitHub commit comments dataset for our analysis. GitHub is 
+an online platform that provides source code hosting and collaboration for both 
+open-source and closed-source projects that use the Git version control system. 
+When working on source code in a version-controlled environment, it is common 
+practice to divide the implementation of functionality into \emph{commits}, 
+which are small packages of code. Once the developer is ready to have the code 
+reviewed, then reviewers can look at these commits and comment on them. For 
+instance, a reviewer could add a comment to a specific line of code and suggest 
+an improvement.
 
-We will work in a distributed manner. Since the GitHub commit comments dataset
-is very large and speed and efficiency are a concern, we aim to distribute most
-of the work, including downloading and preprocessing data, over several worker
-nodes. We first implement a naive algorithm to get insights into the dataset and
-then apply those insights to the final implementation that uses a classifier
-to quickly classify commit comments as being positive, negative or neutral. Later
-on we link the commit comments to the main programming language used in the code
-repository to be able to get insights into the sentiments of the developers per
-language.
+The GitHub commit comments dataset that we use consists of exactly these 
+comments. The commit comments are particularly interesting, since developers 
+and reviewers tend to put a lot of personal feelings in them. These emotions 
+can range from happiness, when a commit is of high quality, to sadness or 
+angriness when a commit is of poor quality.
+
+We perform the sentiment analysis in a distributed manner. Since the total 
+GitHub commit comments dataset is very large, and speed and efficiency are 
+a concern, we aim to distribute most of the work, including downloading and 
+preprocessing data, over several worker nodes. We first implement a naive 
+algorithm to get insights into the dataset and then apply those insights to the 
+final implementation that uses a classifier to quickly classify commit comments 
+as being positive, negative or neutral. Furthermore, we link the commit 
+comments to the main programming language used in the code repository to be 
+able to get insights into the sentiments of the developers per language.
 
 In Section~\ref{sec:problem}, we describe the research question in more detail 
-and we give definitions of the techniques that we evaluate. The used dataset and
-the implementation of the distributed sentiment analysis are discussed in 
-Section~\ref{sec:dataset} and Section~\ref{sec:implementation}, respectively. 
-We present our experiments in Section~\ref{sec:experiments} and discuss the
-results of the experiments in Section~\ref{sec:results}. We conclude our work in
-Section~\ref{sec:conclusion}.
+as well as give definitions of the techniques that we evaluate. The used 
+dataset and the implementation of the distributed sentiment analysis are 
+discussed in Section~\ref{sec:dataset} and Section~\ref{sec:implementation}, 
+respectively. We present our experiments in Section~\ref{sec:experiments} and 
+discuss the results of the experiments in Section~\ref{sec:results}. We 
+conclude our work in Section~\ref{sec:conclusion}.
 
 \section{Problem statement}\label{sec:problem}
 The goal of this research is to determine how we can perform sentiment analysis
@@ -90,17 +94,20 @@ develop a complete sentiment analysis framework in Python that contains all
 techniques discussed in this report. The implementation is further outlined in 
 Section~\ref{sec:implementation}.
 
+% TODO: This first sentence is a literal repeat of the first sentence of the 
+% introduction.
 Sentiment analysis is used to extract subjective information from text, audio
-or other multimedia. Examples of this subjective information are opinions,
+or other multimedia. Examples of such subjective information are opinions,
 judgements or emotions on a certain topic. Multiple types of sentiment analysis
 exist, but the most used ones are classification of content into an emotion
 category (such as `happy', `angry' or `disappointed') or classification of
-content as being positive, negative or neutral. Since sentiment analysis
-yields a probability score for all categories, we are also able to numerically
-compare the sentiment in different content, making it possible to determine if
-one text is more positive than another, for example. Our work focusses on
-performing sentiment analysis on textual content and classifying the textual
-content as being positive, negative or neutral.
+content as being positive, negative or neutral. Since sentiment analysis 
+through the use of classification yields a probability score for all 
+categories, we are also able to numerically compare the sentiment in different 
+content, making it possible to determine if one piece of text is more positive 
+than another, for example. Our work focusses on performing sentiment analysis 
+on textual content and classifying the textual content as being positive, 
+negative or neutral.
 
 Being able to automatically classify content into fixed categories can yield
 previously unknown insights. Because of this, sentiment analysis is becoming
@@ -109,7 +116,9 @@ users review their products or services. For instance, web shops like Amazon
 are interested in determining which products reviewers are positive about.
 With this information Amazon might decide to recommend those products over
 products with less positive reviews, thereby increasing customer satisfaction
-and revenues.
+and revenues. Users on a discussion platform can also benefit from sentiment 
+analysis in order to detect whether a certain discussion has a positive or 
+negative atmosphere.
 
 Sentiment analysis is troubled by the limitations of natural language processing
 as well as by the large amounts of available data. Natural language processing
@@ -117,62 +126,69 @@ limitations include, but are not limited to, making proper use of context and
 detecting sarcasm. On top of that, sentiment analysis on a single text should be
 fast in order to make working with a large dataset feasible.
 
+% TODO: Perhaps split up in subsections?
+% Perhaps also mention: "How do we obtain the dataset and preprocess it?"
+% And: "How can we distribute the work onto worker nodes?" From presentation.
 We propose a framework that performs sentiment analysis on large datasets in a
 distributed manner. We aim to distribute most operations performed by the 
 framework, such as downloading and preprocessing individual data dumps and
 classification. We work on the Distributed ASCI Supercomputer~3 (DAS-3) at
-LIACS, which has 32~worker nodes. Distributing work over multiple worker nodes
-or even over multiple processes on a single node is a key feature of the
-framework as it provides a great speed-up when working with the large
-datasets that we use, of which more details are given in
-Section~\ref{sec:dataset}.
+the LIACS institute of Leiden University. The DAS-3 has a total of 32~worker 
+nodes consisting of commodity hardware and a number of hard drives, including 
+a RAID configuration. Distributing work over multiple worker nodes or even over 
+multiple processes on a single node is a key feature of the framework as it 
+provides a great speed-up when working with the large datasets that we use, of 
+which more details are given in Section~\ref{sec:dataset}.
 
 We implement two different approaches for performing sentiment analysis. The
-first approach is the word list approach. Given a text, we split the text into
-individual words and for each word we test if the word appears in fixed lists
-of positive and negative words. We count the number of positive and negative
-words in the text and perform a majority vote for the final classification
-of positive, negative or neutral. This is a basic approach that is expected to
-work reasonably well, but at the same time we foresee issues with this 
-approach.
+first approach is the word list approach. Given a piece of text, we split the 
+text into individual words and for each word we test if the word appears in 
+fixed lists of positive and negative words. We count the number of positive and 
+negative words in the text and perform a majority vote for the final 
+classification of positive, negative or neutral. This is a basic approach that 
+is expected to work reasonably well, but at the same time we foresee issues 
+with this approach.
 
-For instance, if the algorithm encounters the word `good', it will treat that
-word as positive, but if that word is preceded by the word `not', then the
-meaning is actually negative. The algorithm, because of its simplicity, will
-not be able to distinguish these cases. This shows the main problem of this
-approach: because we only look at individual words, we omit the context in
-which these words appear.
+For instance, when this naive analyzer encounters the word `good', the 
+algorithm treats that word as positive, but if that word is preceded by the 
+word `not', then the meaning is actually negative. The algorithm, because of 
+its simplicity, is not able to distinguish these cases, and may end up deciding 
+that the text is neutral. This shows the main problem of this approach: because 
+we only look at individual words, we omit the context in which these words 
+appear.
 
 To overcome these issues and to actually take context into account, we implement
 a second approach that uses a classifier to do the classification. With this
-approach we do not need any fixed word lists. The classifier will learn what
+approach we do not need any fixed word lists. The classifier learns what
 positive, negative and neutral texts are from training examples. There are two
 main difficulties for this approach, namely that there is no labeled training
-set available for the dataset we are working with and it is not clear which
-classifier would be the best fit for the data. We therefore start by manually
-labeling 2000~commit comments as positive, negative or neutral.
+set available for the dataset we are working with. Secondly, it is not clear 
+which classifier would be the best fit for the data. We therefore start by 
+manually labeling 2000~commit comments as positive, negative or neutral.
 
 Once we have a training set, we can train many different classifiers, such as 
 a random forest classifier or a Gaussian naive Bayes classifier, and perform 
-five-fold cross-validation to get an idea of which classifier is the best fit 
-for the data. After having trained the best classifier with the training set, 
-we treat the data that has not been used for the training set as the test set. 
-We provide the test set to the classifier and let the classifier put positive,
-negative or neutral labels on the commit comments based on learned information
-from the training phase.
+five-fold cross-validation. The resulting accuracies from the cross-validation 
+allow us to get an idea of which classifier is the best fit for the data. After 
+having trained the best classifier with the training set, we treat the data 
+that has not been used for the training set as the test set. We provide the 
+test set to the classifier and let the classifier put positive, negative or 
+neutral labels on the commit comments based on learned information from the 
+training phase.
 
-To show the potential of the latter approach, we supplement each commit
-comment with the main programming language of the repository it belongs to.
-We perform sentiment analysis on the test data and with the resulting labels
-for each commit comment we visualize the distribution of positive and negative
-commit comments per programming language. This is done in order to obtain
-insight into the sentiment of developers that work with different programming
-languages. It is not hard to imagine that the results of sentiment analysis on
-this dataset can be used to obtain many more interesting insights.
+In order to show the potential of the latter approach, we supplement each 
+commit comment with the main programming language of the repository it belongs 
+to. We perform sentiment analysis on the test data and with the resulting 
+labels for each commit comment we visualize the distribution of positive and 
+negative commit comments per programming language. This is done in order to 
+obtain insight into the sentiment of developers that work with different 
+programming languages. It is not hard to imagine that the results of sentiment 
+analysis on this dataset can be used to obtain many more interesting insights.
 
 \subsection{Related work}\label{sec:relatedwork}
 % TODO: Citations to various papers with some sentences in how they are 
-% comparable and some differences.
+% comparable and some differences. Not sure if this is the best location for 
+% such a literature study.
 \ldots
 
 \section{Dataset}\label{sec:dataset}
@@ -188,14 +204,17 @@ repository dumps for our work, but, among others, issue comments, pull
 request comments and events are also available. Every two months a new
 incremental dump is published.
 
-We now focus on the two types of dumps we use for our work, which are the
+We focus on two types of dumps we use for our analysis, which are the
 commit comments and repository dumps. The former is used for the sentiment
-analysis, while the latter is used to assign to a commit the main programming
-language of the repository that it belongs to, which is useful for one of
-the experiments to be performed. Each dump consists of one BSON file, which
-is a binary-encoded JSON file that is used for storing and exchanging data
-in a structured manner. The BSON file is converted to JSON and preprocessed,
-after which we obtain a file containing objects of the following form:
+analysis itself, while the latter is used to assign to a commit the main 
+programming language of the repository that it belongs to, which is useful for 
+one of the experiments described in Section~\ref{sec:experiments}.
+
+Each dump contains a part of the dataset, since GHTorrent generates incremental 
+dumps on a bimonthly basis. A dump consists of one BSON file, which is 
+a binary-encoded JSON file that is used for storing and exchanging data in 
+a structured manner. The BSON file is converted to JSON and preprocessed, after 
+which we obtain a file containing objects of the following form:
 
 \begin{verbatim}
 {
@@ -221,7 +240,7 @@ The characteristics of both datasets (commit comments and repositories) are
 listed in Table~\ref{tab:dataset}. We list details of the 2015--01--29
 commit comments dump as that dump has been used for manually labeling commit
 comments to create a training set, which we discuss in
-Section~\ref{sec:implementation}. Furthermore we list details of the
+Section~\ref{sec:implementation}. Furthermore, we list details of the
 2015--01--29 commit comments dump when all comments with non-Latin characters
 (Chinese, Russian, et cetera) have been removed. Those comments are not
 relevant for our research as we only focus on English commit comments. Finally
@@ -279,9 +298,10 @@ GHTorrent archives.
 
 Firstly, we use a scraper that checks the downloads page of GHTorrent and 
 creates a list of possible dumps to download. The preprocessor checks whether 
-the dump file already exists and otherwise it will download the compressed dump 
-and extract it. Afterwards, the extracted BSON file, a binary JSON format, is 
-converted to JSON\@. At this point, we can filter fields depending on the type
+the dump file already exists and otherwise it downloads the compressed dump and 
+extract it. Afterwards, the extracted BSON file, a binary JSON format, is 
+converted to JSON\@. At this point, we can filter fields depending on the 
+type
 of dump.
 
 The {\tt repos} dumps, containing the repositories dataset, are filtered on the 
@@ -458,7 +478,7 @@ Section~\ref{sec:plotter} can take as input and, using the `algo' group,
 creates an SVG plot for each classifier.
 
 Using the experiment runner on the training set gives an indication of
-how accurate each classifier will be for our dataset. The classifier and
+how accurate each classifier is on our dataset. The classifier and
 parameter combination that yields the highest accuracy is used for the
 final classifier.
 
@@ -471,7 +491,7 @@ comments dump from 29--01--2015 to create our labeled training set.
 The labeler loads this dataset, presents each commit comment individually to
 the user, displays a prediction based on the naive word list approach and asks
 the user whether or not he or she agrees with the prediction. If so, simply
-pressing Enter will store the label for that commit comment. If not, the user
+pressing Enter stores the label for that commit comment. If not, the user
 can enter `p' for positive, `n' for negative, `t' for neutral and `u' for
 unknown, thereby overriding the prediction. We mark commit comments as unknown
 such that the classifier ignores them if they do not contain useful content,
