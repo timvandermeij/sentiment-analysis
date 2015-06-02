@@ -256,12 +256,11 @@ comments on their {\tt id}, which allows for visual output of the predictions
 and cross-referencing the results. The use of the {\tt score} group allows the 
 reducer in Section~\ref{sec:reducer} to count the frequencies of each score, 
 which can then be visualized with a frequency plot. Other groups function more 
-like creating partitions of the dataset, and the reducer then counts 
-frequencies of each score that are within one group. The groups play an 
-important role in the filtering phase of the preprocessor from 
-Section~\ref{sec:preprocessor}, and the plotter can also create different plots 
-for groups, such as the {\tt algo} group for the results of the experiment 
-runner in Section~\ref{sec:experiment_runner}.
+like creating partitions of the dataset. The groups play an important role in
+the filtering phase of the preprocessor from Section~\ref{sec:preprocessor},
+and the plotter can also create different plots for groups, such as the
+{\tt algo} group for the results of the experiment runner in
+Section~\ref{sec:experiment_runner}.
 
 \subsection{Preprocessor}\label{sec:preprocessor}
 
@@ -333,15 +332,15 @@ regarding the commit. We also used a script to check which words that are not
 in either word lists occur in commit comments with a certain score, in order to 
 add more words that are relevant for the scores.
 
-During the word splitting, we sanitize the words by removing quotes and other 
-non-alphabetic characters. In order to handle emoticons correctly, we use 
+During the word splitting, we sanitize words by removing quotes and other 
+non-alphanumeric characters. In order to handle emoticons correctly, we use 
 a specialized regular expression which considers emoticons as individual words 
 instead of splitting or sanitizing them.
 
 The {\tt id} group gives colored output, while other groups are suitable for 
 use with the reducer, as explained in the relevant Section~\ref{sec:reducer}. 
 The analyzer can be run using MapReduce which we explain in that section. One 
-can then use the plotter for further analysis, as explained in 
+can then use the plotter for further analysis, as outlined in 
 Section~\ref{sec:plotter}.
 
 \subsection{Classifier}\label{sec:classifier}
