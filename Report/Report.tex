@@ -339,11 +339,38 @@ instead of splitting or sanitizing them.
 
 The {\tt id} group gives colored output, while other groups are suitable for 
 use with the reducer, as explained in the relevant Section~\ref{sec:reducer}. 
-The analyzer can be run using MapReduce which we explain in that section. One 
-can then use the plotter for further analysis, as outlined in 
+The analyzer can be run using MapReduce which we also explain in that section. 
+One can then use the plotter for further analysis, as outlined in 
 Section~\ref{sec:plotter}.
 
 \subsection{Classifier}\label{sec:classifier}
+
+With a structure of the naive analyzer at hand, we implement a tool which can 
+give similar output as the analyzer, but instead it uses a classifier to
+predict the scores. The classifier tool can also perform other tasks such as 
+cross-validation or saving a trained model.
+
+% TODO: Cite Scikit Learn
+The classifier tool can use one of the classifiers or regressors available from 
+the Scikit Learn machine learning toolkit. The tool creates the model and 
+trains it using the hand-labeled dataset that we create using the labeler from 
+Section~\ref{sec:labeler}. The trained model can then be stored as a serialized 
+\emph{pickle} file, which is a binary format readable by Python programs. The 
+model file can then be distributed to workers, or one can use it to predict the 
+scores for a given commit comments dataset immediately.
+
+Another use of the tool is to cross-validate the chosen classifier. For a given 
+number of folds, the labeled dataset is split into that number of folds, and 
+the same number of models are created. Each model is trained with one fold and 
+then the scores on the rest of the folds are predicted. We then compare these 
+predictions with the actual labels of each comment, and calculate the average 
+correctness of the models.
+
+The predictions themselves can again be analyzed using the reducer and plotter, 
+similar to the naive analyzer output. The classifier can therefore be run using 
+MapReduce as well. When using the preprocessor with MPI to retrieve all commit 
+comments dumps in a distributed way, one can also run the classifier to predict
+the comments in the dumps on all worker nodes.
 
 \subsection{MapReduce and reducer}\label{sec:reducer}
 
