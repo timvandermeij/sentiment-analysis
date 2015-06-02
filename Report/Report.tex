@@ -11,6 +11,7 @@
 \usepackage{parskip}
 \usepackage{hyperref}
 \usepackage[backend=bibtex, sorting=none]{biblatex}
+\usepackage{booktabs}
 
 % Bibliography file
 \bibliography{Report.bib}
@@ -222,17 +223,17 @@ remove unneeded fields for our research.
 
 \begin{table}[h]
   \centering
-  \begin{tabular}{|l|r|l|}
-    \hline
-    \textbf{Dump}                           & \textbf{\# items} & \textbf{Size}                           \\ \hline
-    2015--01--29 commit comments            & 182.282           & 43~MB compressed, 267~MB uncompressed   \\ \hline
-    2015--01--29 Latin-only commit comments & 165.427           & 42~MB preprocessed                      \\ \hline
-    Commit comments (17 dumps)              & 1.731.251         & 434~MB compressed                       \\ \hline
+  \begin{tabular}{l r l}
+    \toprule
+    \textbf{Dump}                           & \textbf{\# items} & \textbf{Size}                           \\
+    \midrule
+    2015--01--29 commit comments            & 182.282           & 43~MB compressed, 267~MB uncompressed   \\
+    2015--01--29 Latin-only commit comments & 165.427           & 42~MB preprocessed                      \\
+    Commit comments (17 dumps)              & 1.731.251         & 434~MB compressed                       \\
     Repositories (17 dumps)                 & 12.802.797        & 10.8~GB compressed, 1.3~GB preprocessed \\
-    \hline
+    \bottomrule
   \end{tabular}
-  \caption{Characteristics of the GitHub commit comment and repository datasets.}
-  \label{tab:dataset}
+  \caption{Characteristics of the GitHub commit comment and repository datasets.}\label{tab:dataset}
 \end{table}
 
 \section{Implementation}\label{sec:implementation}
@@ -252,7 +253,7 @@ Firstly, we use a scraper which checks the downloads page of GHTorrent and
 creates a list of possible dumps to download. The preprocessor checks whether 
 the dump file already exists, otherwise it will download the compressed dump 
 and extract it. Afterwards, the extracted BSON file, a binary JSON format, is 
-converted to JSON. At this point, we can filter fields depending on the type of 
+converted to JSON\@. At this point, we can filter fields depending on the type of 
 dump.
 
 The {\tt repos} dumps, containing the repositories dataset, are filtered on the 
