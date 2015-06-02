@@ -237,16 +237,15 @@ remove unneeded fields for our research.
 \end{table}
 
 \section{Implementation}\label{sec:implementation}
-
 Our implementation consists of a number of components that can interact with 
-each other. Amongst others, we have implemented a preprocessor component for 
+each other. Among others, we have implemented a preprocessor component for 
 extracting the datasets described in Section~\ref{sec:dataset}, an analyzer and 
 classifier that can generate predictions for sentiment scores, a plotting 
 framework, an experiment runner and an interactive dataset labeler.
 
-We implemented these tools using the Python programming language, with 
+We implemented these tools using the Python programming language with 
 distributed processing in mind. The components for making predictions and 
-counting frequencies can be automatically distributed using MapReduce, and the 
+counting frequencies can be automatically distributed using MapReduce and the 
 preprocessor and some parts of the toolchain can be parallelized using MPI, as 
 described in more detail in Section~\ref{sec:mpi}.
 
@@ -260,41 +259,38 @@ like creating partitions of the dataset. The groups play an important role in
 the filtering phase of the preprocessor from Section~\ref{sec:preprocessor},
 and the plotter can also create different plots for groups, such as the
 {\tt algo} group for the results of the experiment runner in
-Section~\ref{sec:experiment_runner}.
+Section~\ref{sec:experiment-runner}.
 
 \subsection{Preprocessor}\label{sec:preprocessor}
-
 The preprocessor is the first step in the implementation. The dataset from 
 Section~\ref{sec:dataset} consists of different types of dumps and is split 
 into multiple incremental dumps that are generated bimonthly. Therefore, we 
-need a tool to automatically performs the phases of downloading, extracting, 
+need a tool to automatically perform the phases of downloading, extracting, 
 converting, processing and filtering the dumps of GitHub data from the 
 GHTorrent archives.
 
-Firstly, we use a scraper which checks the downloads page of GHTorrent and 
+Firstly, we use a scraper that checks the downloads page of GHTorrent and 
 creates a list of possible dumps to download. The preprocessor checks whether 
-the dump file already exists, otherwise it will download the compressed dump 
+the dump file already exists and otherwise it will download the compressed dump 
 and extract it. Afterwards, the extracted BSON file, a binary JSON format, is 
-converted to JSON\@. At this point, we can filter fields depending on the type of 
-dump.
+converted to JSON\@. At this point, we can filter fields depending on the type
+of dump.
 
 The {\tt repos} dumps, containing the repositories dataset, are filtered on the 
-`language' field and stored in an efficient format. This format called 
-\emph{shelves}, is a key-value based storage which allows transparent reads and 
+{\tt language} field and stored in an efficient format. This format, called a
+\emph{shelve}, is a key-value based storage which allows transparent reads and 
 writes. This makes it possible to merge the shelves of each dump in order to 
 obtain a full mapping from repository names to the main programming language of 
-those repositories. We can use this to augment the data from the commit 
-comments dataset for the use in the experiments in 
-Section~\ref{sec:experiments}.
+those repositories. We use this to augment the data from the commit comments
+dataset for usage in the experiments in Section~\ref{sec:experiments}.
 
 The dataset of main importance is based on the {\tt commit\_comments} dumps, 
 which contain the comments that reviewers make on pieces of code and commits in 
 specific repositories. These commit comments are well-suited for sentiment 
-analysis due to the emotions that people express about the code. 
-
-We filter the commit comments that have a non-ASCII Unicode character in it, in 
-order to remove comments in foreign non-Latin languages, in order to focus our 
-classification tools on English comments.
+analysis due to the emotions that reviewers express about the code. We remove
+commit comments that have non-ASCII Unicode characters in it, in order to
+remove comments in foreign non-Latin languages. We focus our classification
+tools on English comments.
 
 We extract the relevant fields, namely the ID for cross-reference, the message 
 body containing the textual content itself, and a group if provided. We extract 
@@ -303,11 +299,10 @@ the repository name from the given URL in the dataset. In case of the
 extracted from the {\tt repos} dumps.
 
 The preprocessor automatically performs the chosen task with interactive 
-progress output on each step. This script can therefore extract data for 
-a specific group from the {\tt repos} dumps and create a shelf of the languages 
-of all repositories. The {\tt commit\_comments} task filters the dumps in order 
-to contain the necessary fields relevant to the commit comments, including the 
-group.
+progress output on each step. This script can therefore extract data from the
+{\tt repos} dumps and create a shelve of the languages of all repositories. The
+{\tt commit\_comments} task filters the dumps in order to keep the necessary
+fields relevant to the commit comments, including the group.
 
 Note that the preprocessor can also be run using MPI in order to parallelize 
 the phases for different dumps. We can distribute the work across nodes, with 
@@ -316,48 +311,45 @@ achieving automatic load balancing. We describe the implementation of MPI in
 our tools in Section~\ref{sec:mpi}.
 
 \subsection{Naive analyzer}\label{sec:analyzer}
-
 We implement a naive approach as a baseline for comparing against real 
 classifiers. Given a commit comment, we split the text into separate words and 
 compare each word against two word lists, respectively containing positive and 
 negative words. Depending on which word list the word appears in, the score of 
-the entire message is altered. If the word is not in any word list, then it 
+the entire message is updated. If the word is not in any word list, then it 
 does not affect the score. We calculate the score as an average of all the 
 scores of each word ($-1$ if negative or $1$ if positive) divided by the number 
 of words in one of the lists.
 
 After data inspection, the word lists are augmented with emoticons and smileys 
 that are often used on GitHub in order to express emotions and opinions 
-regarding the commit. We also used a script to check which words that are not 
+regarding the commit. We also use a script to check which words that are not 
 in either word lists occur in commit comments with a certain score, in order to 
 add more words that are relevant for the scores.
 
 During the word splitting, we sanitize words by removing quotes and other 
 non-alphanumeric characters. In order to handle emoticons correctly, we use 
-a specialized regular expression which considers emoticons as individual words 
+a specialized regular expression that considers emoticons as individual words 
 instead of splitting or sanitizing them.
 
 The {\tt id} group gives colored output, while other groups are suitable for 
-use with the reducer, as explained in the relevant Section~\ref{sec:reducer}. 
-The analyzer can be run using MapReduce which we also explain in that section. 
-One can then use the plotter for further analysis, as outlined in 
-Section~\ref{sec:plotter}.
+usage with the reducer, as explained in Section~\ref{sec:reducer}. The analyzer
+can be run using MapReduce which we also explain in that section. One can then
+use the plotter for further analysis, as outlined in Section~\ref{sec:plotter}.
 
 \subsection{Classifier}\label{sec:classifier}
-
-With a structure of the naive analyzer at hand, we implement a tool which can 
-give similar output as the analyzer, but instead it uses a classifier to
+With the structure of the naive analyzer at hand, we implement a tool that can 
+give similar output as the naive analyzer, but instead it uses a classifier to
 predict the scores. The classifier tool can also perform other tasks such as 
 cross-validation or saving a trained model.
 
 % TODO: Cite Scikit Learn
-The classifier tool can use one of the classifiers or regressors available from 
+The classifier tool can use one of the classifiers or regressors available in
 the Scikit Learn machine learning toolkit. The tool creates the model and 
-trains it using the hand-labeled dataset that we create using the labeler from 
-Section~\ref{sec:labeler}. The trained model can then be stored as a serialized 
-\emph{pickle} file, which is a binary format readable by Python programs. The 
-model file can then be distributed to workers, or one can use it to predict the 
-scores for a given commit comments dataset immediately.
+trains it using the hand-labeled training set that we created using the labeler
+from Section~\ref{sec:labeler}. The trained model can then be stored as a
+serialized \emph{pickle} file, which is a binary format readable by Python
+programs. The model file can then be distributed to worker nodes, or one can
+use it to predict the scores for a given commit comments dataset immediately.
 
 Another use of the tool is to cross-validate the chosen classifier. For a given 
 number of folds, the labeled dataset is split into that number of folds, and 
@@ -370,35 +362,35 @@ The predictions themselves can again be analyzed using the reducer and plotter,
 similar to the naive analyzer output. The classifier can therefore be run using 
 MapReduce as well. When using the preprocessor with MPI to retrieve all commit 
 comments dumps in a distributed way, one can also run the classifier to predict
-the comments in the dumps on all worker nodes.
+the comments in the dumps on the worker nodes.
 % TODO: Example output ../Presentation/Classifier-Output.png
 
 \subsection{MapReduce and reducer}\label{sec:reducer}
-
 MapReduce is a component of Hadoop which allows to create two kinds of jobs: 
 mappers and reducers. The mappers receive input on which they perform 
-calculations, and their output is sorted and split up to the reducer jobs, 
-which can for example make counts or perform other aggregation tasks. This 
+calculations and their output is sorted and split up to the reducer jobs, 
+which can, for example, make counts or perform other aggregation tasks. This 
 allows for distributed computation in phases.
 
 We make use of MapReduce for our prediction and analysis tools. The naive 
 analyzer from Section~\ref{sec:analyzer} and the classifier described in 
 Section~\ref{sec:classifier} conform to the input and output requirements of 
-a mapper. The output can be keyed by a certain group, and the sorting can take 
+a mapper. The output can be keyed by a certain group and the sorting can take 
 into account which part is the key and which part is a value.
 
 The combiner part of MapReduce performs the sorting, so that the output becomes 
 suitable for the reducer. This script simply counts the frequency of a certain 
 score in the file, and the output is then also sorted on those scores. In case 
-of groups, then the input is sorted on each group value first, thus the 
-frequency counts also happen per group and per score. This makes it possible to 
-plot the counts in a frequency plot or to visualize the relative scores of each 
-group.
+of groups, the input is sorted on each group value first, thus the frequency
+counts also happen per group and per score. This makes it possible to plot the
+counts in a frequency plot or to visualize the relative scores of each group.
 % TODO: Example
 
 \subsection{Plotter}\label{sec:plotter}
+\ldots
 
-\subsection{Experiment runner}\label{sec:experiment_runner}
+\subsection{Experiment runner}\label{sec:experiment-runner}
+\ldots
 
 \subsection{Labeler}\label{sec:labeler}
 As a labeled training set does not yet exist for the GitHub commit comments
@@ -427,6 +419,7 @@ version control system such that any user can work with it and continue where
 others left off.
 
 \subsection{MPI}\label{sec:mpi}
+\ldots
 
 \section{Experiments}\label{sec:experiments}
 \ldots
@@ -438,7 +431,7 @@ others left off.
 \ldots
 
 \section{References}\label{sec:references}
-% TODO: add link to GitHub and open-source repository
+% TODO: Add link to GitHub and open-source the repository?
 \printbibliography[heading=none]
 
 \end{document}
