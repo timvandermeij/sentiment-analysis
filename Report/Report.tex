@@ -330,6 +330,30 @@ Section~\ref{sec:plotter}.
 \subsection{Experiment runner}\label{sec:experiment_runner}
 
 \subsection{Labeler}\label{sec:labeler}
+As a labeled training set does not yet exist for the GitHub commit comments
+dataset, we have to make one ourselves. In order to streamline this process
+and to collaborate on the effort, we implement a labeler. We use the commit
+comments dump from 29--01--2015 to create our labeled training set.
+
+The labeler loads this dataset, presents each commit comment individually to
+the user, displays a prediction based on the naive word list approach and asks
+the user whether or not he or she agrees with the prediction. If so, simply
+pressing Enter will store the label for that commit comment. If not, the user
+can enter `p' for positive, `n' for negative, `t' for neutral and `u' for
+unknown, thereby overriding the prediction. We mark commit comments as unknown
+such that the classifier ignores them if they do not contain useful content,
+for instance comments containing only names of variables. We do not want to
+confuse the classifier with those comments during the training phase to avoid
+mispredictions.
+
+In order to collaborate on the effort, the commit comments along with their
+labels are stored in JSON format. The labeler automatically resumes where
+the last collaborator left off. For example, if the first collaborated labeled
+up until commit comment 500, then a second collaborator would resume labeling
+at commit commit 501, thereby skipping already labeled commit comments. The
+JSON file with the commit comment labels can therefore easily be put in a
+version control system such that any user can work with it and continue where
+others left off.
 
 \subsection{MPI}\label{sec:mpi}
 
