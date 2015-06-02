@@ -399,7 +399,68 @@ counts in a frequency plot or to visualize the relative scores of each group.
 \ldots
 
 \subsection{Experiment runner}\label{sec:experiment-runner}
-\ldots
+Determining the best classifier to use from the Scikit Learn toolkit is
+essential for obtaining reliable classifications. Since our labeled training
+set containing 2000 labeled commit comments is relatively small, it is possible
+to explore a large number of different classifiers with many different
+combinations of parameters. We therefore develop an experiment runner that
+performs cross-validation (five folds by default, but the number of folds is
+configurable) on all classifiers and parameter combinations listed in a
+manifest file.
+
+The experiment runner, as mentioned before, depends on the availability of
+a manifest file, which is a JSON file that contains an array of objects
+describing the classifier and the parameters to test. An example entry
+of the manifest file is the following:
+
+\begin{verbatim}
+{
+  "class_name": "AdaBoostClassifier",
+  "module": "sklearn.ensemble.weight_boosting",
+  "name": "Ada Boost classifier",
+  "parameters": {
+    "n_estimators": [
+      10,
+      50,
+      100,
+      250,
+      500
+    ],
+    "learning_rate": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5
+    ]
+  }
+}
+\end{verbatim}
+
+In a manifest entry we mention the Scikit Learn class name of the classifier
+to test, the Scikit Learn module to which the classifier belongs, the name
+of the classifier and the parameters of the classifier that must be tested.
+In the example above, we are working with two parameters, namely
+{\tt n\_estimators} and {\tt learning\_rate}. The manifest entry essentially
+indicates that we perform cross-validation for the Ada Boost classifier with
+all possible combinations of the parameter values. In this case we perform
+25 runs, namely one with {\tt n\_estimators = 10} and {\tt learning\_rate =
+0.1}, one with {\tt n\_estimators = 10} and {\tt learning\_rate = 0.2}, and
+so on.
+
+We work with a manifest file that contains 15 different classifiers from
+Scikit Learn. The parameters and the values of the parameters to test have
+been determined by studying the Scikit Learn documentation. The experiment
+runner reads the manifest file and performs cross-validation for each
+mentioned classifier and for each parameter combination. The results of the
+cross-validation are written to an output JSON file that the plotter from
+Section~\ref{sec:plotter} can take as input and, using the `algo' group,
+creates an SVG plot for each classifier.
+
+Using the experiment runner on the training set gives an indication of
+how accurate each classifier will be for our dataset. The classifier and
+parameter combination that yields the highest accuracy is used for the
+final classifier.
 
 \subsection{Labeler}\label{sec:labeler}
 As a labeled training set does not yet exist for the GitHub commit comments
