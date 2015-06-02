@@ -371,8 +371,30 @@ similar to the naive analyzer output. The classifier can therefore be run using
 MapReduce as well. When using the preprocessor with MPI to retrieve all commit 
 comments dumps in a distributed way, one can also run the classifier to predict
 the comments in the dumps on all worker nodes.
+% TODO: Example output ../Presentation/Classifier-Output.png
 
 \subsection{MapReduce and reducer}\label{sec:reducer}
+
+MapReduce is a component of Hadoop which allows to create two kinds of jobs: 
+mappers and reducers. The mappers receive input on which they perform 
+calculations, and their output is sorted and split up to the reducer jobs, 
+which can for example make counts or perform other aggregation tasks. This 
+allows for distributed computation in phases.
+
+We make use of MapReduce for our prediction and analysis tools. The naive 
+analyzer from Section~\ref{sec:analyzer} and the classifier described in 
+Section~\ref{sec:classifier} conform to the input and output requirements of 
+a mapper. The output can be keyed by a certain group, and the sorting can take 
+into account which part is the key and which part is a value.
+
+The combiner part of MapReduce performs the sorting, so that the output becomes 
+suitable for the reducer. This script simply counts the frequency of a certain 
+score in the file, and the output is then also sorted on those scores. In case 
+of groups, then the input is sorted on each group value first, thus the 
+frequency counts also happen per group and per score. This makes it possible to 
+plot the counts in a frequency plot or to visualize the relative scores of each 
+group.
+% TODO: Example
 
 \subsection{Plotter}\label{sec:plotter}
 
