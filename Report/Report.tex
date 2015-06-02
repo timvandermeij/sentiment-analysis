@@ -237,6 +237,100 @@ remove unneeded fields for our research.
 
 \section{Implementation}\label{sec:implementation}
 \ldots
+% TODO: Group
+
+\subsection{Preprocessor}\label{sec:preprocessor}
+
+The preprocessor is the first step in the implementation. The dataset from 
+Section~\ref{sec:dataset} consists of different types of dumps and is split 
+into multiple incremental dumps that are generated bimonthly. Therefore, we 
+need a tool to automatically performs the phases of downloading, extracting, 
+converting, processing and filtering the dumps of GitHub data from the 
+GHTorrent archives.
+
+Firstly, we use a scraper which checks the downloads page of GHTorrent and 
+creates a list of possible dumps to download. The preprocessor checks whether 
+the dump file already exists, otherwise it will download the compressed dump 
+and extract it. Afterwards, the extracted BSON file, a binary JSON format, is 
+converted to JSON. At this point, we can filter fields depending on the type of 
+dump.
+
+The {\tt repos} dumps, containing the repositories dataset, are filtered on the 
+`language' field and stored in an efficient format. This format called 
+\emph{shelves}, is a key-value based storage which allows transparent reads and 
+writes. This makes it possible to merge the shelves of each dump in order to 
+obtain a full mapping from repository names to the main programming language of 
+those repositories. We can use this to augment the data from the commit 
+comments dataset for the use in the experiments in 
+Section~\ref{sec:experiments}.
+
+The dataset of main importance is based on the {\tt commit\_comments} dumps, 
+which contain the comments that reviewers make on pieces of code and commits in 
+specific repositories. These commit comments are well-suited for sentiment 
+analysis due to the emotions that people express about the code. 
+
+We filter the commit comments that have a non-ASCII Unicode character in it, in 
+order to remove comments in foreign non-Latin languages, in order to focus our 
+classification tools on English comments.
+
+We extract the relevant fields, namely the ID for cross-reference, the message 
+body containing the textual content itself, and a group if provided. We extract 
+the repository name from the given URL in the dataset. In case of the 
+`language' group, we link this repository name to the main language that we 
+extracted from the {\tt repos} dumps.
+
+The preprocessor automatically performs the chosen task with interactive 
+progress output on each step. This script can therefore extract data for 
+a specific group from the {\tt repos} dumps and create a shelf of the languages 
+of all repositories. The {\tt commit\_comments} task filters the dumps in order 
+to contain the necessary fields relevant to the commit comments, including the 
+group.
+
+Note that the preprocessor can also be run using MPI in order to parallelize 
+the phases for different dumps. We can distribute the work across nodes, with 
+a master that schedules new work for processes that are done with one dump, 
+achieving automatic load balancing. We describe the implementation of MPI in 
+our tools in Section~\ref{sec:mpi}.
+
+\subsection{Naive analyzer}\label{sec:analyzer}
+
+We implement a naive approach as a baseline for comparing against real 
+classifiers. Given a commit comment, we split the text into separate words and 
+compare each word against two word lists, respectively containing positive and 
+negative words. Depending on which word list the word appears in, the score of 
+the entire message is altered. If the word is not in any word list, then it 
+does not affect the score. We calculate the score as an average of all the 
+scores of each word ($-1$ if negative or $1$ if positive) divided by the number 
+of words in one of the lists.
+
+After data inspection, the word lists are augmented with emoticons and smileys 
+that are often used on GitHub in order to express emotions and opinions 
+regarding the commit. We also used a script to check which words that are not 
+in either word lists occur in commit comments with a certain score, in order to 
+add more words that are relevant for the scores.
+
+During the word splitting, we sanitize the words by removing quotes and other 
+non-alphabetic characters. In order to handle emoticons correctly, we use 
+a specialized regular expression which considers emoticons as individual words 
+instead of splitting or sanitizing them.
+
+The {\tt id} group gives colored output, while other groups are suitable for 
+use with the reducer, as explained in the relevant Section~\ref{sec:reducer}. 
+The analyzer can be run using MapReduce which we explain in that section. One 
+can then use the plotter for further analysis, as explained in 
+Section~\ref{sec:plotter}.
+
+\subsection{Classifier}\label{sec:classifier}
+
+\subsection{MapReduce and reducer}\label{sec:reducer}
+
+\subsection{Plotter}\label{sec:plotter}
+
+\subsection{Experiment runner}\label{sec:experiment_runner}
+
+\subsection{Labeler}\label{sec:labeler}
+
+\subsection{MPI}\label{sec:mpi}
 
 \section{Experiments}\label{sec:experiments}
 \ldots
