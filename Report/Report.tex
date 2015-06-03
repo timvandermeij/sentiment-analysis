@@ -11,12 +11,14 @@
 \usepackage{parskip}
 \usepackage{hyperref}
 \usepackage{csquotes}
-\usepackage[backend=bibtex, sorting=none]{biblatex}
+\usepackage[backend=bibtex, sorting=none, dateabbrev=false, 
+urldate=long]{biblatex}
 \usepackage{booktabs}
 \usepackage{graphicx}
 
 % Bibliography configuration
 \DeclareFieldFormat[article, inproceedings, online]{title}{\emph{#1}}
+\DeclareFieldFormat{titlecase}{\MakeSentenceCase{#1}}
 \bibliography{Report.bib}
 
 % Hyperlink configuration
