@@ -12,6 +12,7 @@
 \usepackage{hyperref}
 \usepackage[backend=bibtex, sorting=none]{biblatex}
 \usepackage{booktabs}
+\usepackage{graphicx}
 
 % Bibliography file
 \bibliography{Report.bib}
@@ -373,11 +374,22 @@ cross-validation or saving a trained model.
 % TODO: Cite Scikit Learn
 The classifier tool can use one of the classifiers or regressors available in
 the Scikit Learn machine learning toolkit. The tool creates the model and 
-trains it using the hand-labeled training set that we created using the labeler
+trains it using the hand-labeled training set that we created with the labeler
 from Section~\ref{sec:labeler}. The trained model can then be stored as a
 serialized \emph{pickle} file, which is a binary format readable by Python
 programs. The model file can then be distributed to worker nodes, or one can
 use it to predict the scores for a given commit comments dataset immediately.
+Figure~\ref{fig:classifier-output} shows visual output of the classifier tool.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.5\textwidth]{Images/Classifier.png}
+  \caption{Visual output of the classifier tool. Each line of the output
+           consists of the ID, the sentiment score and the textual content of
+           a commit comment. A negative score yields red text in the output,
+           whereas a positive score yields green text in the
+           output.}\label{fig:classifier-output}
+\end{figure}
 
 Another use of the tool is to cross-validate the chosen classifier. For a given 
 number of folds, the labeled dataset is split into that number of folds, and 
@@ -391,7 +403,6 @@ similar to the naive analyzer output. The classifier can therefore be run using
 MapReduce as well. When using the preprocessor with MPI to retrieve all commit 
 comments dumps in a distributed way, one can also run the classifier to predict
 the comments in the dumps on the worker nodes.
-% TODO: Example output ../Presentation/Classifier-Output.png
 
 \subsection{MapReduce and reducer}\label{sec:reducer}
 % TODO: Cite MapReduce/Hadoop
