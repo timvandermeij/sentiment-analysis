@@ -389,12 +389,22 @@ predict the scores. The classifier tool can also perform other tasks such as
 cross-validation or saving a trained model.
 
 The classifier tool can use one of the classifiers or regressors available in
-the \textsc{scikit-learn} machine learning toolkit~\cite{scikit-learn}. The tool
-creates the model and trains it using the labeled training set that we created
-with the labeler from Section~\ref{sec:labeler}. The trained model can then be
-stored as a serialized \emph{pickle} file, which is a binary format readable by
-Python programs. The model file can then be distributed to worker nodes, or one
-can use it to predict the scores for a given commit comments dataset immediately.
+the \textsc{scikit-learn} machine learning toolkit~\cite{scikit-learn}. In 
+order to provide textual data to these classification algorithms, which usually 
+only allow numeric data as input, we create a pipeline of transformation steps. 
+The first step of the pipeline reads the text content and uses the same word 
+splitting technique used in the analyzer from Section~\ref{sec:analyzer}. This 
+gives us the sanitized words and emoticons from each commit comment, which are 
+then converted to TF.IDF values. In case the classifier only accepts dense 
+matrices as input, the TF.IDF values are converted to a dense matrix containing 
+an entry in a cell if the specific TF.IDF value occurs for a given comment.
+
+The tool creates the classification model and trains it using the labeled 
+training set that we created with the labeler from Section~\ref{sec:labeler}. 
+The trained model can then be stored as a serialized \emph{pickle} file, which 
+is a binary format readable by Python programs. The model file can then be 
+distributed to worker nodes, or one can use it to predict the scores for 
+a given commit comments dataset immediately.
 Figure~\ref{fig:classifier-output} shows visual output of the classifier tool.
 
 \begin{figure}[h!]
