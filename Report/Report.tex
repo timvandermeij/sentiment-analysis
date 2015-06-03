@@ -188,10 +188,27 @@ programming languages. It is not hard to imagine that the results of sentiment
 analysis on this dataset can be used to obtain many more interesting insights.
 
 \subsection{Related work}\label{sec:related-work}
-% TODO: Citations to various papers with some sentences in how they are 
-% comparable and some differences. Not sure if this is the best location for 
-% such a literature study.
-\ldots
+There are many papers and studies related to sentiment analysis, particularly 
+on sentiment scores of small pieces of text. Such studies for example 
+investigate the classification of sentiments of a Twitter data 
+set~\cite{agarwal2011twitter,kouloumpis2011twitter}, or perform sentiment 
+analysis on movie review comments~\cite{yessenov2009sentiment}. Often, the 
+empirical studies provide techniques for classifying a specific corpus and 
+compare these with general classifier approaches. Often, the novel techniques 
+require a lot of tuning in order to make use of the features in the dataset as 
+much as possible.
+
+There are also studies related to sentiment analysis of the GitHub commit 
+comments dataset, which we use in our 
+analysis~\cite{guzman2014github,pletea2014security}. Again, these studies often 
+provide a specific sentiment analysis tool which uses lexical extraction based 
+on heuristics. An experiment with a very large dataset and with numerous 
+classifier variants is often unavailable. There is one analysis of a large 
+collection of GitHub commit messages which counts the number of messages that 
+fall in one sentiment category and compares languages in this 
+way~\cite{geeksta}. The downside of this approach is the use of a fixed word 
+list which might not catch all messages and could incorrectly classify some 
+messages as happy which are in fact not happy, for example.
 
 \section{Dataset}\label{sec:dataset}
 We use the GitHub commit comments dataset for our work. As described in the
