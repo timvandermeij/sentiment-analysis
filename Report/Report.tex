@@ -14,7 +14,8 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 
-% Bibliography file
+% Bibliography configuration
+\DeclareFieldFormat[article, online]{title}{\emph{#1}} 
 \bibliography{Report.bib}
 
 % Hyperlink configuration
@@ -371,14 +372,13 @@ give similar output as the naive analyzer, but instead it uses a classifier to
 predict the scores. The classifier tool can also perform other tasks such as 
 cross-validation or saving a trained model.
 
-% TODO: Cite Scikit Learn
 The classifier tool can use one of the classifiers or regressors available in
-the Scikit Learn machine learning toolkit. The tool creates the model and 
-trains it using the hand-labeled training set that we created with the labeler
-from Section~\ref{sec:labeler}. The trained model can then be stored as a
-serialized \emph{pickle} file, which is a binary format readable by Python
-programs. The model file can then be distributed to worker nodes, or one can
-use it to predict the scores for a given commit comments dataset immediately.
+the \textsc{scikit-learn} machine learning toolkit~\cite{scikit-learn}. The tool
+creates the model and trains it using the labeled training set that we created
+with the labeler from Section~\ref{sec:labeler}. The trained model can then be
+stored as a serialized \emph{pickle} file, which is a binary format readable by
+Python programs. The model file can then be distributed to worker nodes, or one
+can use it to predict the scores for a given commit comments dataset immediately.
 Figure~\ref{fig:classifier-output} shows visual output of the classifier tool.
 
 \begin{figure}[h!]
@@ -430,7 +430,7 @@ counts in a frequency plot or to visualize the relative scores of each group.
 \ldots
 
 \subsection{Experiment runner}\label{sec:experiment-runner}
-Determining the best classifier to use from the Scikit Learn toolkit is
+Determining the best classifier to use from the \textsc{scikit-learn} toolkit is
 essential for obtaining reliable classifications. Since our labeled training
 set containing 2000 labeled commit comments is relatively small, it is possible
 to explore a large number of different classifiers with many different
@@ -468,22 +468,21 @@ of the manifest file is the following:
 }
 \end{verbatim}
 
-In a manifest entry we mention the Scikit Learn class name of the classifier
-to test, the Scikit Learn module to which the classifier belongs, the name
-of the classifier and the parameters of the classifier that must be tested.
-In the example above, we are working with two parameters, namely
-{\tt n\_estimators} and {\tt learning\_rate}. The manifest entry essentially
-indicates that we perform cross-validation for the Ada Boost classifier with
-all possible combinations of the parameter values. In this case we perform
-25 runs, namely one with {\tt n\_estimators = 10} and {\tt learning\_rate =
-0.1}, one with {\tt n\_estimators = 10} and {\tt learning\_rate = 0.2}, and
-so on.
+In a manifest entry we mention the class name of the classifier to test, the
+module to which the classifier belongs, the name of the classifier and the
+parameters of the classifier that must be tested. In the example above, we are
+working with two parameters, namely {\tt n\_estimators} and
+{\tt learning\_rate}. The manifest entry essentially indicates that we perform
+cross-validation for the Ada Boost classifier with all possible combinations
+of the parameter values. In this case we perform 25 runs, namely one with
+{\tt n\_estimators = 10} and {\tt learning\_rate = 0.1}, one with
+{\tt n\_estimators = 10} and {\tt learning\_rate = 0.2}, and so on.
 
-We work with a manifest file that contains 15 different classifiers from
-Scikit Learn. The parameters and the values of the parameters to test have
-been determined by studying the Scikit Learn documentation. The experiment
-runner reads the manifest file and performs cross-validation for each
-mentioned classifier and for each parameter combination. The results of the
+We work with a manifest file that contains 15 different classifiers. The
+parameters and the values of the parameters to test have been determined by
+studying the \textsc{scikit-learn} toolkit documentation. The experiment runner
+reads the manifest file and performs cross-validation for each mentioned
+classifier and for each parameter combination. The results of the
 cross-validation are written to an output JSON file that the plotter from
 Section~\ref{sec:plotter} can take as input and, using the `algo' group,
 creates an SVG plot for each classifier.
