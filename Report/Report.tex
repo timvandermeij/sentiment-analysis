@@ -567,32 +567,44 @@ where others left off.
 \ldots
 
 \section{Conclusion}\label{sec:conclusion}
-We have implemented a framework in Python for distributed sentiment analysis on the
-GitHub commit comments dataset. Our framework includes two different approaches
-for performing sentiment analysis, namely a naive positive and negative word list
-approach and a classifier approach. We have discussed the components available in
-the framework, such as the preprocessor, the naive analyzer, the classifier and
-the experiment runner.
+We have implemented a framework in Python for distributed sentiment analysis on
+the GitHub commit comments dataset. Our framework includes two different
+approaches for performing sentiment analysis, namely a naive positive and
+negative word list approach and a classifier approach. We have discussed the
+components available in the framework, such as the preprocessor, the naive
+analyzer, the classifier and the experiment runner.
 
-For the classifier approach we have evaluated 15 different classifiers, including
-many combinations of parameters, with five-fold cross-validation on a manually
-labeled training set of 2000 commit comments. These experiments show that the
-passive aggressive classifier is the most accurate on the commit comments dataset,
-while other classifiers such as the random forest classifier also yield high
-accuracies.
+For the classifier approach we have evaluated 15 different classifiers,
+including many combinations of parameters, with five-fold cross-validation on
+a manually labeled training set of 2000 commit comments. These experiments show
+that the passive aggressive classifier is the most accurate on the commit
+comments dataset, while other classifiers such as the random forest classifier
+also yield high accuracies.
 
 We have performed another experiment to show the potential of our framework by
 performing sentiment analysis on all available commit comments and then grouping
-labels by the main programming language of the repository that each commit belongs
-to. We have generated plots of the 20 languages where the overall developer sentiment
-is most positive and where it is most negative.
+labels by the main programming language of the repository that each commit
+belongs to. We have generated plots of the 20 languages where the overall
+developer sentiment is most positive and where it is most negative.
 
 \subsection{Future research}\label{sec:future-research}
-% TODO: Other approaches: PCA and sentiments in more dimensions (categories), 
-% extension to specific users/repos/communities/discussion (online live data 
-% stream), comparison with other classifiers (neural networks, NLTK) and 
-% specific interpretations of classifiers (RandomForest out of bag error).
-\ldots
+There are several possible extensions that we leave for future research. The
+first extension is the application of principal component analysis (PCA) and
+working with sentiments in more dimensions. This means that we are not labeling
+commit comments as strictly positive, negative or neutral, but instead we use
+emotion categories such as `happy', `disappointed' or `angry'. This approach
+makes the results of the sentiment analysis more specific and might increase
+the overall accuracy.
+
+The second possible extension is to apply the framework to specific users,
+repositories, communities or discussions. This scope limitation makes it
+more feasible to, for example, implement a system that performs sentiment
+analysis on a data stream in realtime.
+
+Finally, further research could go into a comparison with other classifiers,
+such as neural networks, or into researching other interpretations of the
+used classifiers, such as the out-of-bag error for the random forest
+classifier.
 
 \section*{References}\label{sec:references}
 \printbibliography[heading=none]
