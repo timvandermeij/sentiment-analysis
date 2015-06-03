@@ -546,9 +546,43 @@ version control system such that any user can use the labeler and continue
 where others left off.
 
 \subsection{MPI}\label{sec:mpi}
-% TODO: Explain preprocessor master/worker job dispatching and some about 
-% classifier support
-\ldots
+Message Passing Interface (MPI) is a protocol for creating communication 
+channels between instances of a parallelized program. These channels can be 
+created in various ways, depending on the platform and the instantiation of the 
+program. One can use shared memory when the instances are threads. In the case 
+that we instantiate separate processes, an inter-process communication channel 
+allows for data sharing. Finally, if the processes are on different worker 
+nodes, a network protocol such as SSH resolves the communication. Agent 
+forwarding and key-based authentication ensure that none of the connections 
+require interactive password prompts.
+
+OpenMPI~\cite{gabriel2004openmpi} is one implementation of MPI which supports 
+implementations of all these communication channels. It executes multiple 
+instances of another program in parallel. In case the specific program uses the 
+available MPI bindings, then the communication channels allow data sharing and 
+program synchronization. We use the \textsc{mpi4py} library for 
+Python~\cite{dalcin2008mpi4py} in order to use the MPI bindings within our 
+programs.
+
+We specifically use MPI and the data communication in the preprocessor from 
+Section~\ref{sec:preprocessor}. We dispatch jobs for each dump that we want to 
+download, extract and process. When a worker node has finished a job, it sends 
+a message to the master process, which awakens from an idle polling loop. The 
+master process then either sends a new job to the worker node based on the dump 
+date, or signals the worker that it is done if all jobs have been assigned. The 
+list of dumps is sorted on their compressed file size, so that the worker nodes 
+first process the largest tasks. When a worker node finishes a job earlier than 
+others, then it receives a new job before a worker node processing a larger 
+dump. This yields an automatic load-balancing based on the processing time of 
+each dump.
+
+The classifier from Section~\ref{sec:classifier} also supports running with 
+MPI. In this case, all communications happens using standard output streams and 
+shared files. The classifier can detect commit comments dumps that the 
+MPI-enabled preprocessor extracts on worker nodes on their local hard drives, 
+and predict the messages in each of them individually, based on a trained 
+model. The predictions are then collected and can then be used in other 
+components.
 
 \section{Experiments and results}\label{sec:experiments-and-results}
 % TODO: Explain experiments: timing, memory?, analyzer/classifier frequency 
