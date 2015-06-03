@@ -89,10 +89,9 @@ Section~\ref{sec:problem} describes the research question in more detail as well
 as give definitions of the techniques that we evaluate and related work. The
 used dataset and the implementation of the distributed sentiment analysis
 framework are discussed in Section~\ref{sec:dataset} and
-Section~\ref{sec:implementation}, respectively. We present our experiments in
-Section~\ref{sec:experiments} and discuss the results of the experiments in
-Section~\ref{sec:results}. We list future research and conclude our analysis in
-Section~\ref{sec:conclusion}.
+Section~\ref{sec:implementation}, respectively. We present our experiments and
+results in Section~\ref{sec:experiments-and-results}. We list future research
+and conclude our analysis in Section~\ref{sec:conclusion}.
 
 \section{Problem statement}\label{sec:problem}
 The goal of this research is to determine how we can perform sentiment analysis
@@ -230,7 +229,7 @@ We focus on two types of dumps we use for our analysis, which are the
 commit comments and repository dumps. The former is used for the sentiment
 analysis itself, while the latter is used to assign to a commit the main 
 programming language of the repository that it belongs to, which is useful for 
-one of the experiments described in Section~\ref{sec:experiments}.
+one of the experiments described in Section~\ref{sec:experiments-and-results}.
 
 Each dump contains a part of the dataset, since GHTorrent generates incremental 
 dumps on a bimonthly basis. A dump consists of one BSON file, which is 
@@ -331,7 +330,7 @@ The {\tt repos} dumps, containing the repositories dataset, are filtered on the
 writes. This makes it possible to merge the shelves of each dump in order to 
 obtain a full mapping from repository names to the main programming language of 
 those repositories. We use this to augment the data from the commit comments
-dataset for usage in the experiments in Section~\ref{sec:experiments}.
+dataset for usage in the experiments in Section~\ref{sec:experiments-and-results}.
 
 The dataset of main importance is based on the {\tt commit\_comments} dumps, 
 which contain the comments that reviewers make on pieces of code and commits in 
@@ -551,13 +550,20 @@ where others left off.
 % classifier support
 \ldots
 
-\section{Experiments}\label{sec:experiments}
+\section{Experiments and results}\label{sec:experiments-and-results}
 % TODO: Explain experiments: timing, memory?, analyzer/classifier frequency 
 % plots?, algorithm comparisons, language sentiments
 \ldots
 
-\subsection{Results}\label{sec:results}
-% TODO: Split up in sections? Perhaps combine experiments and results?
+\subsection{Determining the most accurate classifier}\label{sec:most-accurate-classifier}
+% TODO: Explain experiments we have done with classifiers (also refer to the
+% experiment runner section), compare the four most promising plots and
+% add details on our final choice.
+\ldots
+
+\subsection{Performing sentiment analysis per language}\label{sec:sentiment-analysis-per-language}
+% TODO: Explain the experiment, why we want to do this and show and explain
+% the generated language plots, much like we have done for the presentation.
 \ldots
 
 \section{Conclusion}\label{sec:conclusion}
