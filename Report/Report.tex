@@ -38,10 +38,10 @@
   algorithms and we use the most promising classifier in our final
   implementation where we apply the trained classifier on the entire dataset.
   We visualize the overall sentiment per programming language to show the
-  potential of our approach. Distributing work is key when working with such a
-  large dataset, hence getting the data, preprocessing it and performing the
-  sentiment analysis is all done in a distributed manner with help of OpenMPI
-  and MapReduce.
+  potential of our approach. Distributing workload is key when working with 
+  such a large dataset. Therefore, getting the data, preprocessing it and 
+  performing the sentiment analysis is all done in a distributed manner with 
+  help of OpenMPI and MapReduce.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
@@ -58,7 +58,7 @@ In this report we focus only on sentiment analysis of textual content. We
 specifically use the GitHub commit comments dataset for our analysis. GitHub is 
 an online platform that provides source code hosting and collaboration for both 
 open-source and closed-source projects that use the Git version control system. 
-When working on source code in a version-controlled environment, it is common 
+When developing source code in a version-controlled environment, it is common 
 practice to divide the implementation of functionality into \emph{commits}, 
 which are small packages of code. Once the developer is ready to have the code 
 reviewed, then reviewers can look at these commits and comment on them. For 
@@ -73,7 +73,7 @@ angriness when a commit is of poor quality.
 
 We perform the sentiment analysis in a distributed manner. Since the total 
 GitHub commit comments dataset is very large, and speed and efficiency are 
-a concern, we aim to distribute most of the work, including downloading and 
+a concern, we aim to distribute most of the workload, including downloading and 
 preprocessing data, over several worker nodes. We first implement a naive 
 algorithm to get insights into the dataset and then apply those insights to the 
 final implementation that uses a classifier to quickly classify commit comments 
@@ -87,7 +87,7 @@ used dataset and the implementation of the distributed sentiment analysis
 framework are discussed in Section~\ref{sec:dataset} and
 Section~\ref{sec:implementation}, respectively. We present our experiments in
 Section~\ref{sec:experiments} and discuss the results of the experiments in
-Section~\ref{sec:results}. We list future research and conclude our work in
+Section~\ref{sec:results}. We list future research and conclude our analysis in
 Section~\ref{sec:conclusion}.
 
 \section{Problem statement}\label{sec:problem}
@@ -105,9 +105,9 @@ classification of content as being positive, negative or neutral. Since
 sentiment analysis through the use of classification yields a probability score
 for all categories, we are also able to numerically compare the sentiment in
 different content, making it possible to determine if one piece of text is more
-positive than another, for example. Our work focusses on performing sentiment
-analysis on textual content and classifying the textual content as being
-positive, negative or neutral.
+positive than another, for example. Our research focusses on performing 
+sentiment analysis on textual content and classifying the textual content as 
+being positive, negative or neutral.
 
 Being able to automatically classify content into fixed categories can yield
 previously unknown insights. Because of this, sentiment analysis is becoming
@@ -132,13 +132,14 @@ fast in order to make working with a large dataset feasible.
 We propose a framework that performs sentiment analysis on large datasets in a
 distributed manner. We aim to distribute most operations performed by the 
 framework, such as downloading and preprocessing individual data dumps and
-classification. We work on the Distributed ASCI Supercomputer~3 (DAS-3) at
-the LIACS institute of Leiden University. The DAS-3 has a total of 32~worker 
-nodes consisting of commodity hardware and a number of hard drives, including 
-a RAID configuration. Distributing work over multiple worker nodes or even over 
-multiple processes on a single node is a key feature of the framework as it 
-provides a great speed-up when working with the large datasets that we use, of 
-which more details are given in Section~\ref{sec:dataset}.
+classification. We utilize the resources of the Distributed ASCI 
+Supercomputer~3 (DAS-3) at the LIACS institute of Leiden University. The DAS-3 
+has a total of 32~worker nodes consisting of commodity hardware and a number of 
+hard drives, including a RAID configuration. A key feature of the framework is 
+the distribution of workload over multiple worker nodes, or even over multiple 
+processes on a single node. This provides a great speed-up when processing the 
+large datasets that we use, of which more details are given in 
+Section~\ref{sec:dataset}.
 
 We implement two different approaches for performing sentiment analysis. The
 first approach is the word list approach. Given a piece of text, we split the 
@@ -146,7 +147,7 @@ text into individual words and for each word we test if the word appears in
 fixed lists of positive and negative words. We count the number of positive and 
 negative words in the text and perform a majority vote for the final 
 classification of positive, negative or neutral. This is a basic approach that 
-is expected to work reasonably well, but at the same time we foresee issues 
+is expected to perform reasonably well, but at the same time we foresee issues 
 with this approach.
 
 For instance, when this naive analyzer encounters the word `good', the 
@@ -162,9 +163,9 @@ a second approach that uses a classifier to do the classification. With this
 approach we do not need any fixed word lists. The classifier learns what
 positive, negative and neutral texts are from training examples. There are two
 main difficulties for this approach, namely that there is no labeled training
-set available for the dataset we are working with. Secondly, it is not clear 
-which classifier would be the best fit for the data. We therefore start by 
-manually labeling 2000~commit comments as positive, negative or neutral.
+set available for the dataset we use. Secondly, it is not clear which 
+classifier would be the best fit for the data. We therefore start by manually 
+labeling 2000~commit comments as positive, negative or neutral.
 
 Once we have a training set, we can train many different classifiers, such as 
 a random forest classifier or a Gaussian naive Bayes classifier, and perform 
@@ -181,9 +182,9 @@ commit comment with the main programming language of the repository it belongs
 to. We perform sentiment analysis on the test data and with the resulting 
 labels for each commit comment we visualize the distribution of positive and 
 negative commit comments per programming language. This is done in order to 
-obtain insight into the sentiment of developers that work with different 
-programming languages. It is not hard to imagine that the results of sentiment 
-analysis on this dataset can be used to obtain many more interesting insights.
+obtain insight into the sentiment of developers that use different programming 
+languages. It is not hard to imagine that the results of sentiment analysis on 
+this dataset can be used to obtain many more interesting insights.
 
 \subsection{Related work}\label{sec:related-work}
 There are many papers and studies related to sentiment analysis, particularly 
@@ -209,15 +210,16 @@ list which might not catch all messages and could incorrectly classify some
 messages as happy which are in fact not happy, for example.
 
 \section{Dataset}\label{sec:dataset}
-We use the GitHub commit comments dataset for our work. As described in the
+We use the GitHub commit comments dataset for our analysis. As described in the
 introduction in Section~\ref{sec:introduction}, the GitHub commit comments
 dataset contains comments that reviewers have attached to specific lines of
 a Git commit or to an entire Git commit.
 
-The dataset is provided by the GHTorrent project~\cite{ghtorrent}, which
+The dataset is provided by the GHTorrent 
+project~\cite{ghtorrent,gousi2013ghtorrent}, which
 publishes incremental and categorized dumps of data from the publicly
 available GitHub API\@. We only use the commit comment dumps and the
-repository dumps for our work, but, among others, issue comments, pull
+repository dumps for our analysis, but, among others, issue comments, pull
 request comments and events are also available. Every two months a new
 incremental dump is published.
 
@@ -349,10 +351,10 @@ progress output on each step. This script can therefore extract data from the
 fields relevant to the commit comments, including the group.
 
 Note that the preprocessor can also be run using MPI in order to parallelize 
-the phases for different dumps. We can distribute the work across nodes, with 
-a master that schedules new work for processes that are done with one dump, 
-achieving automatic load balancing. We describe the implementation of MPI in 
-our tools in Section~\ref{sec:mpi}.
+the phases for different dumps. We can distribute the workload across nodes, 
+with a master that schedules a new task for processes that are done with one 
+dump, achieving automatic load balancing. We describe the implementation of MPI 
+in our tools in Section~\ref{sec:mpi}.
 
 \subsection{Naive analyzer}\label{sec:analyzer}
 We implement a naive approach as a baseline for comparing against real 
@@ -484,15 +486,15 @@ of the manifest file is the following:
 
 In a manifest entry we mention the class name of the classifier to test, the
 module to which the classifier belongs, the name of the classifier and the
-parameters of the classifier that must be tested. In the example above, we are
-working with two parameters, namely {\tt n\_estimators} and
+parameters of the classifier that must be tested. In the example above, we have 
+two parameters, namely {\tt n\_estimators} and
 {\tt learning\_rate}. The manifest entry essentially indicates that we perform
 cross-validation for the Ada Boost classifier with all possible combinations
 of the parameter values. In this case we perform 25 runs, namely one with
 {\tt n\_estimators = 10} and {\tt learning\_rate = 0.1}, one with
 {\tt n\_estimators = 10} and {\tt learning\_rate = 0.2}, and so on.
 
-We work with a manifest file that contains 15 different classifiers. The
+We use a manifest file that contains 15 different classifiers. The
 parameters and the values of the parameters to test have been determined by
 studying the \textsc{scikit-learn} toolkit documentation. The experiment runner
 reads the manifest file and performs cross-validation for each mentioned
@@ -529,8 +531,8 @@ the last collaborator left off. For example, if the first collaborated labeled
 up until commit comment 500, then a second collaborator would resume labeling
 at commit commit 501, thereby skipping already labeled commit comments. The
 JSON file with the commit comment labels can therefore easily be put in a
-version control system such that any user can work with it and continue where
-others left off.
+version control system such that any user can use the labeler and continue 
+where others left off.
 
 \subsection{MPI}\label{sec:mpi}
 % TODO: Explain preprocessor master/worker job dispatching and some about 
