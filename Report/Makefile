@@ -2,7 +2,7 @@ NAME = Report
 
 pdf: $(NAME).pdf
 
-$(NAME).pdf: $(NAME).tex
+$(NAME).pdf: $(NAME).tex $(NAME).bib
 	pdflatex $(NAME)
 	bibtex $(NAME)
 	pdflatex $(NAME)
