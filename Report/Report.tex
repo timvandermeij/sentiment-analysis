@@ -216,9 +216,8 @@ introduction in Section~\ref{sec:introduction}, the GitHub commit comments
 dataset contains comments that reviewers have attached to specific lines of
 a Git commit or to an entire Git commit.
 
-The dataset is provided by the GHTorrent 
-project~\cite{ghtorrent,gousi2013ghtorrent}, which
-publishes incremental and categorized dumps of data from the publicly
+The dataset is provided by the GHTorrent project~\cite{gousios2013ghtorrent},
+which publishes incremental and categorized dumps of data from the publicly
 available GitHub API\@. We only use the commit comment dumps and the
 repository dumps for our analysis, but, among others, issue comments, pull
 request comments and events are also available. Every two months a new
@@ -390,13 +389,13 @@ predict the scores. The classifier tool can also perform other tasks such as
 cross-validation or saving a trained model.
 
 The classifier tool can use one of the classifiers or regressors available in
-the \textsc{scikit-learn} machine learning toolkit~\cite{scikit-learn}. In 
-order to provide textual data to these classification algorithms, which usually 
-only allow numeric data as input, we create a pipeline of transformation steps. 
-The first step of the pipeline reads the text content and uses the same word 
-splitting technique used in the analyzer from Section~\ref{sec:analyzer}. This 
-gives us the sanitized words and emoticons from each commit comment, which are 
-then converted to TF.IDF values. In case the classifier only accepts dense 
+the \textsc{scikit-learn} machine learning toolkit~\cite{pedgregosa2011scikit}.
+In order to provide textual data to these classification algorithms, which
+usually only allow numeric data as input, we create a pipeline of transformation
+steps. The first step of the pipeline reads the text content and uses the same
+word splitting technique used in the analyzer from Section~\ref{sec:analyzer}.
+This gives us the sanitized words and emoticons from each commit comment, which
+are then converted to TF.IDF values. In case the classifier only accepts dense 
 matrices as input, the TF.IDF values are converted to a dense matrix containing 
 an entry in a cell if the specific TF.IDF value occurs for a given comment.
 
@@ -432,11 +431,11 @@ comments dumps in a distributed way, one can also run the classifier to predict
 the comments in the dumps on the worker nodes.
 
 \subsection{MapReduce and reducer}\label{sec:reducer}
-MapReduce~\cite{mapreduce} is a component of Hadoop which allows to create two
-kinds of jobs: mappers and reducers. The mappers receive input on which they
-perform calculations and their output is sorted and split up to the reducer jobs,
-which can, for example, make counts or perform other aggregation tasks. This
-allows for distributed computation in phases.
+MapReduce~\cite{dean2004mapreduce} is a component of Hadoop which allows to
+create two kinds of jobs: mappers and reducers. The mappers receive input on
+which they perform calculations and their output is sorted and split up to the
+reducer jobs, which can, for example, make counts or perform other aggregation
+tasks. This allows for distributed computation in phases.
 
 We make use of MapReduce for our prediction and analysis tools. The naive 
 analyzer from Section~\ref{sec:analyzer} and the classifier described in 
