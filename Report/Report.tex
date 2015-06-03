@@ -49,8 +49,8 @@ limited to, judgements or emotions on a certain topic. Sentiment analysis is
 often troubled by the limitations of natural language processing and by the
 large amounts of data available. Furthermore, in order to process all samples 
 from a given dataset, we require that the sentiment analysis on one sample must 
-perform fast. Otherwise, the process quickly becomes infeasible and unsuitable 
-for a huge dataset.
+be fast. Otherwise, the process quickly becomes infeasible and unsuitable for a
+huge dataset.
 
 In this report we focus only on sentiment analysis of textual content. We 
 specifically use the GitHub commit comments dataset for our analysis. GitHub is 
@@ -79,13 +79,14 @@ as being positive, negative or neutral. Furthermore, we link the commit
 comments to the main programming language used in the code repository to be 
 able to get insights into the sentiments of the developers per language.
 
-In Section~\ref{sec:problem}, we describe the research question in more detail 
-as well as give definitions of the techniques that we evaluate. The used 
-dataset and the implementation of the distributed sentiment analysis are 
-discussed in Section~\ref{sec:dataset} and Section~\ref{sec:implementation}, 
-respectively. We present our experiments in Section~\ref{sec:experiments} and 
-discuss the results of the experiments in Section~\ref{sec:results}. We 
-conclude our work in Section~\ref{sec:conclusion}.
+Section~\ref{sec:problem} describes the research question in more detail as well
+as give definitions of the techniques that we evaluate and related work. The
+used dataset and the implementation of the distributed sentiment analysis
+framework are discussed in Section~\ref{sec:dataset} and
+Section~\ref{sec:implementation}, respectively. We present our experiments in
+Section~\ref{sec:experiments} and discuss the results of the experiments in
+Section~\ref{sec:results}. We list future research and conclude our work in
+Section~\ref{sec:conclusion}.
 
 \section{Problem statement}\label{sec:problem}
 The goal of this research is to determine how we can perform sentiment analysis
@@ -185,7 +186,7 @@ obtain insight into the sentiment of developers that work with different
 programming languages. It is not hard to imagine that the results of sentiment 
 analysis on this dataset can be used to obtain many more interesting insights.
 
-\subsection{Related work}\label{sec:relatedwork}
+\subsection{Related work}\label{sec:related-work}
 % TODO: Citations to various papers with some sentences in how they are 
 % comparable and some differences. Not sure if this is the best location for 
 % such a literature study.
@@ -299,10 +300,9 @@ GHTorrent archives.
 Firstly, we use a scraper that checks the downloads page of GHTorrent and 
 creates a list of possible dumps to download. The preprocessor checks whether 
 the dump file already exists and otherwise it downloads the compressed dump and 
-extract it. Afterwards, the extracted BSON file, a binary JSON format, is 
+extracts it. Afterwards, the extracted BSON file, a binary JSON format, is 
 converted to JSON\@. At this point, we can filter fields depending on the 
-type
-of dump.
+type of dump.
 
 The {\tt repos} dumps, containing the repositories dataset, are filtered on the 
 {\tt language} field and stored in an efficient format. This format, called a
@@ -525,17 +525,18 @@ others left off.
 \section{Conclusion}\label{sec:conclusion}
 \ldots
 
-\subsection{Further research}\label{sec:furtherresearch}
+\subsection{Future research}\label{sec:future-research}
 % TODO: Other approaches: PCA and sentiments in more dimensions (categories), 
 % extension to specific users/repos/communities/discussion (online live data 
 % stream), comparison with other classifiers (neural networks, NLTK) and 
 % specific interpretations of classifiers (RandomForest out of bag error).
 \ldots
 
-\section{References}\label{sec:references}
-% TODO: Add link to GitHub and open-source the repository?
+\section*{References}\label{sec:references}
 \printbibliography[heading=none]
 
+\section*{Appendix}
 % TODO: Appendix (README, link to repository or code listings?)
+\ldots
 
 \end{document}
