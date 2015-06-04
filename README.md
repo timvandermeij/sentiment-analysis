@@ -320,7 +320,7 @@ Once again, add the following to `~/.bashrc` to make running the SSH authenticat
 
 Now `source ~/.bashrc` and then run `ssh-activate` in order to set up an SSH agent with your key by entering your passphrase. We can already use the `pympi` function to run a program locally without problem, however we are not yet done setting up which hosts we can connect to. Use `./ssh-setup.sh /scratch/spark/conf/slaves` (after cloning the code from this repository) to set up a hosts file as well as check if all connections are OK. If the script complains about bad permissions, run `chown 600 $HOME/.ssh/config`. Follow any further instructions from the script and rerun it in case something goes wrong. Note that `ssh-activate` must be run every session before using `pympi`, while setup only needs to be done once.
 
-The final stap is to edit `$SCRATCH/python/bin/activate`. Replace:
+The final step is to edit `$SCRATCH/python/bin/activate`. Replace:
 
     VIRTUAL_ENV="/scratch/scratch/{username}/python"
     export VIRTUAL_ENV
