@@ -656,11 +656,9 @@ such as the out-of-bag error for the random forest classifier.
 
 \appendix
 \section{Appendix}\label{app:appendix}
-% TODO: Appendix (README, link to open-sourced repository)
-
-This appendix is based on an instruction and readme file that accompanies the 
+This appendix is based on an instruction file that accompanies the 
 code of our implementation from Section~\ref{sec:implementation}. The code can 
-be found in a Git repository at 
+be retrieved from a Git repository at 
 \url{https://github.com/timvandermeij/sentiment-analysis}. This repository 
 contains all code necessary to perform sentiment analysis on a large dataset of 
 Git commit comments from GitHub (\url{http://www.ghtorrent.org}). The code is 
@@ -670,8 +668,8 @@ analysis, but has also been tested to work on other hardware and software
 platforms.
 
 \subsection{Prerequisites}\label{app:prerequisities}
-
-The version numbers mentioned below have been verified to work. Different versions might also work.
+The version numbers mentioned below have been verified to work. Different
+versions might also work.
 
 \begin{itemize}
   \item Git 1.7.1 or 2.3.x
@@ -680,7 +678,6 @@ The version numbers mentioned below have been verified to work. Different versio
 \end{itemize}
 
 \subsection{Cloning the repository}\label{app:cloning-the-repository}
-
 The first step is to clone the repository to obtain a local copy of the code. 
 Open a terminal window and run the following commands.
 
@@ -690,7 +687,6 @@ $ cd sentiment-analysis
 \end{verbatim}
 
 \subsection{Running the code}\label{app:running-the-code}
-
 All code is written in Python. To run the simple sentiment analysis program, execute:
 
 \begin{verbatim}
@@ -698,14 +694,17 @@ $ python preprocess.py
 $ echo '{"body":"Yay, it is working perfectly!"}' | python analyze.py score
 \end{verbatim}
 
-For the default group of \texttt{id} and the group \texttt{score}, running \texttt{preprocess.py} only needs to be done once. If all required data is available, \texttt{preprocess.py} will do nothing.
+For the default group of \texttt{id} and the group \texttt{score}, running
+\texttt{preprocess.py} only needs to be done once. If all required data is
+available, \texttt{preprocess.py} will do nothing.
 
 The output of the analysis program are lines containing scores between $-1$ and 
 $1$, where $-1$ indicates that the message is negative, $1$ indicates that the 
 message is positive and $0$ indicates that the message is neutral. The output 
 can also contain grouping data or some visualization of the message.
 
-Instead of using a single line as input, one can give a file to read as standard input as follows:
+Instead of using a single line as input, one can give a file to read as standard
+input as follows:
 
 \begin{verbatim}
 $ python analyze.py < commit_comments-dump.2015-01-29.json
@@ -714,7 +713,7 @@ $ python classify.py score < commit_comments-dump.2015-01-29.json
 
 The latter \texttt{classify.py} script uses a classifier to predict the scores 
 using a labeled dataset. Both programs work in a similar manner. This script 
-requires the \texttt{2015-01-29} commit comments dump in order to 
+requires the 2015--01--29 commit comments dump in order to 
 cross-reference the labels with the messages. The classification itself can be 
 run on any dump, and the script will filter any already labeled messages before 
 prediction.
@@ -727,7 +726,6 @@ a histogram of frequencies of the scores which can be passed to
 \texttt{plot.py} to make a graph of the frequencies.
 
 \subsubsection{Groups}\label{app:groups}
-
 The code by default uses the \texttt{id} of a record as its group. This means 
 that only the analyzer and classifier will do something useful. The reducer and 
 plot scripts do not work nicely when the data is grouped this way. In order to 
@@ -740,7 +738,7 @@ and then again use \texttt{python preprocess.py commit\_comments language}.
 These commands can also be distributed using MPI, in order to retrieve and 
 process multiple dump files in parallel processes. Note that it is only 
 necessary to parallelize the second command if one wants to receive all the 
-commit comments dumps, whereas working with the \texttt{2015-01-29} dataset is 
+commit comments dumps, whereas working with the 2015--01--29 dataset is 
 usually enough. The MPI parallelization can be done on one machine using 
 \texttt{mpirun -n \textless{}num\_processes\textgreater{} python preprocess.py 
 repos language}. The instructions for running the preprocessor on distributed 
@@ -749,7 +747,6 @@ worker nodes are given in Section~\ref{app:mpi}, where the command is
 language" -{}-hostfile hosts -{}-map-by node}.
 
 \subsubsection{Running the code in MapReduce}\label{app:mapreduce}
-
 This section assumes that the installation notes in 
 Section~\ref{app:installation-notes} have already been followed and all 
 dependencies and scripts are set up. The exact commands to call the MapReduce 
@@ -781,7 +778,7 @@ command:
 -file \"\$HDFS\_URL/words/negative.txt\#words/negative.txt\"
 \end{verbatim}
 
-In order too count frequencies of scores within a specific group, use the 
+In order to count frequencies of scores within a specific group, use the 
 following command:
 
 \begin{verbatim}
@@ -795,11 +792,12 @@ This ensures that MapReduce knows which parts of the outputs are keys and which
 are values.
 
 \subsection{Installation notes for the DAS-3}\label{app:installation-notes}
-
-This section describes how to set up all dependencies for running the Python code on the Distributed ASCI Supercomputer 3 at LIACS. Among others, this gives instructions for installing Python 2.7 that can be run in a virtual environment, Hadoop configuration and MPI.
+This section describes how to set up all dependencies for running the Python
+code on the Distributed ASCI Supercomputer 3 at LIACS\@. Among others, this
+gives instructions for installing Python 2.7 that can be run in a virtual
+environment, Hadoop configuration and MPI.
 
 \subsubsection{Python}\label{app:python}
-
 Compile Python (version 2.7.9) from source:
 
 \begin{verbatim}
@@ -828,7 +826,6 @@ $ ~/.local/bin/virtualenv --relocatable python
 \end{verbatim}
 
 \subsubsection{OpenMPI}\label{app:openmpi}
-
 Compile OpenMPI from source:
 
 \begin{verbatim}
@@ -843,7 +840,6 @@ $ rm openmpi-1.8.4.tar.gz
 \end{verbatim}
 
 \subsubsection{OpenBLAS}\label{app:openblas}
-
 Compile OpenBLAS from source:
 
 \begin{verbatim}
@@ -854,7 +850,6 @@ $ make PREFIX=$HOME/.local install
 \end{verbatim}
 
 \subsubsection{Update $\sim$/.bashrc}\label{app:update-bashrc}
-
 Append the following segment to \texttt{$\sim$/.bashrc}:
 
 \begin{verbatim}
@@ -876,7 +871,6 @@ export BLAS="$SCRATCH/opt/lib/libopenblas.a"
 Then use \texttt{source $\sim$/.bashrc} to reload the configuration.
 
 \subsubsection{Python libraries}\label{app:python-libraries}
-
 Activate the virtual environment:
 
 \begin{verbatim}
@@ -904,8 +898,8 @@ First install the following dependencies:
 \end{verbatim}
 
 Next we need to compile \textsc{NumPy} from source as we need it to work with 
-OpenBLAS. This BLAS implementation not only performs better than standard BLAS 
-installations according to benchmarks at 
+OpenBLAS\@. This BLAS implementation not only performs better than standard
+BLAS installations according to benchmarks at 
 \url{http://stackoverflow.com/a/7645939}, but \textsc{SciPy} requires it 
 because Lapack/BLAS are not installed on the DAS-3. Follow the instructions 
 from step~2 onward from \url{http://stackoverflow.com/a/14391693}. Make sure to 
@@ -930,7 +924,6 @@ source installation of \textsc{NumPy}.
 \end{verbatim}
 
 \subsubsection{HDFS}\label{app:hdfs}
-
 Now we can put the entire environment on HDFS for MapReduce:
 
 \begin{verbatim}
@@ -997,19 +990,18 @@ $ pyhadoop input.txt result mapper.py reducer.py "data/data 123" "data/data 42" 
 \end{verbatim}
 
 If you have hardcoded paths, sometimes you can circumvent these directory 
-problems by using e.g. the following:
+problems by using e.g., the following:
 \begin{verbatim}
 -file \"\$HDFS\_URL/words/positive.txt\#words/positive.txt\" \
 -file \"\$HDFS\_URL/words/negative.txt\#words/negative.txt\"
 \end{verbatim}
 
 \subsubsection{MPI}\label{app:mpi}
-
 To get the \texttt{preprocess.py} script running on distributed nodes, MPI must 
-be able to connect to other nodes via SSH. Although SSH access is possible, one 
-must ensure that there are no interactive authentication prompts when MPI tries 
-to open an SSH connection. This is complicated further by the fact that MPI 
-might open SSH connections on other nodes as well.
+be able to connect to other nodes via SSH\@. Although SSH access is available on
+the DAS-3, one must ensure that there are no interactive authentication prompts
+when MPI tries to open an SSH connection. This is complicated further by the fact
+that MPI might open SSH connections on other nodes as well.
 
 Let us first start with setting up an SSH key. Run \texttt{ssh-keygen -t rsa}. 
 For the first question, keep the default file of \texttt{$\sim$/.ssh/id\_rsa}. 
@@ -1051,7 +1043,7 @@ already use the \texttt{pympi} function to run a program locally without
 problem, however we are not yet done setting up which hosts we can connect to. 
 Use \texttt{./ssh-setup.sh /scratch/spark/conf/slaves} (after cloning the code 
 from the repository) to set up a hosts file as well as check if all connections 
-are OK. If the script complains about bad permissions, run \texttt{chown 600 
+are OK\@. If the script complains about bad permissions, run \texttt{chown 600 
 \$HOME/.ssh/config}. Follow any further instructions from the script and rerun 
 it in case something goes wrong. Note that \texttt{ssh-activate} must be run 
 every session before using \texttt{pympi}, while setup only needs to be done 
@@ -1109,7 +1101,6 @@ plot script. This means that MapReduce is not necessary to perform the
 classification in this way.
 
 \subsubsection{Additional notes for installing Qt}\label{app:qt}
-
 Note that installing Python from source on the DAS-3 has the strange effect 
 that among others, the default \textsc{Tk} GUI library in Python does not 
 function. This is probably related to missing dependencies (development 
@@ -1167,7 +1158,6 @@ $ pip install ipython
 \end{itemize}
 
 \subsubsection{Finding application logs}
-
 After completing a job, you can find the logs with:
 
 \begin{verbatim}
