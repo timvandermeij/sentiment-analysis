@@ -393,6 +393,11 @@ The latest one is the most recent application job. Copy the whole application ID
     
     $ yarn logs -applicationId application_1421846212827_0079 | less
 
+License
+=======
+
+The distributed sentiment analysis framework is licensed under the permissive MIT license.
+
 Authors
 =======
 
