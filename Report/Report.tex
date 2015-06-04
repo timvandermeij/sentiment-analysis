@@ -24,6 +24,13 @@ urldate=long]{biblatex}
 % Hyperlink configuration
 \hypersetup{colorlinks,linkcolor=black,citecolor=black,filecolor=black,urlcolor=black}
 
+% Verbatim configuration
+\makeatletter
+\let \@sverbatim \@verbatim
+\def \@verbatim {\@sverbatim \verbatimplus}
+{\catcode`'=13 \gdef \verbatimplus{\catcode`'=13 \chardef '=13 }}
+\makeatother
+
 % Document contents
 \begin{document}
 
@@ -644,11 +651,535 @@ such as neural networks and natural language processing, including word
 stemming. We can also research other interpretations of the used classifiers, 
 such as the out-of-bag error for the random forest classifier.
 
-\section*{References}\label{sec:references}
+\section{References}\label{sec:references}
 \printbibliography[heading=none]
 
-\section*{Appendix}
+\appendix
+\section{Appendix}\label{app:appendix}
 % TODO: Appendix (README, link to open-sourced repository)
-\ldots
+
+This appendix is based on an instruction and readme file that accompanies the 
+code of our implementation from Section~\ref{sec:implementation}. The code can 
+be found in a Git repository at 
+\url{https://github.com/timvandermeij/sentiment-analysis}. This repository 
+contains all code necessary to perform sentiment analysis on a large dataset of 
+Git commit comments from GitHub (\url{http://www.ghtorrent.org}). The code is 
+meant to be run on the Distributed ASCI Supercomputer 3 (DAS-3) at LIACS, and 
+makes use of Apache Hadoop's HDFS and MapReduce to perform the sentiment 
+analysis, but has also been tested to work on other hardware and software 
+platforms.
+
+\subsection{Prerequisites}\label{app:prerequisities}
+
+The version numbers mentioned below have been verified to work. Different versions might also work.
+
+\begin{itemize}
+  \item Git 1.7.1 or 2.3.x
+  \item Python 2.7.9 with libraries (see installation notes in 
+    Section~\ref{app:python} for details)
+\end{itemize}
+
+\subsection{Cloning the repository}\label{app:cloning-the-repository}
+
+The first step is to clone the repository to obtain a local copy of the code. 
+Open a terminal window and run the following commands.
+
+\begin{verbatim}
+$ git clone https://github.com/timvandermeij/sentiment-analysis.git
+$ cd sentiment-analysis
+\end{verbatim}
+
+\subsection{Running the code}\label{app:running-the-code}
+
+All code is written in Python. To run the simple sentiment analysis program, execute:
+
+\begin{verbatim}
+$ python preprocess.py
+$ echo '{"body":"Yay, it is working perfectly!"}' | python analyze.py score
+\end{verbatim}
+
+For the default group of \texttt{id} and the group \texttt{score}, running \texttt{preprocess.py} only needs to be done once. If all required data is available, \texttt{preprocess.py} will do nothing.
+
+The output of the analysis program are lines containing scores between $-1$ and 
+$1$, where $-1$ indicates that the message is negative, $1$ indicates that the 
+message is positive and $0$ indicates that the message is neutral. The output 
+can also contain grouping data or some visualization of the message.
+
+Instead of using a single line as input, one can give a file to read as standard input as follows:
+
+\begin{verbatim}
+$ python analyze.py < commit_comments-dump.2015-01-29.json
+$ python classify.py score < commit_comments-dump.2015-01-29.json
+\end{verbatim}
+
+The latter \texttt{classify.py} script uses a classifier to predict the scores 
+using a labeled dataset. Both programs work in a similar manner. This script 
+requires the \texttt{2015-01-29} commit comments dump in order to 
+cross-reference the labels with the messages. The classification itself can be 
+run on any dump, and the script will filter any already labeled messages before 
+prediction.
+
+The output can be given to the \texttt{reducer.py} script, but only if it has 
+been sorted on the first column of the output (the group or the score of the 
+line). This can be done using MapReduce as described later on, or by passing 
+the output through \texttt{sort}. The \texttt{reducer.py} script generates 
+a histogram of frequencies of the scores which can be passed to 
+\texttt{plot.py} to make a graph of the frequencies.
+
+\subsubsection{Groups}\label{app:groups}
+
+The code by default uses the \texttt{id} of a record as its group. This means 
+that only the analyzer and classifier will do something useful. The reducer and 
+plot scripts do not work nicely when the data is grouped this way. In order to 
+group the classified targets with something else, pass another group, such as 
+\texttt{score} or \texttt{language}, to all relevant scripts.
+
+Note that for the \texttt{language} group, the preprocessor needs to retrieve 
+more data, which can be done with \texttt{python preprocess.py repos language} 
+and then again use \texttt{python preprocess.py commit\_comments language}. 
+These commands can also be distributed using MPI, in order to retrieve and 
+process multiple dump files in parallel processes. Note that it is only 
+necessary to parallelize the second command if one wants to receive all the 
+commit comments dumps, whereas working with the \texttt{2015-01-29} dataset is 
+usually enough. The MPI parallelization can be done on one machine using 
+\texttt{mpirun -n \textless{}num\_processes\textgreater{} python preprocess.py 
+repos language}. The instructions for running the preprocessor on distributed 
+worker nodes are given in Section~\ref{app:mpi}, where the command is 
+\texttt{pympi \textless{}num\_processes\textgreater{} preprocess.py "repos 
+language" -{}-hostfile hosts -{}-map-by node}.
+
+\subsubsection{Running the code in MapReduce}\label{app:mapreduce}
+
+This section assumes that the installation notes in 
+Section~\ref{app:installation-notes} have already been followed and all 
+dependencies and scripts are set up. The exact commands to call the MapReduce 
+scripts, for various group parameters, are given in this section.
+
+First of all, ensure that the data sets are on the HDFS:
+
+\begin{verbatim}
+$ hdfs dfs -put commit_comments-dump.2015-01-29.json
+$ hdfs dfs -put commit_comments-dump.2015-01-29.labeled.json
+$ hdfs dfs -put words/positive.txt words/positive.txt
+$ hdfs dfs -put words/negative.txt words/negative.txt
+\end{verbatim}
+
+Now, one can start a MapReduce job which classifies each record in the dataset 
+and then counts the frequency of each score as follows:
+
+\begin{verbatim}
+$ pyhadoop commit_comments-dump.2015-01-29.json score classify.py reducer.py \
+  score score -file commit_comments-dump.2015-01-29.labeled.json -file \
+  commit_comments-dump.2015-01-29.json
+\end{verbatim}
+
+For the naive analyzer, use \texttt{analyze.py} instead of 
+\texttt{classify.py}, and add the following arguments to the 
+command:
+\begin{verbatim}
+-file \"\$HDFS\_URL/words/positive.txt\#words/positive.txt\" \
+-file \"\$HDFS\_URL/words/negative.txt\#words/negative.txt\"
+\end{verbatim}
+
+In order too count frequencies of scores within a specific group, use the 
+following command:
+
+\begin{verbatim}
+$ pyhadoop commit_comments-dump.2015-01-29.json score_lang classify.py \
+  reducer.py language language -D stream.num.map.output.key.fields=2 \
+  -file commit_comments-dump.2015-01-29.labeled.json -file \
+  commit_comments-dump.2015-01-29.json
+\end{verbatim}
+
+This ensures that MapReduce knows which parts of the outputs are keys and which 
+are values.
+
+\subsection{Installation notes for the DAS-3}\label{app:installation-notes}
+
+This section describes how to set up all dependencies for running the Python code on the Distributed ASCI Supercomputer 3 at LIACS. Among others, this gives instructions for installing Python 2.7 that can be run in a virtual environment, Hadoop configuration and MPI.
+
+\subsubsection{Python}\label{app:python}
+
+Compile Python (version 2.7.9) from source:
+
+\begin{verbatim}
+$ wget https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz
+$ tar xzvf Python-2.7.9.tgz
+$ cd Python-2.7.9
+$ ./configure --prefix=$HOME/.local
+$ make
+$ make install
+$ rm Python-2.7.9.tgz
+\end{verbatim}
+
+\subsubsection{Virtualenv}\label{app:virtualenv}
+
+Install \textsc{virtualenv} using \textsc{pip} and create a virtual environment 
+called \texttt{python} that we can distribute over the nodes using HDFS:
+
+\begin{verbatim}
+$ pip install --user virtualenv
+$ mkdir /scratch/scratch/{username}
+$ cd /scratch/scratch
+$ chmod 700 {username}
+$ cd {username}
+$ ~/.local/bin/virtualenv -p ~/.local/bin/python2.7 python
+$ ~/.local/bin/virtualenv --relocatable python
+\end{verbatim}
+
+\subsubsection{OpenMPI}\label{app:openmpi}
+
+Compile OpenMPI from source:
+
+\begin{verbatim}
+$ cd ~
+$ wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
+$ tar xzvf openmpi-1.8.4.tar.gz
+$ cd openmpi-1.8.4/
+$ ./configure --prefix=$HOME/.local
+$ make
+$ make install
+$ rm openmpi-1.8.4.tar.gz
+\end{verbatim}
+
+\subsubsection{OpenBLAS}\label{app:openblas}
+
+Compile OpenBLAS from source:
+
+\begin{verbatim}
+$ cd ~
+$ git clone git://github.com/xianyi/OpenBLAS
+$ cd OpenBLAS && make FC=gfortran
+$ make PREFIX=$HOME/.local install
+\end{verbatim}
+
+\subsubsection{Update $\sim$/.bashrc}\label{app:update-bashrc}
+
+Append the following segment to \texttt{$\sim$/.bashrc}:
+
+\begin{verbatim}
+if [ "$HOSTNAME" = "fs.das3" ]; then
+    export SCRATCH="/scratch/scratch/{username}"
+else
+    export SCRATCH="/scratch/{username}"
+fi
+alias activate="source $SCRATCH/python/bin/activate"
+export PATH="$PATH:$HOME/.local/bin:/mounts/CentOS/6.6/root/usr/bin"
+export PATH="$PATH:$SCRATCH/python/bin:$SCRATCH/opt/bin:$SCRATCH/opt/lib"
+export LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$SCRATCH/opt/lib"
+export CPATH="$HOME/.local/include:$SCRATCH/opt/include"
+export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig:$SCRATCH/opt/lib/pkgconfig"
+export BLAS="$SCRATCH/opt/lib/libopenblas.a"
+\end{verbatim}
+
+Then use \texttt{source $\sim$/.bashrc} to reload the configuration.
+
+\subsubsection{Python libraries}\label{app:python-libraries}
+
+Activate the virtual environment:
+
+\begin{verbatim}
+$ activate
+\end{verbatim}
+
+We now have a Python 2.7 virtual environment running, but \textsc{pip} is still 
+from Python 2.6. In order to fix this, run the following:
+
+\begin{verbatim}
+(python)$ cd $SCRATCH
+(python)$ wget https://bootstrap.pypa.io/get-pip.py
+(python)$ python get-pip.py -U -I
+\end{verbatim}
+
+This installs \textsc{pip} for Python 2.7, which is less likely to give 
+troubles with installing or upgrading dependencies.
+
+First install the following dependencies:
+
+\begin{verbatim}
+(python)$ pip install cython
+(python)$ pip install readline
+(python)$ pip install pymongo
+\end{verbatim}
+
+Next we need to compile \textsc{NumPy} from source as we need it to work with 
+OpenBLAS. This BLAS implementation not only performs better than standard BLAS 
+installations according to benchmarks at 
+\url{http://stackoverflow.com/a/7645939}, but \textsc{SciPy} requires it 
+because Lapack/BLAS are not installed on the DAS-3. Follow the instructions 
+from step~2 onward from \url{http://stackoverflow.com/a/14391693}. Make sure to 
+use \texttt{/home/\{username\}/.local} for the paths.
+
+If that is done (make sure to test that it is working) we continue installing 
+the remaining dependencies. Make sure to use \texttt{--no-deps} for libraries 
+that depend on \textsc{NumPy}, since these often attempt to overwrite our 
+source installation of \textsc{NumPy}.
+
+\begin{verbatim}
+(python)$ pip install --no-deps scipy
+(python)$ pip install --no-deps pandas
+(python)$ pip install python-dateutil
+(python)$ pip install pytz
+(python)$ pip install --no-deps scikit-learn==0.16b1
+(python)$ pip install --no-deps numexpr
+(python)$ pip install --no-deps matplotlib
+(python)$ pip install pyparsing
+(python)$ pip install BeautifulSoup
+(python)$ pip install mpi4py
+\end{verbatim}
+
+\subsubsection{HDFS}\label{app:hdfs}
+
+Now we can put the entire environment on HDFS for MapReduce:
+
+\begin{verbatim}
+$ tar czvf python.tgz python/
+$ tar czvf local.tgz ~/.local/
+$ tar czvf libs.tgz /usr/lib64/libg2c.so* /usr/lib64/libgfortran.so*
+$ hdfs dfs -put python.tgz
+$ hdfs dfs -put local.tgz
+$ hdfs dfs -put libs.tgz
+\end{verbatim}
+
+\subsubsection{Update $\sim$/.bashrc again}
+
+Append the following segment to \texttt{$\sim$/.bashrc}:
+
+\begin{verbatim}
+export HDFS_URL='hdfs://fs.das3.liacs.nl:8020/user/{username}'
+pyhadoop () {
+  input=$1;shift;
+  if [[ "x$input" = "x" ]]; then
+    echo "Usage: pyhadoop <input> <output> <mapper> <reducer> [margs] [rargs]  [...]"
+    echo "Input and output are on HDFS, mapper and reducer are files in this directory."
+    echo "Specify mapper and reducer arguments between quotes."
+    echo "Rest of the parameters are used for the hadoop streaming command near start."
+    return
+  fi
+  output=$1;shift;
+  mapper=$1;shift;
+  reducer=$1;shift;
+  margs=$1;shift;
+  rargs=$1;shift;
+  echo "Arguments: input=$input output=$output mapper=\"$mapper $margs\"" \
+    reducer=\"$reducer $rargs\" REST=\"$@\""
+  hadoop jar /usr/lib/hadoop-mapreduce/hadoop-streaming.jar -archives \
+    "$HDFS_URL/python.tgz#python,$HDFS_URL/local.tgz#local,$HDFS_URL/libs.tgz#libs" \
+    $@ -input "$input" -output "$output" \
+    -cmdenv "LD_LIBRARY_PATH=./local/lib:./libs/usr/lib64" \
+    -cmdenv "PYTHONHOME=./python/python:./local" \
+    -cmdenv "PYTHONPATH=./python/python/lib/python2.7:./local/lib/python2.7:." \
+    -mapper "./python/python/bin/python $mapper $margs" -reducer \
+    "./python/python/bin/python $reducer $rargs" -file "$mapper" -file "$reducer"
+}
+\end{verbatim}
+
+After sourcing \texttt{$\sim$/.bashrc} again, the function gives help by 
+running \texttt{pyhadoop}. As can be seen, the function needs at least four 
+arguments: the input file, the output directory, the Python mapper script and 
+the Python reducer script. Then one can give arguments to the mapper and 
+reducer, respectively. Put these between quotes if you want to give more than 
+one argument per script.
+
+The rest of the command is interpreted as extra arguments to \texttt{hadoop}, 
+such as any additional archive files you might want to make available to the 
+workers. These archives must be on HDFS and are then unpacked on the worker 
+nodes. The part after the \texttt{\#} specifies the directory name to unpack 
+the archive in, but beware of directories within archives as well. So, for 
+example, if you have an archive \texttt{data.tgz} containing a directory data 
+with additional data files, then pass it like this:
+
+\begin{verbatim}
+$ hdfs dfs -put data.tgz
+$ pyhadoop input.txt result mapper.py reducer.py "data/data 123" "data/data 42" \
+  -archives "$HDFS_URL/data.tgz#data"
+\end{verbatim}
+
+If you have hardcoded paths, sometimes you can circumvent these directory 
+problems by using e.g. the following:
+\begin{verbatim}
+-file \"\$HDFS\_URL/words/positive.txt\#words/positive.txt\" \
+-file \"\$HDFS\_URL/words/negative.txt\#words/negative.txt\"
+\end{verbatim}
+
+\subsubsection{MPI}\label{app:mpi}
+
+To get the \texttt{preprocess.py} script running on distributed nodes, MPI must 
+be able to connect to other nodes via SSH. Although SSH access is possible, one 
+must ensure that there are no interactive authentication prompts when MPI tries 
+to open an SSH connection. This is complicated further by the fact that MPI 
+might open SSH connections on other nodes as well.
+
+Let us first start with setting up an SSH key. Run \texttt{ssh-keygen -t rsa}. 
+For the first question, keep the default file of \texttt{$\sim$/.ssh/id\_rsa}. 
+For the next two questions, enter and confirm a strong passphrase. Not entering 
+one would make it easier to share the key, but is extremely unsafe and should 
+not be done. After this, \texttt{cd $\sim$/.ssh} and make the key authorized: 
+\texttt{cp id\_rsa.pub authorized\_keys}. Ensure that these two files are 
+world-readable for SSH and that \texttt{id\_rsa} is only read/writable by the 
+user with \texttt{ls -la}.
+
+Once again, add the following to \texttt{$\sim$/.bashrc} to make running the 
+SSH authentication and MPI easier:
+
+\begin{verbatim}
+alias ssh-activate='eval $(ssh-agent);ssh-add ~/.ssh/id_rsa'
+pympi () {
+  procs=$1;shift;
+  if [[ "x$procs" = "x" ]]; then
+    echo "Usage: pympi <procs> <program> <progargs> [...]"
+    echo "Program is a file in this directory."
+    echo "Specify program arguments between quotes."
+    echo "Rest of the parameters are used for the mpi command."
+    echo "Example: pympi 8 test.py \"\" --hostfile hosts"
+    return
+  fi
+  prog=$1;shift;
+  args=$1;shift;
+  # Automatically replace /scratch/scratch/{username} with $SCRATCH
+  # in working directory so that it works on other nodes
+  workdir=${PWD/$SCRATCH/\$SCRATCH};
+  mpirun -np $procs $@ bash -c \
+    "source ~/.bashrc;source activate;cd $workdir; python $prog $args"
+}
+\end{verbatim}
+
+Now \texttt{source $\sim$/.bashrc} and then run \texttt{ssh-activate} in order 
+to set up an SSH agent with your key by entering your passphrase. We can 
+already use the \texttt{pympi} function to run a program locally without 
+problem, however we are not yet done setting up which hosts we can connect to. 
+Use \texttt{./ssh-setup.sh /scratch/spark/conf/slaves} (after cloning the code 
+from the repository) to set up a hosts file as well as check if all connections 
+are OK. If the script complains about bad permissions, run \texttt{chown 600 
+\$HOME/.ssh/config}. Follow any further instructions from the script and rerun 
+it in case something goes wrong. Note that \texttt{ssh-activate} must be run 
+every session before using \texttt{pympi}, while setup only needs to be done 
+once.
+
+The final step is to edit \texttt{\$SCRATCH/python/bin/activate}. Replace:
+
+\begin{verbatim}
+VIRTUAL_ENV="/scratch/scratch/{username}/python"
+export VIRTUAL_ENV
+\end{verbatim}
+
+with:
+
+\begin{verbatim}
+SCRIPT="${BASH_SOURCE[0]}"
+pushd `dirname $SCRIPT` > /dev/null
+SCRIPTPATH=`pwd`
+VIRTUAL_ENV=`dirname $SCRIPTPATH`
+popd > /dev/null
+export VIRTUAL_ENV
+\end{verbatim}
+
+This has to be done to make the virtual environment actually relocatable, 
+otherwise it would be nonfunctional on the nodes, where we would still have 
+Python 2.6.
+
+Once everything is set up, check whether the Python scripts are distributed as 
+follows: \texttt{pympi 8 mpi-test.py "" -{}-hostfile hosts -{}-map-by node}.
+
+MPI also allows running parts of the preprocessing and classification steps on 
+the worker nodes. As explained in Section~\ref{app:groups}, we can preprocess 
+the repositories dumps in order to extract the languages. We can also download 
+all the commit comments dumps in this way, keep them on local hard drives, and 
+use a pretrained model to classify all the comments. This can be done for the 
+\texttt{language} group as an example, as follows:
+
+\begin{verbatim}
+$ python classify.py --model model.pickle --only-train [algorithm parameters]
+$ pympi 8 preprocess.py "commit_comments language /local/sentiment-analysis" \
+  --hostfile hosts --map-by node
+$ pympi 8 classify.py \
+  "language model.pickle /local/sentiment-analysis > \$HOSTNAME.dat" \
+  --hostfile hosts --map-by node
+$ cat node*.dat | sort | python reducer.py language > all-group.dat
+$ python plot.py language all-group.dat
+\end{verbatim}
+
+The training of the model only needs to be done once to create the 
+\texttt{model.pickle} file for one algorithm. The preprocess script 
+automatically creates the given local path on the worker nodes when necessary. 
+The classifications also happen on the workers, and are collected in a shared 
+location. This allows us to pass it to the reducer to group the data for the 
+plot script. This means that MapReduce is not necessary to perform the 
+classification in this way.
+
+\subsubsection{Additional notes for installing Qt}\label{app:qt}
+
+Note that installing Python from source on the DAS-3 has the strange effect 
+that among others, the default \textsc{Tk} GUI library in Python does not 
+function. This is probably related to missing dependencies (development 
+headers) or to configuration flags. Either way, it might be better to use 
+something like GTK or \textsc{Qt}, although it is certainly not easy.
+
+Also, this section is of limited use: this allows one to display 
+\textsc{matplotlib} files through X forwarding (make sure to use \texttt{ssh 
+-X} on all connections between you and the DAS-3).
+
+Installation will cost at least 4~hours. We assume you are in an activated 
+\textsc{virtualenv} shell.
+
+\begin{itemize}
+  \item Download the Qt source from 
+    \url{http://download.qt-project.org/official_releases/qt/5.4/5.4.1/single/qt-everywhere-opensource-src-5.4.1.tar.gz}
+  \item Extract with \texttt{tar xzf qt-everywhere-opensource-src-5.4.1.tar.gz} 
+    and \texttt{cd} into that directory
+  \item Compile as follows:
+
+\begin{verbatim}
+$ ./configure -prefix $SCRATCH/opt -opensource -nomake tests -qt-xcb
+$ make
+$ make install
+\end{verbatim}
+
+    Each step takes a long time. Answer \texttt{yes} to the license question 
+    during \texttt{./configure}, and check at the end whether the configuration 
+    makes sense. We probably did not need the entirety of Qt, but it is the 
+    easiest way, and the binary installation did not work.
+  \item Download and install \textsc{SIP}:
+
+\begin{verbatim}
+$ wget http://sourceforge.net/projects/pyqt/files/sip/sip-4.16.6/sip-4.16.6.tar.gz
+$ tar xzvf sip-4.16.6.tar.gz
+$ cd sip-4.16.6
+$ python configure.py
+$ make
+$ make install
+\end{verbatim}
+
+  \item Download \textsc{PyQt4} in the same fashion as \textsc{SIP} from 
+    \url{http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.11.3/PyQt-x11-gpl-4.11.3.tar.gz} 
+    and again use \texttt{configure.py}.
+  \item This should be enough to display plots using \textsc{matplotlib}. Try 
+    out \texttt{python plot.py} with some frequency data (e.g., from 
+    a MapReduce run) to test.
+  \item Requirements for IPython QtConsole:
+
+\begin{verbatim}
+$ pip install pygments
+$ pip install pyzmq
+$ pip install ipython
+\end{verbatim}
+\end{itemize}
+
+\subsubsection{Finding application logs}
+
+After completing a job, you can find the logs with:
+
+\begin{verbatim}
+$ hdfs dfs -ls /app-logs/{username}/logs/
+\end{verbatim}
+
+The latest one is the most recent application job. Copy the whole application 
+ID behind the slash, e.g. \texttt{application\_1421846212827\_0079}. Then you 
+can read the logs with:
+
+\begin{verbatim}
+$ yarn logs -applicationId application_1421846212827_0079 | less
+\end{verbatim}
 
 \end{document}
