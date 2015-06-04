@@ -15,8 +15,8 @@ Cloning the repository
 
 The first step is to clone the repository to obtain a local copy of the code. Open a terminal window and run the following commands.
 
-    $ git clone https://github.com/timvandermeij/SDDM.git
-    $ cd SDDM
+    $ git clone https://github.com/timvandermeij/sentiment-analysis.git
+    $ cd sentiment-analysis
 
 Running the code
 ================
@@ -341,8 +341,8 @@ Once everything is set up, check whether the Python scripts are distributed as f
 MPI also allows running parts of the preprocessing and classification steps on the worker nodes. As explained in the Groups section, we can preprocess the repos dumps in order to extract the languages. We can also download all the commit comments dumps in this way, keep them on local hard drives, and use a pretrained model to classify all the comments. This can be done for the `language` group as an example, as follows:
 
     $ python classify.py --model model.pickle --only-train [algorithm parameters]
-    $ pympi 8 preprocess.py "commit_comments language /local/SDDM" --hostfile hosts --map-by node
-    $ pympi 8 classify.py "language model.pickle /local/SDDM > \$HOSTNAME.dat" --hostfile hosts --map-by node
+    $ pympi 8 preprocess.py "commit_comments language /local/sentiment-analysis" --hostfile hosts --map-by node
+    $ pympi 8 classify.py "language model.pickle /local/sentiment-analysis > \$HOSTNAME.dat" --hostfile hosts --map-by node
     $ cat node*.dat | sort | python reducer.py language > all-group.dat
     $ python plot.py language all-group.dat
 
