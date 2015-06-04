@@ -80,7 +80,7 @@ class Preprocessor(object):
         if self.process_id != '':
             self.path = path + self.process_id + '/'
 
-        if path != '' and not os.path.exists(self.path):
+        if self.path != '' and not os.path.exists(self.path):
             os.makedirs(self.path, 0700)
 
 
