@@ -457,12 +457,32 @@ score in the file, and the output is then also sorted on those scores. In case
 of groups, the input is sorted on each group value first, thus the frequency
 counts also happen per group and per score. This makes it possible to plot the
 counts in a frequency plot or to visualize the relative scores of each group.
-% TODO: Example
 
 \subsection{Plotter}\label{sec:plotter}
-% TODO: Explain which kinds of plots the framework can produce and
-% what the input and output are.
-\ldots
+In order to visualize the predictions and other outputs of the various 
+components, we implement a plotting framework that is able to create multiple 
+types of plots in PDF format. The framework is based on the \textsc{matplotlib} 
+library~\cite{hunter2007matplotlib}. There are three ``groups'' of plots, the 
+first one being the \texttt{score} group which generates a frequency plot. The 
+input of this group is a tab-delimited file with predictions, which we generate 
+using the analyzer or classifier and the reducer from 
+Section~\ref{sec:reducer}. The plot output is a bar chart of the frequencies of 
+each score bin, and this discrete histogram is augmented with a smooth curve.
+
+Another group that the plotter recognizes is the same group given to the 
+analyzer or classifier, specifically the \texttt{language} group. This allows 
+us to obtain a stacked bar chart which displays the positive and negative 
+ratios of the relative scores in each language. This plot type is used in the 
+experiment in Section~\ref{sec:sentiment-analysis-per-language}.
+
+The final plot type is the \texttt{algo} group, which generates multiple plots 
+for each experiment that the experiment runner in 
+Section~\ref{sec:experiment-runner} runs. For each experiment in the resulting 
+JSON file of the experiment runner with various combinations of parameters, we 
+create a plot with the average scores and standard deviations calculated from 
+the cross-validation runs of each parameter combination. We use these plots in 
+our experiments that compare the classifiers in 
+Section~\ref{sec:most-accurate-classifier}.
 
 \subsection{Experiment runner}\label{sec:experiment-runner}
 Determining the best classifier to use from the \textsc{scikit-learn} toolkit is
