@@ -635,7 +635,7 @@ analyze the ratio of positive and negative commit comments per programming
 language. Performing such an analysis might be useful for determining problems
 with programming languages. For instance, if many reviewers are negative about
 a certain language, inspection of the commit comments could indicate reasons
-for this, which might be addressed by the designers of the programming
+for this, which can be addressed by the designers of the programming
 language. Python and PHP are examples of programming languages that are
 constantly updated based on new specifications and wishes from the community.
 
@@ -688,10 +688,10 @@ often pass for those languages, which is indeed a positive sign. Among the
 most negative languages we have VHDL and Matlab as interesting appearances,
 for which there is no additional explanation.
 
-We see many relatively unknown languages in both plots. This situation might
-improve by changing our weighting scheme to take group size into account.
-Currently we do filter languages that have very few comments, but adding more
-restrictions on the number of comments per language would make some smaller
+We see many small and relatively unknown languages in both plots. This can be
+improved by changing our weighting scheme to take the group size more into
+account. Currently we do filter languages that have very few comments, but
+adding more restrictions on the number of comments per language makes smaller
 languages like Dylan and Nimrod unlikely to appear in the plots. Clearly,
 more weighting schemes are possible and our plotting framework allows for
 these modifications, but we have chosen this weighting scheme for simplicity
@@ -742,6 +742,8 @@ such as the out-of-bag error for the random forest classifier.
 
 \section{References}\label{sec:references}
 \printbibliography[heading=none]
+
+\newpage
 
 \appendix
 \section{Appendix}\label{app:appendix}
