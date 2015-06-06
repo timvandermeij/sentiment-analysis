@@ -624,9 +624,72 @@ components.
 \ldots
 
 \subsection{Performing sentiment analysis per language}\label{sec:sentiment-analysis-per-language}
-% TODO: Explain the experiment, why we want to do this and show and explain
-% the generated language plots, much like we have done for the presentation.
-\ldots
+For this experiment we apply our distributed sentiment analysis framework to
+analyze the ratio of positive and negative commit comments per programming
+language. Performing such an analysis might be useful for determining problems
+with programming languages. For instance, if many reviewers are negative about
+a certain language, inspection of the commit comments could indicate reasons
+for this, which might be addressed by the designers of the programming
+language. Python and PHP are examples of programming languages that are
+constantly updated based on new specifications and wishes from the community.
+
+We combine the commit comments dataset and the repositories dataset to add to
+each commit comment the main programming language of the repository that the
+commit belongs to. This experiment also shows the potential of our distributed
+approach as this experiment, due to the large amount of data as presented in
+Section~\ref{sec:dataset}, requires us to use almost all available tools in
+the framework. Not only do we need to preprocess the commit comments dataset,
+but first we must preprocess the repositories dataset such that we have the
+main language of each repository available when we preprocess the commit
+comments data. Our framework supports processing both in a distributed
+manner.
+
+We work only on the DAS-3 for this experiment. We start by preprocessing the
+repositories dataset on the worker nodes as outlined in Section~\ref{sec:mpi}.
+After completion of that task, we preprocess the commit comments dataset on
+the worker nodes too and add the language to each commit comment in the
+process. Once this task is also completed, the result is one JSON file that
+contains for each commit comment the text and the main language of the
+repository it belongs to. We pass that file to the classifier component, in
+which we use the passive aggressive classifier from \textsc{scikit-learn} as
+that classifier has been shown in Section~\ref{sec:most-accurate-classifier}
+to be the best fit for our dataset, along with the {\tt language} group. The
+output of the classifier consists of single lines with on each line the main
+language name and the score of one commit comment. The plotting framework
+takes this output as input and generates the plots in
+Figure~\ref{fig:language-pos} and Figure~\ref{fig:language-neg}, which show
+the 20 most positive and most negative languages based on the comment
+comments, respectively.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.6\textwidth]{Images/Positive_languages_passive_aggressive.pdf}
+  \caption{Top 20 of programming languages with the most positive commit comments.}\label{fig:language-pos}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.6\textwidth]{Images/Negative_languages_passive_aggressive.pdf}
+  \caption{Top 20 of programming languages with the most negative commit comments.}\label{fig:language-neg}
+\end{figure}
+
+Interesting appearances among the most positive languages are Rust and
+Erlang, which are both fairly new languages. We noticed by manual inspection
+of the commit comments for those two languages that many commit comments
+consist of output from testing bots. However, it can be seen as positive
+if all tests pass and as negative if all tests fail, and clearly the tests
+often pass for those languages, which is indeed a positive sign. Among the
+most negative languages we have VHDL and Matlab as interesting appearances,
+for which there is no additional explanation.
+
+We see many relatively unknown languages in both plots. This situation might
+improve by changing our weighting scheme to take group size into account.
+Currently we do filter languages that have very few comments, but adding more
+restrictions on the number of comments per language would make some smaller
+languages like Dylan and Nimrod unlikely to appear in the plots. Clearly,
+more weighting schemes are possible and our plotting framework allows for
+these modifications, but we have chosen this weighting scheme for simplicity
+and to be able to list smaller languages too.
 
 \section{Conclusion}\label{sec:conclusion}
 We have implemented a framework in Python for distributed sentiment analysis on
