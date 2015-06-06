@@ -11,14 +11,17 @@
 \usepackage{parskip}
 \usepackage{hyperref}
 \usepackage{csquotes}
-\usepackage[backend=bibtex, sorting=none, dateabbrev=false, 
-urldate=long]{biblatex}
+\usepackage[backend=bibtex, sorting=none, dateabbrev=false, urldate=long, maxbibnames=2]{biblatex}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{enumitem}
 
 % Bibliography configuration
 \DeclareFieldFormat[article, inproceedings, online, techreport]{title}{\emph{#1}}
 \DeclareFieldFormat{titlecase}{\MakeSentenceCase{#1}}
+\DefineBibliographyStrings{english}{%
+  techreport = {Technical report},
+}
 \bibliography{Report.bib}
 
 % Hyperlink configuration
@@ -30,6 +33,9 @@ urldate=long]{biblatex}
 \def \@verbatim {\@sverbatim \verbatimplus}
 {\catcode`'=13 \gdef \verbatimplus{\catcode`'=13 \chardef '=13 }}
 \makeatother
+
+% Itemize configuration
+\setlist[itemize,1]{leftmargin=\dimexpr 14pt}
 
 % Document contents
 \begin{document}
@@ -140,15 +146,15 @@ fast in order to make working with a large dataset feasible.
 % And: "How can we distribute the work onto worker nodes?" From presentation.
 We propose a framework that performs sentiment analysis on large datasets in a
 distributed manner. We aim to distribute most operations performed by the 
-framework, such as downloading and preprocessing individual data dumps and
-classification. We utilize the resources of the Distributed ASCI 
-Supercomputer~3 (DAS-3) at the LIACS institute of Leiden University. The DAS-3 
-has a total of 32~worker nodes consisting of commodity hardware and a number of 
-hard drives, including a RAID configuration. A key feature of the framework is 
-the distribution of workload over multiple worker nodes, or even over multiple 
-processes on a single node. This provides a great speed-up when processing the 
-large datasets that we use, of which more details are given in 
-Section~\ref{sec:dataset}.
+framework, such as downloading and preprocessing individual data dumps,
+classification and collection of analyzable results. We utilize the resources 
+of the Distributed ASCI Supercomputer~3 (DAS-3) at the LIACS institute of 
+Leiden University. The DAS-3 has a total of 32~worker nodes consisting of 
+commodity hardware and a number of hard drives, including a RAID configuration. 
+A key feature of the framework is the distribution of workload over multiple 
+worker nodes, or even over multiple processes on a single node. This provides 
+a great speed-up when processing the large datasets that we use, of which more 
+details are given in Section~\ref{sec:dataset}.
 
 We implement two different approaches for performing sentiment analysis. The
 first approach is the word list approach. Given a piece of text, we split the 
@@ -702,9 +708,9 @@ analyzer, the classifier and the experiment runner.
 For the classifier approach we have evaluated 15~different classifiers,
 including many combinations of parameters, with five-fold cross-validation on
 a manually labeled training set of 2000~commit comments. These experiments show
-that the passive aggressive classifier is the most accurate on the commit
-comments dataset, while other classifiers such as the random forest classifier
-also yield high accuracies.
+that the passive aggressive classifier with $C = 0.4$ is the most accurate on 
+the commit comments dataset, while other classifiers such as the random forest 
+classifier also yield high accuracies.
 
 We have performed another experiment to show the potential of our framework by
 performing sentiment analysis on all available commit comments and then grouping
@@ -823,10 +829,10 @@ process multiple dump files in parallel processes. Note that it is only
 necessary to parallelize the second command if one wants to receive all the 
 commit comments dumps, whereas working with the 2015--01--29 dataset is 
 usually enough. The MPI parallelization can be done on one machine using 
-\texttt{mpirun -n \textless{}num\_processes\textgreater{} python preprocess.py 
+\texttt{mpirun -n <num\_processes> python preprocess.py 
 repos language}. The instructions for running the preprocessor on distributed 
 worker nodes are given in Section~\ref{app:mpi}, where the command is 
-\texttt{pympi \textless{}num\_processes\textgreater{} preprocess.py "repos 
+\texttt{pympi <num\_processes> preprocess.py "repos 
 language" -{}-hostfile hosts -{}-map-by node}.
 
 \subsubsection{Running the code in MapReduce}\label{app:mapreduce}
@@ -932,7 +938,7 @@ $ cd OpenBLAS && make FC=gfortran
 $ make PREFIX=$HOME/.local install
 \end{verbatim}
 
-\subsubsection{Update $\sim$/.bashrc}\label{app:update-bashrc}
+\subsubsection{Update Bash configuration}\label{app:update-bashrc}
 Append the following segment to \texttt{$\sim$/.bashrc}:
 
 \begin{verbatim}
@@ -970,9 +976,7 @@ from Python 2.6. In order to fix this, run the following:
 \end{verbatim}
 
 This installs \textsc{pip} for Python 2.7, which is less likely to give 
-troubles with installing or upgrading dependencies.
-
-First install the following dependencies:
+troubles when we are installing or upgrading dependencies. Now first install the following dependencies:
 
 \begin{verbatim}
 (python)$ pip install cython
@@ -984,9 +988,9 @@ Next we need to compile \textsc{NumPy} from source as we need it to work with
 OpenBLAS\@. This BLAS implementation not only performs better than standard
 BLAS installations according to benchmarks at 
 \url{http://stackoverflow.com/a/7645939}, but \textsc{SciPy} requires it 
-because Lapack/BLAS are not installed on the DAS-3. Follow the instructions 
+since Lapack/BLAS are not installed on the DAS-3. Follow the instructions 
 from step~2 onward from \url{http://stackoverflow.com/a/14391693}. Make sure to 
-use \texttt{/home/\{username\}/.local} for the paths.
+use \texttt{/home/\string{username\string}/.local} for the paths.
 
 If that is done (make sure to test that it is working) we continue installing 
 the remaining dependencies. Make sure to use \texttt{--no-deps} for libraries 
@@ -1018,7 +1022,7 @@ $ hdfs dfs -put local.tgz
 $ hdfs dfs -put libs.tgz
 \end{verbatim}
 
-\subsubsection{Update $\sim$/.bashrc again}
+\subsubsection{Update Bash configuration again}\label{app:update-bashrc-again}
 
 Append the following segment to \texttt{$\sim$/.bashrc}:
 
@@ -1028,9 +1032,9 @@ pyhadoop () {
   input=$1;shift;
   if [[ "x$input" = "x" ]]; then
     echo "Usage: pyhadoop <input> <output> <mapper> <reducer> [margs] [rargs]  [...]"
-    echo "Input and output are on HDFS, mapper and reducer are files in this directory."
+    echo "Input and output are on HDFS, mapper and reducer are in this directory."
     echo "Specify mapper and reducer arguments between quotes."
-    echo "Rest of the parameters are used for the hadoop streaming command near start."
+    echo "Rest of the parameters are used near start of the hadoop streaming command."
     return
   fi
   output=$1;shift;
@@ -1150,12 +1154,13 @@ popd > /dev/null
 export VIRTUAL_ENV
 \end{verbatim}
 
-This has to be done to make the virtual environment actually relocatable, 
-otherwise it would be nonfunctional on the nodes, where we would still have 
-Python 2.6.
+This has to be done in order to make the virtual environment actually 
+relocatable, otherwise it would be nonfunctional on the nodes, where we would 
+still have Python 2.6.
 
-Once everything is set up, check whether the Python scripts are distributed as 
-follows: \texttt{pympi 8 mpi-test.py "" -{}-hostfile hosts -{}-map-by node}.
+Once everything is set up, check whether the Python scripts are distributed 
+using the following command: \texttt{pympi 8 mpi-test.py "" -{}-hostfile 
+hosts -{}-map-by node}.
 
 MPI also allows running parts of the preprocessing and classification steps on 
 the worker nodes. As explained in Section~\ref{app:groups}, we can preprocess 
