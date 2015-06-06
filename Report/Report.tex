@@ -11,8 +11,7 @@
 \usepackage{parskip}
 \usepackage{hyperref}
 \usepackage{csquotes}
-\usepackage[backend=bibtex, sorting=none, dateabbrev=false, 
-urldate=long]{biblatex}
+\usepackage[backend=bibtex, sorting=none, dateabbrev=false, urldate=long, maxbibnames=2]{biblatex}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{enumitem}
@@ -20,6 +19,9 @@ urldate=long]{biblatex}
 % Bibliography configuration
 \DeclareFieldFormat[article, inproceedings, online, techreport]{title}{\emph{#1}}
 \DeclareFieldFormat{titlecase}{\MakeSentenceCase{#1}}
+\DefineBibliographyStrings{english}{%
+  techreport = {Technical report},
+}
 \bibliography{Report.bib}
 
 % Hyperlink configuration
