@@ -787,7 +787,7 @@ and then counts the frequency of each score as follows:
 \begin{verbatim}
 $ pyhadoop commit_comments-dump.2015-01-29.json score classify.py reducer.py \
   score score -file commit_comments-dump.2015-01-29.labeled.json -file \
-  commit_comments-dump.2015-01-29.json
+  commit_comments-dump.2015-01-29.json -file utils.py -file algorithms.json
 \end{verbatim}
 
 For the naive analyzer, use \texttt{analyze.py} instead of 
@@ -805,7 +805,7 @@ following command:
 $ pyhadoop commit_comments-dump.2015-01-29.json score_lang classify.py \
   reducer.py language language -D stream.num.map.output.key.fields=2 \
   -file commit_comments-dump.2015-01-29.labeled.json -file \
-  commit_comments-dump.2015-01-29.json
+  commit_comments-dump.2015-01-29.json -file utils.py -file algorithms.json
 \end{verbatim}
 
 This ensures that MapReduce knows which parts of the outputs are keys and which 
@@ -1177,8 +1177,8 @@ $ pip install ipython
 \end{verbatim}
 \end{itemize}
 
-\subsubsection{Finding application logs}
-After completing a job, you can find the logs with:
+\subsubsection{Finding application logs}\label{app:finding-application-logs}
+After completing a MapReduce job, you can find the logs with:
 
 \begin{verbatim}
 $ hdfs dfs -ls /app-logs/{username}/logs/

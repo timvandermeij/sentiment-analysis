@@ -55,7 +55,19 @@ preprocess.py for repos without anything on node02:
 TODO
 
 MapReduce classify.py for plain commit_comments (score group) and reducer.py:
-TODO
+Total time spent by all maps in occupied slots (ms)=115006
+Total time spent by all reduces in occupied slots (ms)=28171
+Total time spent by all map tasks (ms)=115006
+Total time spent by all reduce tasks (ms)=28171
+Total vcore-seconds taken by all map tasks=115006
+Total vcore-seconds taken by all reduce tasks=28171
+Total megabyte-seconds taken by all map tasks=78434092
+Total megabyte-seconds taken by all reduce tasks=19212622
+GC time elapsed (ms)=1102
+CPU time spent (ms)=83620
+Physical memory (bytes) snapshot=1084923904
+Virtual memory (bytes) snapshot=7437201408
+Total committed heap usage (bytes)=844627968
 
 classify.py for language commit_comments:
 TODO

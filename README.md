@@ -64,11 +64,11 @@ First of all, ensure that the data sets are on the HDFS:
 
 Now, one can start a MapReduce job which classifies each record in the data set and then counts the frequency of each score as follows:
 
-    $ pyhadoop commit_comments-dump.2015-01-29.json score classify.py reducer.py score score -file commit_comments-dump.2015-01-29.labeled.json -file commit_comments-dump.2015-01-29.json
+    $ pyhadoop commit_comments-dump.2015-01-29.json score classify.py reducer.py score score -file commit_comments-dump.2015-01-29.labeled.json -file commit_comments-dump.2015-01-29.json -file utils.py -file algorithms.json
 
 For the naive analyzer, use `analyze.py` instead of `classify.py`, and add `-files \"$HDFS_URL/words/positive.txt#words/positive.txt,$HDFS_URL/words/negative.txt#words/negative.txt\"` to the command. To count frequencies of scores within a specific group, use the following:
 
-    $ pyhadoop commit_comments-dump.2015-01-29.json score_lang classify.py reducer.py language language -D stream.num.map.output.key.fields=2 -file commit_comments-dump.2015-01-29.labeled.json -file commit_comments-dump.2015-01-29.json
+    $ pyhadoop commit_comments-dump.2015-01-29.json score_lang classify.py reducer.py language language -D stream.num.map.output.key.fields=2 -file commit_comments-dump.2015-01-29.labeled.json -file commit_comments-dump.2015-01-29.json -file utils.py -file algorithms.json
 
 This ensures that MapReduce knows which parts of the outputs are keys and which are values.
 
@@ -232,7 +232,10 @@ Next we need to compile NumPy from source as we need it to work with OpenBLAS. I
 DAS-3. Follow the instructions from step 2 onward from this link: http://stackoverflow.com/questions/11443302/compiling-numpy-with-openblas-integration/14391693#14391693.
 Make sure to use `/home/{username}/.local` for the paths.
 
-If that is done (make sure to test that it is working) we continue installing the remaining dependencies:
+If that is done (make sure to test that it is working) we continue installing 
+the remaining dependencies. Make sure to use `--no-deps` for libraries 
+that depend on NumPy, since these often attempt to overwrite our 
+source installation of NumPy.
 
     (python)$ pip install --no-deps scipy
     (python)$ pip install --no-deps pandas
@@ -385,7 +388,7 @@ Installation will cost at least 4 hours. We assume you are in an `activate`d vir
 
 Finding application logs
 ------------------------
-After completing a job, you can find the logs with:
+After completing a MapReduce job, you can find the logs with:
 
     $ hdfs dfs -ls /app-logs/{username}/logs/
 
