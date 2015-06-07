@@ -11,14 +11,17 @@
 \usepackage{parskip}
 \usepackage{hyperref}
 \usepackage{csquotes}
-\usepackage[backend=bibtex, sorting=none, dateabbrev=false, 
-urldate=long]{biblatex}
+\usepackage[backend=bibtex, sorting=none, dateabbrev=false, urldate=long, maxbibnames=2]{biblatex}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{enumitem}
 
 % Bibliography configuration
 \DeclareFieldFormat[article, inproceedings, online, techreport]{title}{\emph{#1}}
 \DeclareFieldFormat{titlecase}{\MakeSentenceCase{#1}}
+\DefineBibliographyStrings{english}{%
+  techreport = {Technical report},
+}
 \bibliography{Report.bib}
 
 % Hyperlink configuration
@@ -30,6 +33,9 @@ urldate=long]{biblatex}
 \def \@verbatim {\@sverbatim \verbatimplus}
 {\catcode`'=13 \gdef \verbatimplus{\catcode`'=13 \chardef '=13 }}
 \makeatother
+
+% Itemize configuration
+\setlist[itemize,1]{leftmargin=\dimexpr 14pt}
 
 % Document contents
 \begin{document}
@@ -140,15 +146,15 @@ fast in order to make working with a large dataset feasible.
 % And: "How can we distribute the work onto worker nodes?" From presentation.
 We propose a framework that performs sentiment analysis on large datasets in a
 distributed manner. We aim to distribute most operations performed by the 
-framework, such as downloading and preprocessing individual data dumps and
-classification. We utilize the resources of the Distributed ASCI 
-Supercomputer~3 (DAS-3) at the LIACS institute of Leiden University. The DAS-3 
-has a total of 32~worker nodes consisting of commodity hardware and a number of 
-hard drives, including a RAID configuration. A key feature of the framework is 
-the distribution of workload over multiple worker nodes, or even over multiple 
-processes on a single node. This provides a great speed-up when processing the 
-large datasets that we use, of which more details are given in 
-Section~\ref{sec:dataset}.
+framework, such as downloading and preprocessing individual data dumps,
+classification and collection of analyzable results. We utilize the resources 
+of the Distributed ASCI Supercomputer~3 (DAS-3) at the LIACS institute of 
+Leiden University. The DAS-3 has a total of 32~worker nodes consisting of 
+commodity hardware and a number of hard drives, including a RAID configuration. 
+A key feature of the framework is the distribution of workload over multiple 
+worker nodes, or even over multiple processes on a single node. This provides 
+a great speed-up when processing the large datasets that we use, of which more 
+details are given in Section~\ref{sec:dataset}.
 
 We implement two different approaches for performing sentiment analysis. The
 first approach is the word list approach. Given a piece of text, we split the 
@@ -620,13 +626,101 @@ components.
 \subsection{Determining the most accurate classifier}\label{sec:most-accurate-classifier}
 % TODO: Explain experiments we have done with classifiers (also refer to the
 % experiment runner section), compare the four most promising plots and
-% add details on our final choice.
+% add details on our final choice. Explain why we use classifiers and not 
+% regressors (discrete classes in our labeled dataset), and make observations.
 \ldots
 
 \subsection{Performing sentiment analysis per language}\label{sec:sentiment-analysis-per-language}
-% TODO: Explain the experiment, why we want to do this and show and explain
-% the generated language plots, much like we have done for the presentation.
-\ldots
+For this experiment, we apply our distributed sentiment analysis framework to
+analyze the ratio of positive and negative commit comments per programming
+language. Performing such an analysis might be useful for gaining insight to 
+the satisfaction of the developers and determining problems with programming 
+languages. For instance, if many reviewers are negative about a certain 
+language, inspection of the commit comments could indicate reasons for this, 
+which can be addressed by the designers of the programming language, such as 
+addressing shortcomings that currently make implementation of algorithms or 
+bugfixing more difficult than one would reasonable need time for. Python and 
+PHP are examples of mature programming languages that are constantly updated 
+based on new specifications and wishes from the community.
+
+We combine the commit comments dataset and the repositories dataset described 
+in Section~\ref{sec:dataset}. Each commit comment is augmented with the main 
+programming language of the repository that the commit belongs to. This 
+experiment also shows the potential of our distributed approach as this 
+experiment. The large amount and variety of data requires us to use almost all 
+available tools in the framework shown in Section~\ref{sec:implementation}. Not 
+only do we need to preprocess the commit comments dataset, but first we must 
+preprocess the repositories dataset such that we have the main language of each 
+repository available when we preprocess the commit comments data. Our framework 
+supports processing both types of dumps in a distributed manner.
+
+We utilize eight nodes of DAS-3 for this experiment, including the fileserver 
+node which acts as a master node. We start by preprocessing the repositories 
+dataset on the worker nodes as outlined in Section~\ref{sec:mpi}. This task 
+processes 17~dumps containing the repositories and creates a shelve for each of 
+them. The shelves only store the main language of each repository. After 
+completion of the task, we preprocess the commit comments dataset on the worker 
+nodes too. First, we merge the shelves into one shelve, so that we can easily 
+look up the language of each repository. We add the language to each commit 
+comment in the process, by inspection of the repository it is from, based on 
+the {\tt url} attribute. Once this task is also completed, we receive a JSON 
+file for every dump that contains for each commit comment the text and the main 
+language of the repository it belongs to.
+
+These files are kept on the worker nodes on which the preprocessor extracted 
+them. We use the classifier component with MPI as well, in order to pass each 
+file to the classifier component by running an instance of the classifier with 
+the {\tt language} group on each node. We use a model of the passive aggressive 
+regressor from \textsc{scikit-learn} that we train beforehand. We show in 
+Section~\ref{sec:most-accurate-classifier} that the classifier version of the 
+passive aggressive algorithm appears to have the best fit for our dataset. We 
+use the regressor variant since this gives us relative scores for each commit 
+comment, which improves the results of our comparisons of the languages. The
+output of the classifier consists of single lines with on each line the main
+language name and the score of one commit comment. The plotting framework
+takes this output as input and generates the plots in 
+Figure~\ref{fig:language-pos} and Figure~\ref{fig:language-neg}, which show
+the 20~most positive and most negative languages based on the comment
+comments, respectively.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{Images/Positive_languages_passive_aggressive.pdf}
+  \caption{Top 20 of programming languages with the most positive commit comments.}\label{fig:language-pos}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{Images/Negative_languages_passive_aggressive.pdf}
+  \caption{Top 20 of programming languages with the most negative commit 
+  comments.}\label{fig:language-neg}
+\end{figure}
+
+The two most positive languages are Rust and Erlang, which is an interesting 
+appearance among the top~20. First, Rust is a fairly new language which is 
+under development on GitHub. We noticed by manual inspection
+of the commit comments that many commit comments consist of output from testing 
+bots. However, it can be seen as positive if all tests pass and as negative if 
+all tests fail, and clearly the tests often pass for those languages, which is 
+indeed a positive sign. The same also applies to the Erlang language, where we 
+also find that many comments are simply very positive and even excited about 
+the implementation of new features that are possible using the language. The 
+top~20 of the most positive language also contains other new languages for 
+which this ease of use also applies.
+
+Among the most negative languages we have VHDL and Matlab as interesting 
+appearances. Developers often seem to be annoyed by problems when changing the 
+code in these languages, and are often surprised about the way certain bugs 
+with basis operations are resolved in the code.
+
+We see many small and relatively unknown languages in both plots. This can be
+improved by changing our weighting scheme to take the group size more into
+account. Currently we do filter languages that have very few comments, but
+adding more restrictions on the number of comments per language makes smaller
+languages like Dylan and Nimrod unlikely to appear in the plots. Clearly,
+more weighting schemes are possible and our plotting framework allows for
+these modifications, but we have chosen this weighting scheme for simplicity
+and to be able to list smaller languages too.
 
 \section{Conclusion}\label{sec:conclusion}
 We have implemented a framework in Python for distributed sentiment analysis on
@@ -639,9 +733,9 @@ analyzer, the classifier and the experiment runner.
 For the classifier approach we have evaluated 15~different classifiers,
 including many combinations of parameters, with five-fold cross-validation on
 a manually labeled training set of 2000~commit comments. These experiments show
-that the passive aggressive classifier is the most accurate on the commit
-comments dataset, while other classifiers such as the random forest classifier
-also yield high accuracies.
+that the passive aggressive classifier with $C = 0.4$ is the most accurate on 
+the commit comments dataset, while other classifiers such as the random forest 
+classifier also yield high accuracies.
 
 We have performed another experiment to show the potential of our framework by
 performing sentiment analysis on all available commit comments and then grouping
@@ -671,8 +765,10 @@ such as neural networks and natural language processing, including word
 stemming. We can also research other interpretations of the used classifiers, 
 such as the out-of-bag error for the random forest classifier.
 
-\section{References}\label{sec:references}
+\section*{References}\label{sec:references}
 \printbibliography[heading=none]
+
+\newpage
 
 \appendix
 \section{Appendix}\label{app:appendix}
@@ -760,10 +856,10 @@ process multiple dump files in parallel processes. Note that it is only
 necessary to parallelize the second command if one wants to receive all the 
 commit comments dumps, whereas working with the 2015--01--29 dataset is 
 usually enough. The MPI parallelization can be done on one machine using 
-\texttt{mpirun -n \textless{}num\_processes\textgreater{} python preprocess.py 
+\texttt{mpirun -n <num\_processes> python preprocess.py 
 repos language}. The instructions for running the preprocessor on distributed 
 worker nodes are given in Section~\ref{app:mpi}, where the command is 
-\texttt{pympi \textless{}num\_processes\textgreater{} preprocess.py "repos 
+\texttt{pympi <num\_processes> preprocess.py "repos 
 language" -{}-hostfile hosts -{}-map-by node}.
 
 \subsubsection{Running the code in MapReduce}\label{app:mapreduce}
@@ -869,7 +965,7 @@ $ cd OpenBLAS && make FC=gfortran
 $ make PREFIX=$HOME/.local install
 \end{verbatim}
 
-\subsubsection{Update $\sim$/.bashrc}\label{app:update-bashrc}
+\subsubsection{Update Bash configuration}\label{app:update-bashrc}
 Append the following segment to \texttt{$\sim$/.bashrc}:
 
 \begin{verbatim}
@@ -907,9 +1003,7 @@ from Python 2.6. In order to fix this, run the following:
 \end{verbatim}
 
 This installs \textsc{pip} for Python 2.7, which is less likely to give 
-troubles with installing or upgrading dependencies.
-
-First install the following dependencies:
+troubles when we are installing or upgrading dependencies. Now first install the following dependencies:
 
 \begin{verbatim}
 (python)$ pip install cython
@@ -921,9 +1015,9 @@ Next we need to compile \textsc{NumPy} from source as we need it to work with
 OpenBLAS\@. This BLAS implementation not only performs better than standard
 BLAS installations according to benchmarks at 
 \url{http://stackoverflow.com/a/7645939}, but \textsc{SciPy} requires it 
-because Lapack/BLAS are not installed on the DAS-3. Follow the instructions 
+since Lapack/BLAS are not installed on the DAS-3. Follow the instructions 
 from step~2 onward from \url{http://stackoverflow.com/a/14391693}. Make sure to 
-use \texttt{/home/\{username\}/.local} for the paths.
+use \texttt{/home/\string{username\string}/.local} for the paths.
 
 If that is done (make sure to test that it is working) we continue installing 
 the remaining dependencies. Make sure to use \texttt{--no-deps} for libraries 
@@ -955,7 +1049,7 @@ $ hdfs dfs -put local.tgz
 $ hdfs dfs -put libs.tgz
 \end{verbatim}
 
-\subsubsection{Update $\sim$/.bashrc again}
+\subsubsection{Update Bash configuration again}\label{app:update-bashrc-again}
 
 Append the following segment to \texttt{$\sim$/.bashrc}:
 
@@ -965,9 +1059,9 @@ pyhadoop () {
   input=$1;shift;
   if [[ "x$input" = "x" ]]; then
     echo "Usage: pyhadoop <input> <output> <mapper> <reducer> [margs] [rargs]  [...]"
-    echo "Input and output are on HDFS, mapper and reducer are files in this directory."
+    echo "Input and output are on HDFS, mapper and reducer are in this directory."
     echo "Specify mapper and reducer arguments between quotes."
-    echo "Rest of the parameters are used for the hadoop streaming command near start."
+    echo "Rest of the parameters are used near start of the hadoop streaming command."
     return
   fi
   output=$1;shift;
@@ -1087,12 +1181,13 @@ popd > /dev/null
 export VIRTUAL_ENV
 \end{verbatim}
 
-This has to be done to make the virtual environment actually relocatable, 
-otherwise it would be nonfunctional on the nodes, where we would still have 
-Python 2.6.
+This has to be done in order to make the virtual environment actually 
+relocatable, otherwise it would be nonfunctional on the nodes, where we would 
+still have Python 2.6.
 
-Once everything is set up, check whether the Python scripts are distributed as 
-follows: \texttt{pympi 8 mpi-test.py "" -{}-hostfile hosts -{}-map-by node}.
+Once everything is set up, check whether the Python scripts are distributed 
+using the following command: \texttt{pympi 8 mpi-test.py "" -{}-hostfile 
+hosts -{}-map-by node}.
 
 MPI also allows running parts of the preprocessing and classification steps on 
 the worker nodes. As explained in Section~\ref{app:groups}, we can preprocess 
