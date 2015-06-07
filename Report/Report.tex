@@ -15,6 +15,8 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
 
 % Bibliography configuration
 \DeclareFieldFormat[article, inproceedings, online, techreport]{title}{\emph{#1}}
@@ -624,11 +626,65 @@ components.
 \ldots
 
 \subsection{Determining the most accurate classifier}\label{sec:most-accurate-classifier}
-% TODO: Explain experiments we have done with classifiers (also refer to the
-% experiment runner section), compare the four most promising plots and
-% add details on our final choice. Explain why we use classifiers and not 
-% regressors (discrete classes in our labeled dataset), and make observations.
-\ldots
+Before we are able to classify commit comments, it is important to determine
+the most accurate classifier to use on our dataset. In order to consider as
+much combinations of classifier and parameters as possible, we have developed
+an experiment runner as described in Section~\ref{sec:experiment-runner}.
+The experiment runner performs five-fold cross validation using the labeled
+training set for each combination of classifier and parameters. Since we have
+discrete classes in our labeled dataset (positive, negative or neutral), we
+use classifiers instead of regressors as the latter only gives relative
+scores and no discrete classes.
+
+We execute the experiment runner, which takes several minutes to complete all
+its tasks. For each combination of classifier and parameters we store the
+average accuracy and the standard deviation of the cross-validation runs in
+a JSON file. The plotting framework is able to read this JSON file and
+create separate plots for each classifier. This allows us to visually inspect
+the results and to compare the effect of different parameters in combination
+with the same algorithm. Figure~\ref{fig:classifiers} shows the three most
+accurate classifiers on the labeled training set.
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/Passive_aggressive.pdf}
+    \caption{Passive aggressive classifier}\label{fig:classifiers-passive-aggressive}
+  \end{subfigure}
+  \begin{subfigure}{.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/Linear_SVC.pdf}
+    \caption{Linear SVC}\label{fig:classifiers-linear-svc}
+  \end{subfigure} \\
+  \vspace{0.5cm}
+  \begin{subfigure}{.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{Images/Random_forest.pdf}
+    \caption{Random forest classifier}\label{fig:classifiers-random-forest}
+  \end{subfigure}
+  \caption{Three most accurate classifiers on the labeled training set. Accuracy
+           values range between 0 and 1, indicating 0\% and 100\% accuracy, respectively.}\label{fig:classifiers}
+\end{figure}
+
+We observe from the plots that these three classifiers yield very similar
+accuracies on the labeled training set, with an average of 63\% accuracy.
+The plots also show that all three classifiers are relatively stable,
+meaning that changing parameters has a very low impact on the accuracy
+and standard deviation. We see that the passive aggressive classifier and
+linear SVC are almost identical, whereas the accuracy of the random forest
+classifier is slightly lower and the standard deviation is slightly higher,
+especially when the number of estimators is small.
+
+The random forest classifier fits several decision tree classifiers on
+samples of the dataset. Averaging is applied to improve the accuracy and
+to prevent overfitting. Linear SVC is a support vector machine, especially
+well-suited for scaling up to a large number of samples. The passive
+aggressive classifier works by keeping a model if the prediction is correct
+and by updating the model when a sample is misclassified. After careful
+comparison of the classifiers we have decided to use the passive aggressive
+algorithm with regularization parameter $C = 0.4$ for the classifier
+component as it is slightly more accurate than the linear SVC.
 
 \subsection{Performing sentiment analysis per language}\label{sec:sentiment-analysis-per-language}
 For this experiment, we apply our distributed sentiment analysis framework to
