@@ -633,26 +633,26 @@ components.
 \subsection{Performing sentiment analysis per language}\label{sec:sentiment-analysis-per-language}
 For this experiment, we apply our distributed sentiment analysis framework to
 analyze the ratio of positive and negative commit comments per programming
-language. Performing such an analysis might be useful for gaining insight to 
+language. Performing such an analysis might be useful for gaining insight into 
 the satisfaction of the developers and determining problems with programming 
 languages. For instance, if many reviewers are negative about a certain 
 language, inspection of the commit comments could indicate reasons for this, 
 which can be addressed by the designers of the programming language, such as 
-addressing shortcomings that currently make implementation of algorithms or 
-bugfixing more difficult than one would reasonable need time for. Python and 
-PHP are examples of mature programming languages that are constantly updated 
-based on new specifications and wishes from the community.
+addressing shortcomings that make implementation of algorithms or bugfixing
+more difficult. Python and PHP are examples of mature programming languages
+that are constantly updated based on new specifications and wishes from the
+community.
 
 We combine the commit comments dataset and the repositories dataset described 
 in Section~\ref{sec:dataset}. Each commit comment is augmented with the main 
 programming language of the repository that the commit belongs to. This 
-experiment also shows the potential of our distributed approach as this 
-experiment. The large amount and variety of data requires us to use almost all 
-available tools in the framework shown in Section~\ref{sec:implementation}. Not 
-only do we need to preprocess the commit comments dataset, but first we must 
-preprocess the repositories dataset such that we have the main language of each 
-repository available when we preprocess the commit comments data. Our framework 
-supports processing both types of dumps in a distributed manner.
+experiment also shows the potential of our distributed approach. The large
+amount and variety of data requires us to use almost all available tools in the
+framework shown in Section~\ref{sec:implementation}. Not only do we need to
+preprocess the commit comments dataset, but first we must preprocess the
+repositories dataset such that we have the main language of each repository
+available when we preprocess the commit comments data. Our framework supports
+processing both types of dumps in a distributed manner.
 
 We utilize eight nodes of DAS-3 for this experiment, including the fileserver 
 node which acts as a master node. We start by preprocessing the repositories 
@@ -663,7 +663,7 @@ completion of the task, we preprocess the commit comments dataset on the worker
 nodes too. First, we merge the shelves into one shelve, so that we can easily 
 look up the language of each repository. We add the language to each commit 
 comment in the process, by inspection of the repository it is from, based on 
-the {\tt url} attribute. Once this task is also completed, we receive a JSON 
+the {\tt url} attribute. Once this task is also completed, we obtain a JSON 
 file for every dump that contains for each commit comment the text and the main 
 language of the repository it belongs to.
 
@@ -696,8 +696,8 @@ comments, respectively.
   comments.}\label{fig:language-neg}
 \end{figure}
 
-The two most positive languages are Rust and Erlang, which is an interesting 
-appearance among the top~20. First, Rust is a fairly new language which is 
+The two most positive languages are Rust and Erlang, which are interesting 
+appearances among the top~20. First, Rust is a fairly new language which is 
 under development on GitHub. We noticed by manual inspection
 of the commit comments that many commit comments consist of output from testing 
 bots. However, it can be seen as positive if all tests pass and as negative if 
@@ -705,13 +705,13 @@ all tests fail, and clearly the tests often pass for those languages, which is
 indeed a positive sign. The same also applies to the Erlang language, where we 
 also find that many comments are simply very positive and even excited about 
 the implementation of new features that are possible using the language. The 
-top~20 of the most positive language also contains other new languages for 
+top~20 of the most positive languages also contains other new languages for 
 which this ease of use also applies.
 
 Among the most negative languages we have VHDL and Matlab as interesting 
-appearances. Developers often seem to be annoyed by problems when changing the 
+appearances. Developers often seem to be annoyed by problems when changing
 code in these languages, and are often surprised about the way certain bugs 
-with basis operations are resolved in the code.
+are resolved in the code.
 
 We see many small and relatively unknown languages in both plots. This can be
 improved by changing our weighting scheme to take the group size more into
