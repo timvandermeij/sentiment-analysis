@@ -52,7 +52,11 @@ We should probably just give the sum of this in order to compare with MapReduce.
 TODO: Comparison with more recent hardware (laptop, huisuil?) and parallel MPI
 
 preprocess.py for repos without anything on node02:
-TODO
+real    51:59:38
+user    27873.34
+sys     1393.81
+mem     1452400/4 kB
+
 
 MapReduce classify.py for plain commit_comments (score group) and reducer.py:
 Total time spent by all maps in occupied slots (ms)=115006
@@ -69,14 +73,67 @@ Physical memory (bytes) snapshot=1084923904
 Virtual memory (bytes) snapshot=7437201408
 Total committed heap usage (bytes)=844627968
 
+MapReduce classify.py for commit_comments with languages group and reducer.py
+Total time spent by all maps in occupied slots (ms)=100490
+Total time spent by all reduces in occupied slots (ms)=9561
+Total time spent by all map tasks (ms)=100490
+Total time spent by all reduce tasks (ms)=9561
+Total vcore-seconds taken by all map tasks=100490
+Total vcore-seconds taken by all reduce tasks=9561
+Total megabyte-seconds taken by all map tasks=68534180
+Total megabyte-seconds taken by all reduce tasks=6520602
+GC time elapsed (ms)=1388
+CPU time spent (ms)=80640
+Physical memory (bytes) snapshot=1082146816
+Virtual memory (bytes) snapshot=7439532032
+Total committed heap usage (bytes)=844627968
+hadoop real    1:23.76
+hadoop user    17.10
+hadoop sys     1.00
+hadoop mem     652000/4 kB
+
+
 classify.py for language commit_comments:
-TODO
+total real    1:09/33
+classify user 61.65
+classify sys  1.69
+classify mem  852848/4 kB
+sort user     0.90
+sprt sys      0.47
+sort mem      40784/4 kB
+reducer user  0.20
+reducer sys   0.01
+reducer mem   16224/4 kB
+
 
 MPI preprocess repos with SSH:
-TODO
+workers user 33007.07
+workers sys  1823.79
+workers mem  1721864 kB
 
 MPI preprocess all commit_comments with language group with SSH:
-TODO
+mpiexec real 1:06:29
+mpiexec user 844.09
+mpiexec sys  26.76
+mpiexec mem  758592/4 kB
+workers real 31896 (sum of all nodes)
+workers user 3166.15
+workers sys  23132.71
+workers mem  387192 kB
 
-MPI classify.py for all language commit_comments with SSH:
-TODO
+MPI classify.py/sort/reducer.py for all 17 dumps of language commit_comments with SSH:
+total real    1:49.51
+mpiexec user  1.50
+mpiexec sys   0.35
+mpiexec mem   352880/4 kB
+workers real  620.18 (sum of all nodes)
+workers user  599.20
+workers sys   9.55
+workers mem   1713280 kB
+sort user     9.74
+sort sys      1.08
+sort mem      204336/4 kB
+reducer user  2.02
+reducer sys   0.06
+reducer mem   16208/4 kB
+

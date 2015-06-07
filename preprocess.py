@@ -146,6 +146,27 @@ class Preprocessor(object):
                 os.remove(output_name)
             shutil.move(self.path + output_name, '.')
 
+class Shelf(object):
+    @classmethod
+    def merge_shelves(cls):
+        files = sorted(glob('languages-*.shelf'))
+        count = len(files)
+        if count == 0:
+            return
+
+        message = 'Merging partial shelves'
+        progress = Progress(message, count)
+
+        merged = shelve.open('languages.shelf')
+        for index in range(count):
+            progress.show_progress(index)
+            shelf = shelve.open(files[index])
+            merged.update(shelf)
+            shelf.close()
+            os.remove(files[index])
+        merged.close()
+        progress.finish()
+
 class Commit_Comments_Preprocessor(Preprocessor):
     def __init__(self, process_id, path, date, group, *a):
         super(Commit_Comments_Preprocessor, self).__init__(process_id, path)
@@ -164,30 +185,12 @@ class Commit_Comments_Preprocessor(Preprocessor):
         
         return True
 
-    def merge_shelves(self):
-        files = sorted(glob('languages-*.shelf'))
-        count = len(files)
-        message = 'Merging partial shelves'
-        progress = Progress(message, count)
-
-        merged = shelve.open('languages.shelf')
-        for index in range(count):
-            progress.show_progress(index)
-            shelf = shelve.open(files[index])
-            merged.update(shelf)
-            shelf.close()
-            os.remove(files[index])
-        merged.close()
-        progress.finish()
-
     def convert_bson(self):
         output = open(self.path + self.dataset + '.json', 'wb')
         message = 'Converting BSON "{}" and filtering fields'.format(self.dataset)
         bson_file = ProgressFile(self.bson_file, 'rb', message=message)
         
-        if os.path.isfile('languages-1.shelf'):
-            # We have at least one partial shelve waiting to be merged.
-            self.merge_shelves()
+        Shelf.merge_shelves()
         
         if os.path.isfile('languages.shelf'):
             if self.path != "" and not os.path.isfile(self.path + 'languages.shelf'):
@@ -280,6 +283,10 @@ class Process(object):
 
     def run_master(self):
         print('MASTER on node {}'.format(socket.gethostname()))
+
+        if self.task == "commit_comments":
+            # Merge any shelves beforehand
+            Shelf.merge_shelves()
 
         # Fetch the dumps from the GHTorrent website and
         # process them in parallel on the other processes.
