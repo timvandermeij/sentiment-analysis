@@ -40,7 +40,7 @@ classify.py for plain commit_comments (score group) through sort and reducer:
 total real       1:02.43
 classify.py user 61.24
 classify.py sys  1.50
-classify.pu mem  815136/4 kB
+classify.py mem  815136/4 kB
 sort user        0.49
 sort sys         0.49
 sort mem         38320/4 kB
@@ -58,6 +58,26 @@ sys     1393.81
 mem     1452400/4 kB
 
 
+MapReduce analyze.py (score group) + reducer.py
+Total time spent by all maps in occupied slots (ms)=81087
+Total time spent by all reduces in occupied slots (ms)=6963
+Total time spent by all map tasks (ms)=81087
+Total time spent by all reduce tasks (ms)=6963
+Total vcore-seconds taken by all map tasks=81087
+Total vcore-seconds taken by all reduce tasks=6963
+Total megabyte-seconds taken by all map tasks=55301334
+Total megabyte-seconds taken by all reduce tasks=4748766
+GC time elapsed (ms)=1029
+CPU time spent (ms)=70240
+Physical memory (bytes) snapshot=1085562880
+Virtual memory (bytes) snapshot=7439216640
+Total committed heap usage (bytes)=851443712
+real    1:08.76
+user    12.57
+sys     0.64
+mem     591248/4 kB
+
+
 MapReduce classify.py for plain commit_comments (score group) and reducer.py:
 Total time spent by all maps in occupied slots (ms)=115006
 Total time spent by all reduces in occupied slots (ms)=28171
@@ -72,6 +92,10 @@ CPU time spent (ms)=83620
 Physical memory (bytes) snapshot=1084923904
 Virtual memory (bytes) snapshot=7437201408
 Total committed heap usage (bytes)=844627968
+hadoop real    1:46.63
+hadoop user    12.63
+hadoop sys     0.77
+hadoop mem     559840/4 kB
 
 MapReduce classify.py for commit_comments with languages group and reducer.py
 Total time spent by all maps in occupied slots (ms)=100490
@@ -107,6 +131,7 @@ reducer mem   16224/4 kB
 
 
 MPI preprocess repos with SSH:
+ran from 16:58:55 until 23:55:13, so 6h 56m 18s
 workers user 33007.07
 workers sys  1823.79
 workers mem  1721864 kB
@@ -126,7 +151,7 @@ total real    1:49.51
 mpiexec user  1.50
 mpiexec sys   0.35
 mpiexec mem   352880/4 kB
-workers real  620.18 (sum of all nodes)
+workers real  620.18 (sum of all nodes), avg=1m 18s
 workers user  599.20
 workers sys   9.55
 workers mem   1713280 kB

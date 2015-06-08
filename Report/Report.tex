@@ -640,6 +640,80 @@ Section~\ref{sec:sentiment-analysis-per-language}.
 \subsection{Measuring time and memory usage of the framework}\label{sec:time-and-memory-usage}
 \ldots
 
+% Some notes: for MPI, the commit comments preprocess runs use 17 dumps instead 
+% of just 1 as we do on the other platforms. Furthermore, the MPI run of the 
+% classifier and reducer components use the sum of all the worker nodes, 
+% including the master and the MPI managing process. The MapReduce timing is 
+% also based on the Hadoop job and resource monitoring system as well as the 
+% resource information of individual job tasks provided by Hadoop's statistics.
+% Need to explain the difference between real and user/sys clearly, with 
+% examples etc.
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{l l l l l}
+    \toprule
+    \textbf{Component} & \textbf{Baseline} & \textbf{MapReduce} &
+    \textbf{Baseline languages} & \textbf{MPI languages $\times$ 17} \\
+    \midrule
+    Preprocessor           & 2 minutes & ---    & 22 hours    & 7 hours    \\
+    \quad Repositories     & ---       & ---    & 20h 58m 15s & 6h 56m 18s \\
+    \quad Commit comments  & 1m 52s    & ---    & 1h 9m 50s   & 1h 6m 29s  \\
+    Analyzer               & 1m 3s     & 1m 8s  & ---         & ---        \\
+    Classify, sort, reduce & 1m 6s     & 1m 46s & 1m 9s       & 1m 49s     \\
+    \quad Classifier       & 1m 2s     & ---    & 1m 2s       & 1m 18s     \\
+    \quad Reducer          & 0.2s      & ---    & 0.2s        & 2s         \\
+    \bottomrule
+  \end{tabular}
+  \caption{Real time of components using various distributed platforms.}
+  \label{tab:component-real-time}
+\end{table}
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{l l l l l}
+    \toprule
+    \textbf{Component} & \textbf{Baseline} & \textbf{MapReduce} &
+    \textbf{Baseline languages} & \textbf{MPI languages $\times$ 17} \\
+    \midrule
+    Preprocessor           & 1 minute  & ---    & 8.5 hours   & 17 hours   \\
+    \quad Repositories     & ---       & ---    & 8h 26m 1s   & 9h 40m 30s \\
+    \quad Commit comments  & 1m 10s    & ---    & 15m 57s     & 7h 32m 49s \\
+    Analyzer               & 1m 3s     & 1m 23s & ---         & ---        \\
+    Classify, sort, reduce & 1m 4s     & 1m 46s & 1m 5s       & 10m 23s    \\
+    \quad Classifier       & 1m 3s     & 1m 40s & 1m 3s       & 10m 9s     \\
+    \quad Reducer          & 0.2s      & 10s    & 0.2s        & 2s         \\
+    \bottomrule
+  \end{tabular}
+  \caption{Summed user and system time of components using various distributed 
+  platforms.}
+  \label{tab:component-user-sys-time}
+\end{table}
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{l r r r r}
+    \toprule
+    \textbf{Component} & \textbf{Baseline} & \textbf{MapReduce} &
+    \textbf{Baseline languages} & \textbf{MPI languages $\times$ 17} \\
+    \midrule
+    Preprocessor           & 16 MB   & ---    & 543 MB & 2.2 GB  \\
+    \quad Repositories     & ---     & ---    & 356 MB & 1681 MB \\
+    \quad Commit comments  & 16.4 MB & ---    & 187 MB & 563 MB  \\
+    Analyzer               & 7.5 MB  & 956 MB & ---    & ---     \\
+    Classify, sort, reduce & 212 MB  & 942 MB & 222 MB & 1.7 GB  \\
+    \quad Classifier       & 199 MB  & ---    & 208 MB & 1673 MB \\
+    \quad Reducer          & 4.0 MB  & ---    & 4.0 MB & 4.0 MB  \\
+    \bottomrule
+  \end{tabular}
+  \caption{Memory usage of components using various distributed platforms.}
+  \label{tab:component-mem}
+\end{table}
+% Note, when we wish to display the output of the classifier with the id group, 
+% the test data has to be converted to a list in order to show the prediction 
+% along with the original message. This increases the memory to 282 MB for the 
+% classifier only, an increase of 83 MB. The classifier component's memory 
+% usage is also very dependent on the actual classifier model used. MapReduce 
+% has a lot of overhead from the Java stack it is on, and provides little 
+% detail on memory usage.
+
 \subsection{Determining the most accurate 
 classifier}\label{sec:most-accurate-classifier}
 Before we are able to classify commit comments, it is important to determine
