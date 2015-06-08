@@ -622,28 +622,36 @@ components.
 
 \section{Experiments and results}\label{sec:experiments-and-results}
 % TODO: Explain experiments: timing, memory?, analyzer/classifier frequency 
-% plots?, algorithm comparisons, language sentiments
+% plots (in case we need more experiments...)?
 \ldots
 
 \subsection{Determining the most accurate classifier}\label{sec:most-accurate-classifier}
 Before we are able to classify commit comments, it is important to determine
 the most accurate classifier to use on our dataset. In order to consider as
-much combinations of classifier and parameters as possible, we have developed
+many combinations of classifier and parameters as possible, we have implemented
 an experiment runner as described in Section~\ref{sec:experiment-runner}.
-The experiment runner performs five-fold cross validation using the labeled
-training set for each combination of classifier and parameters. Since we have
-discrete classes in our labeled dataset (positive, negative or neutral), we
-use classifiers instead of regressors as the latter only gives relative
-scores and no discrete classes.
 
-We execute the experiment runner, which takes several minutes to complete all
-its tasks. For each combination of classifier and parameters we store the
-average accuracy and the standard deviation of the cross-validation runs in
-a JSON file. The plotting framework is able to read this JSON file and
-create separate plots for each classifier. This allows us to visually inspect
-the results and to compare the effect of different parameters in combination
-with the same algorithm. Figure~\ref{fig:classifiers} shows the three most
-accurate classifiers on the labeled training set.
+The experiment runner performs five-fold cross-validation using the 
+2000~entries in the labeled training set for each combination of classifier and 
+parameters. Since we have discrete classes in our labeled dataset (positive, 
+negative or neutral), we use classifiers instead of regressors. A regressor 
+gives relative scores instead of discrete classes, and this would artificially 
+worsen the scores on the cross-validation test folds. We assume that the 
+regressor variants of the available classifiers from \textsc{scikit-learn} 
+behave similarly to the classifiers, of which we make use in the subsequent 
+experiment in Section~\ref{sec:sentiment-analysis-per-language}
+
+We execute the experiment runner, which takes several minutes to about an hour 
+to complete all its tasks. For each combination of classifier and 
+a predetermined set of values for the available parameters, we calculate the 
+average accuracy and the standard deviation of the five cross-validation runs. 
+We store these results in a JSON file. The plotting framework from 
+Section~\ref{sec:plotter} is able to read this JSON file and create separate 
+plots for each classifier, and in case there are many combinations of 
+parameters, for each value of a certain parameter. This allows us to visually 
+inspect the results and to compare the effect of different parameters in 
+combination with the same algorithm. Figure~\ref{fig:classifiers} shows the 
+three most accurate classifiers on the labeled training set.
 
 \begin{figure}[h!]
   \centering
@@ -663,28 +671,37 @@ accurate classifiers on the labeled training set.
     \includegraphics[width=\textwidth]{Images/Random_forest.pdf}
     \caption{Random forest classifier}\label{fig:classifiers-random-forest}
   \end{subfigure}
-  \caption{Three most accurate classifiers on the labeled training set. Accuracy
-           values range between 0 and 1, indicating 0\% and 100\% accuracy, respectively.}\label{fig:classifiers}
+  \caption{Three most accurate classifiers on the labeled training set, based
+           on five-fold cross-validation. Accuracy values range 
+           between~0~and~1, indicating 0\%~and~100\%~accuracy, 
+           respectively.}\label{fig:classifiers}
 \end{figure}
 
 We observe from the plots that these three classifiers yield very similar
-accuracies on the labeled training set, with an average of 63\% accuracy.
+accuracies on the labeled training set, with an average of 63\%~accuracy.
 The plots also show that all three classifiers are relatively stable,
 meaning that changing parameters has a very low impact on the accuracy
 and standard deviation. We see that the passive aggressive classifier and
 linear SVC are almost identical, whereas the accuracy of the random forest
 classifier is slightly lower and the standard deviation is slightly higher,
-especially when the number of estimators is small.
+especially when the number of estimator trees is small.
 
 The random forest classifier fits several decision tree classifiers on
 samples of the dataset. Averaging is applied to improve the accuracy and
-to prevent overfitting. Linear SVC is a support vector machine, especially
-well-suited for scaling up to a large number of samples. The passive
-aggressive classifier works by keeping a model if the prediction is correct
-and by updating the model when a sample is misclassified. After careful
-comparison of the classifiers we have decided to use the passive aggressive
-algorithm with regularization parameter $C = 0.4$ for the classifier
-component as it is slightly more accurate than the linear SVC.
+to prevent overfitting~\cite{breiman2001randomforests}. We find however that 
+the individual decision trees often become very large on our dataset, with 
+a long tail where a node keeps on being split on a condition in order to 
+improve the accuracy within that node. After tuning parameters, the trees have 
+fewer nodes, but there are still nodes that have too many splits in their 
+subtree.
+
+Linear SVC is a support vector machine, which is especially well-suited for 
+scaling up to a large number of samples. The passive aggressive classifier 
+works by keeping a model if the prediction is correct and by updating the model 
+when a sample is misclassified~\cite{crammer2006passive}. After careful 
+comparison of the classifiers, we decide to use the passive aggressive 
+algorithm with regularization parameter $C = 0.4$ for the classifier component 
+as it is slightly more accurate than the linear SVC.
 
 \subsection{Performing sentiment analysis per language}\label{sec:sentiment-analysis-per-language}
 For this experiment, we apply our distributed sentiment analysis framework to
