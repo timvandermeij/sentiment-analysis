@@ -625,13 +625,13 @@ components.
 
 \section{Experiments and results}\label{sec:experiments-and-results}
 In this section, we introduce the experiments that we perform with the 
-framework from Section~\ref{sec:implementation} upon the GitHub commit comments 
+framework from Section~\ref{sec:implementation} on the GitHub commit comments 
 dataset described in Section~\ref{sec:dataset}. We measure and compare the 
 running time and memory usage of our components on different distributed 
 computing platforms in Section~\ref{sec:time-and-memory-usage}.
 
 After thoroughly testing our framework, we use it to determine the most 
-accurate classifier upon the dataset in 
+accurate classifier for the dataset in 
 Section~\ref{sec:most-accurate-classifier}. Finally, we use the observations 
 made in these experiments and apply the components of our framework to the 
 problem of finding the most positive and most negative languages based on the 
@@ -658,7 +658,7 @@ We measure the real time, user and system time, and peak memory usage for each
 component and on several platforms. Note that the real time is equal to the 
 elapsed time between the start and end of the program, and can easily become 
 imprecise due to scheduling on a busy system as well as networking or I/O 
-latency. We ensure that the DAS-3 that we perform our experiments on is not 
+latency. We ensure that the DAS-3, on which we perform our experiments, is not 
 working on other processes while we perform our experiments, but we note that 
 the DAS-3 has relatively slow download connections as well as a filesystem that 
 easily blocks the process when reading or writing large amounts of data. This 
@@ -681,7 +681,7 @@ system, but not all of them are specific to the mapper or reducer job.
     \textbf{Component} & \textbf{Baseline} & \textbf{MapReduce} &
     \textbf{Baseline languages} & \textbf{MPI languages $\times$ 17} \\
     \midrule
-    Preprocessor           & 2 minutes & ---    & 22 hours    & 7 hours    \\
+    Preprocessor           & 2 minutes & ---    & 22 hours    & 8 hours    \\
     \quad Repositories     & ---       & ---    & 20h 58m 15s & 6h 56m 18s \\
     \quad Commit comments  & 1m 52s    & ---    & 1h 9m 50s   & 1h 6m 29s  \\
     Analyzer               & 52s       & 1m 8s  & 53s         & 2m 19s     \\
@@ -705,15 +705,14 @@ In fact, when we also process all 17~repositories dumps, the preprocessor
 component from Section~\ref{sec:preprocessor} takes much longer on the DAS-3. 
 We wish to avoid the slowness issue caused by sequentially reading the dumps 
 and converting them to shelves containing language data. Therefore, we can 
-distribute the tasks for the dumps using MPI. We use eight nodes, of which one 
-node is a master node which distributes jobs. This setup causes a three-fold 
+distribute the tasks for the dumps using MPI\@. We use eight nodes, of which one 
+node is a master node that distributes jobs. This setup causes a three-fold 
 speedup for the repositories dumps. One could expect the process to be 
-seven~times faster due to the number of nodes, but at the end there are a few 
-nodes which are busy with a large dump, which causes the total time to be 
-higher than expected. This is also the case for the commit comments task, which 
-has to merge the language shelves beforehand. Note however than the baseline 
-only processes one dump while the MPI task uses all 17~dumps of the commit 
-comments.
+seven~times faster due to the number of nodes, but at the end a few nodes are
+busy with a large dump, which causes the total time to be higher than expected.
+This is also the case for the commit comments task, which has to merge the
+language shelves beforehand. Note however that the baseline only processes one
+dump while the MPI task uses all 17~dumps of the commit comments.
 
 For the analyzer and the classifier components, we see that all platforms 
 perform fairly equally, where we again note that the MPI version processes more 
@@ -743,9 +742,9 @@ than ten times as much data as the other platforms do.
 The user and system time shown in Table~\ref{tab:component-user-sys-time} shows 
 fairly different results than the elapsed time from 
 Table~\ref{tab:component-real-time}, which is partially caused by the fact that 
-idle processes caused by networking and I/O latency is not counted toward the 
-total time. This can be seen in the baseline time of the preprocessor, which
-is idling 37.5\% of the time.
+idling, networking latency and I/O latency are not counted toward the total
+time. This can be seen in the baseline time of the preprocessor, which is idling
+37.5\% of the time.
 
 There is also a difference in the timing for the baseline of the much more 
 tedious job of preprocessing the repositories dumps. This shows that the 
@@ -795,7 +794,7 @@ one dump. The measurements are based on the total committed heap usage, which
 can be artificially high due to Java's initial memory allocation. The Hadoop 
 components are based on a Java stack, which adds a lot of overhead in memory. 
 The MPI run uses even more memory, but this can be explained by the fact that 
-all eight worker nodes keep a model of the classifier into memory. We use 
+all eight worker nodes keep a model of the classifier in memory. We use 
 a complex random forest classifier, which we explain in more detail in 
 Section~\ref{sec:most-accurate-classifier}, in order to be able to see the 
 effects on timing and memory.
