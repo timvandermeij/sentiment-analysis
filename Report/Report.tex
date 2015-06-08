@@ -633,10 +633,10 @@ computing platforms in Section~\ref{sec:time-and-memory-usage}.
 After thoroughly testing our framework, we use it to determine the most 
 accurate classifier upon the dataset in 
 Section~\ref{sec:most-accurate-classifier}. Finally, we use the observations 
-made in these experiments and apply the components of our framework to the 
-problem of finding the most positive and most negative languages based on the 
-main programming language of each repository on GitHub. The results and 
-observations from this experiment are shown in 
+made in these experiments and make use of the components of our framework in 
+the problem of finding the most positive and most negative languages based on 
+the main programming language of each repository on GitHub. The results and 
+observations for this experiment are shown in 
 Section~\ref{sec:sentiment-analysis-per-language}.
 
 \subsection{Measuring time and memory usage of the framework}\label{sec:time-and-memory-usage}
@@ -783,12 +783,12 @@ related to the additional overhead of the Hadoop framework.
   \caption{Memory usage of components using various distributed platforms.}
   \label{tab:component-mem}
 \end{table}
-Finally, we measure the peak memory usage of the individual components. The 
-results of these experiments are shown in Table~\ref{tab:component-mem}. We see 
-that the preprocessor starts to use more memory when it has to use the 
-languages shelves. This is caused by a cache which aims to speed up and 
-simplify the iterative reads and writes, although this does not seem to affect 
-the running time.
+Finally, we measure the peak memory usage of the individual components. We show 
+the results of these experiments in Table~\ref{tab:component-mem}. We see that 
+the preprocessor starts to use more memory when it has to use the languages 
+shelves. This is caused by a cache which aims to speed up and simplify the 
+iterative reads and writes, although this does not seem to affect the running 
+time.
 
 For the analyzer and classifier, we see that MapReduce uses a lot of memory for 
 one dump. The measurements are based on the total committed heap usage, which 
@@ -838,21 +838,27 @@ combination with the same algorithm.
 
 \begin{figure}[h!]
   \centering
-  \begin{subfigure}{.48\textwidth}
+  \begin{subfigure}{0.66\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Images/Passive_aggressive.pdf}
-    \caption{Passive aggressive classifier}\label{fig:classifiers-passive-aggressive}
-  \end{subfigure}
-  \begin{subfigure}{.48\textwidth}
+    \caption{Cross-validation results for passive aggressive classifier}
+    \label{fig:classifiers-passive-aggressive}
+  \end{subfigure} \\
+\end{figure}
+\begin{figure}[ht!]
+  \ContinuedFloat
+  \centering
+  \begin{subfigure}{0.66\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Images/Linear_SVC.pdf}
-    \caption{Linear SVC}\label{fig:classifiers-linear-svc}
+    \caption{Cross-validation results for linear SVC}
+    \label{fig:classifiers-linear-svc}
   \end{subfigure} \\
-  \vspace{0.5cm}
-  \begin{subfigure}{.48\textwidth}
+  \begin{subfigure}{0.66\textwidth}
     \centering
     \includegraphics[width=\textwidth]{Images/Random_forest.pdf}
-    \caption{Random forest classifier}\label{fig:classifiers-random-forest}
+    \caption{Cross-validation results for random forest classifier}
+    \label{fig:classifiers-random-forest}
   \end{subfigure}
   \caption{Three most accurate classifiers on the labeled training set, based
            on five-fold cross-validation. Accuracy values range 
@@ -865,10 +871,13 @@ labeled training set. We observe from the plots that these three classifiers
 yield very similar accuracies on the labeled training set, with an average of 
 63\%~accuracy. The plots also show that all three classifiers are relatively 
 stable, meaning that changing parameters has a very low impact on the accuracy
-and standard deviation. We see that the passive aggressive classifier and
-linear SVC are almost identical, whereas the accuracy of the random forest
-classifier is slightly lower and the standard deviation is slightly higher,
-especially when the number of estimator trees is small.
+and standard deviation. We see that the passive aggressive classifier in 
+Figure~\ref{fig:classifiers-passive-aggressive} and linear SVC as shown in 
+Figure~\ref{fig:classifiers-linear-svc} are almost identical, whereas the 
+accuracy of the random forest classifier from 
+Figure~\ref{fig:classifiers-random-forest} is slightly lower and the standard 
+deviation is slightly higher, especially when the number of estimator trees is 
+small.
 
 The random forest classifier fits several decision tree classifiers on
 samples of the dataset. Averaging is applied to improve the accuracy and
@@ -933,25 +942,26 @@ Section~\ref{sec:most-accurate-classifier} that the classifier version of the
 passive aggressive algorithm appears to have the best fit for our dataset. We 
 use the regressor variant since this gives us relative scores for each commit 
 comment, which improves the results of our comparisons of the languages. The
-output of the classifier consists of single lines with on each line the main
-language name and the score of one commit comment. The plotting framework
-takes this output as input and generates the plots in 
-Figure~\ref{fig:language-pos} and Figure~\ref{fig:language-neg}, which show
-the 20~most positive and most negative languages based on the comment
-comments, respectively.
+output of the classifier consists of tab-separated lines with on each line the 
+main language name and the score of one commit comment. The plotting framework
+takes this data as input and generates the plots.
 
-\begin{figure}[h!]
+\begin{figure}[hb!]
   \centering
-  \includegraphics[width=0.8\textwidth]{Images/Positive_languages_passive_aggressive.pdf}
+  \includegraphics[width=0.66\textwidth]{Images/Positive_languages_passive_aggressive.pdf}
   \caption{Top 20 of programming languages with the most positive commit comments.}\label{fig:language-pos}
 \end{figure}
 
-\begin{figure}[h!]
+\begin{figure}[ht!]
   \centering
-  \includegraphics[width=0.8\textwidth]{Images/Negative_languages_passive_aggressive.pdf}
+  \includegraphics[width=0.66\textwidth]{Images/Negative_languages_passive_aggressive.pdf}
   \caption{Top 20 of programming languages with the most negative commit 
   comments.}\label{fig:language-neg}
 \end{figure}
+
+The plots in Figure~\ref{fig:language-pos} and Figure~\ref{fig:language-neg} 
+show the 20~most positive and most negative languages based on the comment
+comments, respectively.
 
 The two most positive languages are Rust and Erlang, which are interesting 
 appearances among the top~20. First, Rust is a fairly new language which is 
