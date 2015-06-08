@@ -531,14 +531,15 @@ of the manifest file is the following:
 }
 \end{verbatim}
 
-In a manifest entry we mention the class name of the classifier to test, the
-module to which the classifier belongs, the human-readable name of the 
-classifier and the parameters of the classifier that that experiment runner can 
-test. In the example above, we have two parameters, namely {\tt n\_estimators} 
-and {\tt learning\_rate}. The manifest entry essentially indicates that we 
-perform cross-validation for the Ada Boost classifier with all possible 
-combinations of the parameter values. In this case we perform 25~runs, namely 
-one with {\tt n\_estimators = 10} and {\tt learning\_rate = 0.1}, one with
+In a manifest entry, we mention the class name of the classifier to test, the
+module to which the classifier belongs, a human-readable descriptive name of 
+the classifier and the parameters available for the classifier that the 
+experiment runner can test. In the example above, we have two parameters, 
+namely {\tt n\_estimators} and {\tt learning\_rate}. The manifest entry 
+essentially indicates that we perform cross-validation for the Ada Boost 
+classifier with all possible combinations of the parameter values. In this case 
+we perform 25~runs, namely one with {\tt n\_estimators = 10} and {\tt 
+learning\_rate = 0.1}, one with
 {\tt n\_estimators = 10} and {\tt learning\_rate = 0.2}, and so on.
 
 We use a manifest file that contains 15 different classifiers. The
@@ -547,13 +548,15 @@ studying the \textsc{scikit-learn} toolkit documentation. The experiment runner
 reads the manifest file and performs cross-validation for each mentioned
 classifier and for each parameter combination. The results of the
 cross-validation are written to an output JSON file that the plotter from
-Section~\ref{sec:plotter} can take as input and, using the `algo' group,
-creates an SVG plot for each classifier.
+Section~\ref{sec:plotter} can then take as input using the `algo' group and 
+create a number of PDF plots that show the cross-validation results for the 
+various classifiers and parameters.
 
 Using the experiment runner on the training set gives an indication of
 how accurate each classifier is on our dataset. The classifier and
-parameter combination that yields the highest accuracy is used for the
-final classifier.
+parameter combination that yields highest accuracy is selected as the final 
+classifier. We use the experiment runner for this purpose in the experiment of 
+Section~\ref{sec:most-accurate-classifier}.
 
 \subsection{Labeler}\label{sec:labeler}
 As a labeled training set does not yet exist for the GitHub commit comments
@@ -625,14 +628,16 @@ In this section, we introduce the experiments that we perform with the
 framework from Section~\ref{sec:implementation} upon the GitHub commit comments 
 dataset described in Section~\ref{sec:dataset}. We measure and compare the 
 running time and memory usage of our components on different distributed 
-computing platforms in Section~\ref{sec:time-and-memory-usage}. After 
-thoroughly testing our framework, we use it to determine the most accurate 
-classifier upon the dataset in Section~\ref{sec:most-accurate-classifier}. 
-Finally, we use the observations made in these experiments and apply the 
-components of our framework to the problem of finding the most positive and 
-most negative languages based on the main programming language of each 
-repository on GitHub. The results and observations from this experiment are 
-shown in Section~\ref{sec:sentiment-analysis-per-language}.
+computing platforms in Section~\ref{sec:time-and-memory-usage}.
+
+After thoroughly testing our framework, we use it to determine the most 
+accurate classifier upon the dataset in 
+Section~\ref{sec:most-accurate-classifier}. Finally, we use the observations 
+made in these experiments and apply the components of our framework to the 
+problem of finding the most positive and most negative languages based on the 
+main programming language of each repository on GitHub. The results and 
+observations from this experiment are shown in 
+Section~\ref{sec:sentiment-analysis-per-language}.
 
 \subsection{Measuring time and memory usage of the framework}\label{sec:time-and-memory-usage}
 We experiment with the implementations of our components, which we describe in 
@@ -829,8 +834,7 @@ Section~\ref{sec:plotter} is able to read this JSON file and create separate
 plots for each classifier, and in case there are many combinations of 
 parameters, for each value of a certain parameter. This allows us to visually 
 inspect the results and to compare the effect of different parameters in 
-combination with the same algorithm. Figure~\ref{fig:classifiers} shows the 
-three most accurate classifiers on the labeled training set.
+combination with the same algorithm.
 
 \begin{figure}[h!]
   \centering
@@ -856,10 +860,11 @@ three most accurate classifiers on the labeled training set.
            respectively.}\label{fig:classifiers}
 \end{figure}
 
-We observe from the plots that these three classifiers yield very similar
-accuracies on the labeled training set, with an average of 63\%~accuracy.
-The plots also show that all three classifiers are relatively stable,
-meaning that changing parameters has a very low impact on the accuracy
+Figure~\ref{fig:classifiers} shows the three most accurate classifiers on the 
+labeled training set. We observe from the plots that these three classifiers 
+yield very similar accuracies on the labeled training set, with an average of 
+63\%~accuracy. The plots also show that all three classifiers are relatively 
+stable, meaning that changing parameters has a very low impact on the accuracy
 and standard deviation. We see that the passive aggressive classifier and
 linear SVC are almost identical, whereas the accuracy of the random forest
 classifier is slightly lower and the standard deviation is slightly higher,
