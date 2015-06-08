@@ -621,33 +621,54 @@ model. The predictions are then collected and can then be used in other
 components.
 
 \section{Experiments and results}\label{sec:experiments-and-results}
-% TODO: Explain experiments: timing, memory?, analyzer/classifier frequency 
-% plots (in case we need more experiments...)?
 In this section, we introduce the experiments that we perform with the 
 framework from Section~\ref{sec:implementation} upon the GitHub commit comments 
 dataset described in Section~\ref{sec:dataset}. We measure and compare the 
-running time and memory usage of our components on different platforms and 
-distributed computing techniques in Section~\ref{sec:time-and-memory-usage}. 
-After thoroughly testing our framework, we use it to determine the most 
-accurate classifier upon the dataset in 
-Section~\ref{sec:most-accurate-classifier}. Finally, we use the observations 
-made in these experiments and apply the components of our framework to the 
-problem of finding the most positive and most negative languages based on the 
-main programming language of each repository on GitHub. The results and 
-observations from this experiment are shown in 
-Section~\ref{sec:sentiment-analysis-per-language}.
+running time and memory usage of our components on different distributed 
+computing platforms in Section~\ref{sec:time-and-memory-usage}. After 
+thoroughly testing our framework, we use it to determine the most accurate 
+classifier upon the dataset in Section~\ref{sec:most-accurate-classifier}. 
+Finally, we use the observations made in these experiments and apply the 
+components of our framework to the problem of finding the most positive and 
+most negative languages based on the main programming language of each 
+repository on GitHub. The results and observations from this experiment are 
+shown in Section~\ref{sec:sentiment-analysis-per-language}.
 
 \subsection{Measuring time and memory usage of the framework}\label{sec:time-and-memory-usage}
-\ldots
+We experiment with the implementations of our components, which we describe in 
+Section~\ref{sec:implementation}. We optimize several parts of each component 
+in order to reduce the memory footprint as well as the running time of the 
+overall framework. We also make the components suitable for distributed 
+computation using the Hadoop MapReduce framework, as outlined in 
+Section~\ref{sec:reducer}, as well as for the MPI protocol using SSH, which we 
+recapitulate in Section~\ref{sec:mpi}.
 
-% Some notes: for MPI, the commit comments preprocess runs use 17 dumps instead 
-% of just 1 as we do on the other platforms. Furthermore, the MPI run of the 
-% classifier and reducer components use the sum of all the worker nodes, 
-% including the master and the MPI managing process. The MapReduce timing is 
-% also based on the Hadoop job and resource monitoring system as well as the 
-% resource information of individual job tasks provided by Hadoop's statistics.
-% Need to explain the difference between real and user/sys clearly, with 
-% examples etc.
+Even though these optimizations and parallelized utilities are available using 
+our framework, we wish to find out whether such distributed approaches actually 
+have an advantage over a sequential program. Therefore, our experiments focus 
+on what each platform can do, how long each task takes and what the memory 
+requirements are.
+
+We measure the real time, user and system time, and peak memory usage for each 
+component and on several platforms. Note that the real time is equal to the 
+elapsed time between the start and end of the program, and can easily become 
+imprecise due to scheduling on a busy system as well as networking or I/O 
+latency. We ensure that the DAS-3 that we perform our experiments on is not 
+working on other processes while we perform our experiments, but we note that 
+the DAS-3 has relatively slow download connections as well as a filesystem that 
+easily blocks the process when reading or writing large amounts of data. This 
+is also one reason to use distributed processes that can take advantage of 
+local hard drives.
+
+Meanwhile, for the user and system time, we take the sum of all processes for 
+these jobs. This means that a parallelized program can use more CPU time than 
+the actual elapsed time. The overhead of parallelizing and synchronizing the 
+jobs can make this cost more than a sequential program's user and system time. 
+Finally, we measure the peak memory usage, but we note that different platforms 
+have varying levels of accuracies for all measurements. For example, MapReduce 
+gives its own timing and memory statistics based on the resource monitoring 
+system, but not all of them are specific to the mapper or reducer job.
+
 \begin{table}[h!]
   \centering
   \begin{tabular}{l l l l l}
@@ -658,7 +679,7 @@ Section~\ref{sec:sentiment-analysis-per-language}.
     Preprocessor           & 2 minutes & ---    & 22 hours    & 7 hours    \\
     \quad Repositories     & ---       & ---    & 20h 58m 15s & 6h 56m 18s \\
     \quad Commit comments  & 1m 52s    & ---    & 1h 9m 50s   & 1h 6m 29s  \\
-    Analyzer               & 1m 3s     & 1m 8s  & ---         & ---        \\
+    Analyzer               & 52s       & 1m 8s  & 53s         & 2m 19s     \\
     Classify, sort, reduce & 1m 6s     & 1m 46s & 1m 9s       & 1m 49s     \\
     \quad Classifier       & 1m 2s     & ---    & 1m 2s       & 1m 18s     \\
     \quad Reducer          & 0.2s      & ---    & 0.2s        & 2s         \\
@@ -667,6 +688,32 @@ Section~\ref{sec:sentiment-analysis-per-language}.
   \caption{Real time of components using various distributed platforms.}
   \label{tab:component-real-time}
 \end{table}
+
+In Table~\ref{tab:component-real-time}, we show the results of the real time 
+measurements. We see that the baseline run on the DAS-3 without any 
+parallelization is already done very quickly, as each component only takes up 
+to two~minutes to finish. However, this run is only on the 2015--01--29 dump of 
+the commit comments dataset as shown in Table~\ref{tab:dataset}, and running 
+the components on all datasets would take an order of magnitude longer.
+
+In fact, when we also process all 17~repositories dumps, the preprocessor 
+component from Section~\ref{sec:preprocessor} takes much longer on the DAS-3. 
+We wish to avoid the slowness issue caused by sequentially reading the dumps 
+and converting them to shelves containing language data. Therefore, we can 
+distribute the tasks for the dumps using MPI. We use eight nodes, of which one 
+node is a master node which distributes jobs. This setup causes a three-fold 
+speedup for the repositories dumps. One could expect the process to be 
+seven~times faster due to the number of nodes, but at the end there are a few 
+nodes which are busy with a large dump, which causes the total time to be 
+higher than expected. This is also the case for the commit comments task, which 
+has to merge the language shelves beforehand. Note however than the baseline 
+only processes one dump while the MPI task uses all 17~dumps of the commit 
+comments.
+
+For the analyzer and the classifier components, we see that all platforms 
+perform fairly equally, where we again note that the MPI version processes more 
+than ten times as much data as the other platforms do.
+
 \begin{table}[h!]
   \centering
   \begin{tabular}{l l l l l}
@@ -677,7 +724,7 @@ Section~\ref{sec:sentiment-analysis-per-language}.
     Preprocessor           & 1 minute  & ---    & 8.5 hours   & 17 hours   \\
     \quad Repositories     & ---       & ---    & 8h 26m 1s   & 9h 40m 30s \\
     \quad Commit comments  & 1m 10s    & ---    & 15m 57s     & 7h 32m 49s \\
-    Analyzer               & 1m 3s     & 1m 23s & ---         & ---        \\
+    Analyzer               & 52s       & 1m 23s & 53s         & 4m 12s     \\
     Classify, sort, reduce & 1m 4s     & 1m 46s & 1m 5s       & 10m 23s    \\
     \quad Classifier       & 1m 3s     & 1m 40s & 1m 3s       & 10m 9s     \\
     \quad Reducer          & 0.2s      & 10s    & 0.2s        & 2s         \\
@@ -687,6 +734,31 @@ Section~\ref{sec:sentiment-analysis-per-language}.
   platforms.}
   \label{tab:component-user-sys-time}
 \end{table}
+
+The user and system time shown in Table~\ref{tab:component-user-sys-time} shows 
+fairly different results than the elapsed time from 
+Table~\ref{tab:component-real-time}, which is partially caused by the fact that 
+idle processes caused by networking and I/O latency is not counted toward the 
+total time. This can be seen in the baseline time of the preprocessor, which
+is idling 37.5\% of the time.
+
+There is also a difference in the timing for the baseline of the much more 
+tedious job of preprocessing the repositories dumps. This shows that the 
+reading and writing of the shelves takes up a large portion of the waiting 
+time. Although the shelve format is very compact and integrated into Python, it 
+has to seek a lot through the file in order to read or write an entry. For the 
+MPI run, we use the sum of all the worker nodes, including the master and the 
+MPI managing process. This makes the total time seem larger than it actually 
+is, but in fact shows that the MPI version utilizes the available resources 
+better than a sequential process does.
+
+The user and system times for the classifier and reducer components are mostly 
+as expected compared to the real time. The MPI run uses ten times more CPU time 
+than the other jobs, which matches with the increase in data that it processes. 
+The MapReduce job on one dump however takes longer than the sequential program, 
+and especially the reducer is quite slow compared to other runs. This is mostly 
+related to the additional overhead of the Hadoop framework.
+
 \begin{table}[h!]
   \centering
   \begin{tabular}{l r r r r}
@@ -697,7 +769,7 @@ Section~\ref{sec:sentiment-analysis-per-language}.
     Preprocessor           & 16 MB   & ---    & 543 MB & 2.2 GB  \\
     \quad Repositories     & ---     & ---    & 356 MB & 1681 MB \\
     \quad Commit comments  & 16.4 MB & ---    & 187 MB & 563 MB  \\
-    Analyzer               & 7.5 MB  & 956 MB & ---    & ---     \\
+    Analyzer               & 7.5 MB  & 956 MB & 7.5 MB & 56 MB   \\
     Classify, sort, reduce & 212 MB  & 942 MB & 222 MB & 1.7 GB  \\
     \quad Classifier       & 199 MB  & ---    & 208 MB & 1673 MB \\
     \quad Reducer          & 4.0 MB  & ---    & 4.0 MB & 4.0 MB  \\
@@ -706,20 +778,37 @@ Section~\ref{sec:sentiment-analysis-per-language}.
   \caption{Memory usage of components using various distributed platforms.}
   \label{tab:component-mem}
 \end{table}
-% Note, when we wish to display the output of the classifier with the id group, 
-% the test data has to be converted to a list in order to show the prediction 
-% along with the original message. This increases the memory to 282 MB for the 
-% classifier only, an increase of 83 MB. The classifier component's memory 
-% usage is also very dependent on the actual classifier model used. MapReduce 
-% has a lot of overhead from the Java stack it is on, and provides little 
-% detail on memory usage.
+Finally, we measure the peak memory usage of the individual components. The 
+results of these experiments are shown in Table~\ref{tab:component-mem}. We see 
+that the preprocessor starts to use more memory when it has to use the 
+languages shelves. This is caused by a cache which aims to speed up and 
+simplify the iterative reads and writes, although this does not seem to affect 
+the running time.
 
-\subsection{Determining the most accurate 
-classifier}\label{sec:most-accurate-classifier}
-Before we are able to classify commit comments, it is important to determine
-the most accurate classifier to use on our dataset. In order to consider as
-many combinations of classifier and parameters as possible, we have implemented
-an experiment runner as described in Section~\ref{sec:experiment-runner}.
+For the analyzer and classifier, we see that MapReduce uses a lot of memory for 
+one dump. The measurements are based on the total committed heap usage, which 
+can be artificially high due to Java's initial memory allocation. The Hadoop 
+components are based on a Java stack, which adds a lot of overhead in memory. 
+The MPI run uses even more memory, but this can be explained by the fact that 
+all eight worker nodes keep a model of the classifier into memory. We use 
+a complex random forest classifier, which we explain in more detail in 
+Section~\ref{sec:most-accurate-classifier}, in order to be able to see the 
+effects on timing and memory.
+
+Note that the classifier tasks pass along their grouped output to the reducer. 
+When we wish to display the output of the classifier with the {\tt id} group 
+for immediate analysis, the test data has to be converted to a list in order to 
+show the prediction along with the original message. This causes the memory 
+usage of the classifier to become 282~MB, an increase of 83~MB.
+
+\subsection{Determining the most accurate classifier}\label{sec:most-accurate-classifier}
+% TODO: Say something about our analysis/comparisons between the analyzer and 
+% the classifier (unrecognized.py)? It was a short experiment, but still.
+Before we are able to give classifications for commit comments, it is important 
+to determine the most accurate classifier to use on our dataset. In order to 
+consider as many combinations of classifier and parameters as possible, we have 
+implemented an experiment runner as described in 
+Section~\ref{sec:experiment-runner}.
 
 The experiment runner performs five-fold cross-validation using the 
 2000~entries in the labeled training set for each combination of classifier and 

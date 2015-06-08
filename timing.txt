@@ -30,6 +30,12 @@ user    63.04
 sys     0.25
 mem     30592/4 kB
 
+analyze.py (score group) for plain commit_comments without anything:
+real    0:52.04
+user    51.78
+sys     0.23
+mem     30976/4 kB
+
 classify.py for plain commit_comments without anything and ignored output (id group) on fs.das3:
 real    1:06.96
 user    62.51
@@ -117,6 +123,13 @@ hadoop sys     1.00
 hadoop mem     652000/4 kB
 
 
+analyze.py for language commit_comments:
+real    0:53.62
+user    52.77
+sys     0.21
+mem     30560/4 kB
+
+
 classify.py for language commit_comments:
 total real    1:09/33
 classify user 61.65
@@ -145,6 +158,17 @@ workers real 31896 (sum of all nodes)
 workers user 3166.15
 workers sys  23132.71
 workers mem  387192 kB
+
+MPI analyze.py for all 17 dumps of language commit_comments with SSH:
+total real    2:19.43
+mpiexec user  0.15
+mpiexec sys   0.09
+mpiexec mem   16624/4 kB
+workers real  312.44 (sum of all nodes), avg=45s
+workers user  250.21
+workers sys   1.10
+workers mem   53196 kB
+
 
 MPI classify.py/sort/reducer.py for all 17 dumps of language commit_comments with SSH:
 total real    1:49.51
