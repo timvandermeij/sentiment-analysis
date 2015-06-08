@@ -532,13 +532,13 @@ of the manifest file is the following:
 \end{verbatim}
 
 In a manifest entry we mention the class name of the classifier to test, the
-module to which the classifier belongs, the name of the classifier and the
-parameters of the classifier that must be tested. In the example above, we have 
-two parameters, namely {\tt n\_estimators} and
-{\tt learning\_rate}. The manifest entry essentially indicates that we perform
-cross-validation for the Ada Boost classifier with all possible combinations
-of the parameter values. In this case we perform 25 runs, namely one with
-{\tt n\_estimators = 10} and {\tt learning\_rate = 0.1}, one with
+module to which the classifier belongs, the human-readable name of the 
+classifier and the parameters of the classifier that that experiment runner can 
+test. In the example above, we have two parameters, namely {\tt n\_estimators} 
+and {\tt learning\_rate}. The manifest entry essentially indicates that we 
+perform cross-validation for the Ada Boost classifier with all possible 
+combinations of the parameter values. In this case we perform 25~runs, namely 
+one with {\tt n\_estimators = 10} and {\tt learning\_rate = 0.1}, one with
 {\tt n\_estimators = 10} and {\tt learning\_rate = 0.2}, and so on.
 
 We use a manifest file that contains 15 different classifiers. The
@@ -623,9 +623,25 @@ components.
 \section{Experiments and results}\label{sec:experiments-and-results}
 % TODO: Explain experiments: timing, memory?, analyzer/classifier frequency 
 % plots (in case we need more experiments...)?
+In this section, we introduce the experiments that we perform with the 
+framework from Section~\ref{sec:implementation} upon the GitHub commit comments 
+dataset described in Section~\ref{sec:dataset}. We measure and compare the 
+running time and memory usage of our components on different platforms and 
+distributed computing techniques in Section~\ref{sec:time-and-memory-usage}. 
+After thoroughly testing our framework, we use it to determine the most 
+accurate classifier upon the dataset in 
+Section~\ref{sec:most-accurate-classifier}. Finally, we use the observations 
+made in these experiments and apply the components of our framework to the 
+problem of finding the most positive and most negative languages based on the 
+main programming language of each repository on GitHub. The results and 
+observations from this experiment are shown in 
+Section~\ref{sec:sentiment-analysis-per-language}.
+
+\subsection{Measuring time and memory usage of the framework}\label{sec:time-and-memory-usage}
 \ldots
 
-\subsection{Determining the most accurate classifier}\label{sec:most-accurate-classifier}
+\subsection{Determining the most accurate 
+classifier}\label{sec:most-accurate-classifier}
 Before we are able to classify commit comments, it is important to determine
 the most accurate classifier to use on our dataset. In order to consider as
 many combinations of classifier and parameters as possible, we have implemented
@@ -639,7 +655,7 @@ gives relative scores instead of discrete classes, and this would artificially
 worsen the scores on the cross-validation test folds. We assume that the 
 regressor variants of the available classifiers from \textsc{scikit-learn} 
 behave similarly to the classifiers, of which we make use in the subsequent 
-experiment in Section~\ref{sec:sentiment-analysis-per-language}
+experiment in Section~\ref{sec:sentiment-analysis-per-language}.
 
 We execute the experiment runner, which takes several minutes to about an hour 
 to complete all its tasks. For each combination of classifier and 
