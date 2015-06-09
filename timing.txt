@@ -55,7 +55,6 @@ reducer.py sys   0.01
 reducer.py mem   16224/4 kB
 We should probably just give the sum of this in order to compare with MapReduce.
 
-TODO: Comparison with more recent hardware (laptop, huisuil?) and parallel MPI
 
 preprocess.py for repos without anything on node02:
 real    51:59:38
@@ -102,6 +101,25 @@ hadoop real    1:46.63
 hadoop user    12.63
 hadoop sys     0.77
 hadoop mem     559840/4 kB
+
+Total time spent by all maps in occupied slots (ms)=86719
+Total time spent by all reduces in occupied slots (ms)=8770
+Total time spent by all map tasks (ms)=86719
+Total time spent by all reduce tasks (ms)=8770
+Total vcore-seconds taken by all map tasks=86719
+Total vcore-seconds taken by all reduce tasks=8770
+Total megabyte-seconds taken by all map tasks=59142358
+Total megabyte-seconds taken by all reduce tasks=5981140
+GC time elapsed (ms)=1108
+CPU time spent (ms)=80110
+Physical memory (bytes) snapshot=1080074240
+Virtual memory (bytes) snapshot=7438934016
+Total committed heap usage (bytes)=844103680
+real    1:44.21
+user    12.43
+sys     0.73
+mem     558288/4 kB
+
 
 MapReduce classify.py for commit_comments with languages group and reducer.py
 Total time spent by all maps in occupied slots (ms)=100490

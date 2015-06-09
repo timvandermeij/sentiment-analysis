@@ -143,9 +143,7 @@ limitations include, but are not limited to, making proper use of context and
 detecting sarcasm. On top of that, sentiment analysis on a single text should be
 fast in order to make working with a large dataset feasible.
 
-% TODO: Perhaps split up in subsections?
-% Perhaps also mention: "How do we obtain the dataset and preprocess it?"
-% And: "How can we distribute the work onto worker nodes?" From presentation.
+\subsection{Approach}\label{sec:approach}
 We propose a framework that performs sentiment analysis on large datasets in a
 distributed manner. We aim to distribute most operations performed by the 
 framework, such as downloading and preprocessing individual data dumps,
@@ -705,14 +703,16 @@ In fact, when we also process all 17~repositories dumps, the preprocessor
 component from Section~\ref{sec:preprocessor} takes much longer on the DAS-3. 
 We wish to avoid the slowness issue caused by sequentially reading the dumps 
 and converting them to shelves containing language data. Therefore, we can 
-distribute the tasks for the dumps using MPI\@. We use eight nodes, of which one 
-node is a master node that distributes jobs. This setup causes a three-fold 
+distribute the tasks for the dumps using MPI\@. We use eight nodes, of which 
+one node is a master node that distributes jobs. This setup causes a three-fold 
 speedup for the repositories dumps. One could expect the process to be 
 seven~times faster due to the number of nodes, but at the end a few nodes are
 busy with a large dump, which causes the total time to be higher than expected.
 This is also the case for the commit comments task, which has to merge the
-language shelves beforehand. Note however that the baseline only processes one
-dump while the MPI task uses all 17~dumps of the commit comments.
+language shelves beforehand. Note however that the `baseline languages' column 
+in Table~\ref{tab:component-real-time} does make use of the languages from all 
+the repositories dumps, but it only processes one commit comments dump. 
+Meanwhile, the MPI task uses all 17~dumps of the commit comments.
 
 For the analyzer and the classifier components, we see that all platforms 
 perform fairly equally, where we again note that the MPI version processes more 
@@ -729,9 +729,9 @@ than ten times as much data as the other platforms do.
     \quad Repositories     & ---       & ---    & 8h 26m 1s   & 9h 40m 30s \\
     \quad Commit comments  & 1m 10s    & ---    & 15m 57s     & 7h 32m 49s \\
     Analyzer               & 52s       & 1m 23s & 53s         & 4m 12s     \\
-    Classify, sort, reduce & 1m 4s     & 1m 46s & 1m 5s       & 10m 23s    \\
-    \quad Classifier       & 1m 3s     & 1m 40s & 1m 3s       & 10m 9s     \\
-    \quad Reducer          & 0.2s      & 10s    & 0.2s        & 2s         \\
+    Classify, sort, reduce & 1m 4s     & 1m 37s & 1m 5s       & 10m 23s    \\
+    \quad Classifier       & 1m 3s     & 1m 27s & 1m 3s       & 10m 9s     \\
+    \quad Reducer          & 0.2s      & 9s     & 0.2s        & 2s         \\
     \bottomrule
   \end{tabular}
   \caption{Summed user and system time of components using various distributed 
@@ -806,8 +806,6 @@ show the prediction along with the original message. This causes the memory
 usage of the classifier to become 282~MB, an increase of 83~MB.
 
 \subsection{Determining the most accurate classifier}\label{sec:most-accurate-classifier}
-% TODO: Say something about our analysis/comparisons between the analyzer and 
-% the classifier (unrecognized.py)? It was a short experiment, but still.
 Before we are able to give classifications for commit comments, it is important 
 to determine the most accurate classifier to use on our dataset. In order to 
 consider as many combinations of classifier and parameters as possible, we have 
